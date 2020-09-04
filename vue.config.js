@@ -2,10 +2,11 @@
 module.exports = {
   pages: {
     popup: {
-      template: "public/browser-extension.html",
+      template: "public/index.html",
       entry: "./src/popup/main.ts",
       title: "Popup",
     },
+    sidebar: "./src/sidebar/main.ts",
   },
   css: {
     loaderOptions: {
@@ -26,6 +27,11 @@ module.exports = {
           },
         },
       },
+    },
+  },
+  configureWebpack: {
+    entry: {
+      styles: "./src/assets/styles/sidebar_wrapper.less",
     },
   },
 };

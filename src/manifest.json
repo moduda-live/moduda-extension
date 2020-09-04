@@ -1,23 +1,16 @@
 {
   "manifest_version": 2,
   "name": "__MSG_extName__",
-  "homepage_url": "http://localhost:8080/",
-  "description": "A Vue Browser Extension",
+  "description": "Watch videos together with friends, in real time",
   "default_locale": "en",
-  "permissions": [
-    "activeTab",
-    "<all_urls>",
-    "*://*/*"
-  ],
+  "permissions": ["activeTab", "storage"],
   "icons": {
     "16": "icons/16.png",
     "48": "icons/48.png",
     "128": "icons/128.png"
   },
   "background": {
-    "scripts": [
-      "js/background.js"
-    ],
+    "scripts": ["js/background.js"],
     "persistent": false
   },
   "browser_action": {
@@ -27,5 +20,13 @@
       "19": "icons/19.png",
       "38": "icons/38.png"
     }
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://movens.app/join"],
+      "js": ["js/content-script.js"]
+    }
+  ],
+  "optional_permissions": ["http://*/*", "https://*/*"],
+  "web_accessible_resources": ["js/styles.js", "sidebar.html"]
 }

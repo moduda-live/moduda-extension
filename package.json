@@ -1,5 +1,5 @@
 {
-  "name": "movens-ext",
+  "name": "Movens",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@popperjs/core": "^2.4.4",
     "core-js": "^3.6.5",
     "iview": "^3.5.4",
     "vue": "^2.6.11",
