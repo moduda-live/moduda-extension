@@ -6,7 +6,7 @@ module.exports = {
       entry: "./src/popup/popup.ts",
       title: "Popup",
     },
-    sidebar: "./src/sidebar/main.ts",
+    sidebar: "./src/sidebar/sidebar.ts",
   },
   css: {
     loaderOptions: {
