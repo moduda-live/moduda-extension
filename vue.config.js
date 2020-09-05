@@ -3,7 +3,7 @@ module.exports = {
   pages: {
     popup: {
       template: "public/index.html",
-      entry: "./src/popup/main.ts",
+      entry: "./src/popup/popup.ts",
       title: "Popup",
     },
     sidebar: "./src/sidebar/main.ts",

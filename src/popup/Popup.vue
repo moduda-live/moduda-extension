@@ -1,24 +1,23 @@
 <template>
   <div id="popup">
-    <div class="popup-header">
-      <Icon type="ios-ionitron-outline" size="24" />
-      <h1 style="margin-left: 5px">movens</h1>
+    <Header />
+    <div class="popup-guide">
+      Please ensure that you are on a page with the video you want to watch
     </div>
-    <div class="popup-guide">Please ensure that you are on a page with the video you want to watch</div>
     <Alert type="error" show-icon v-if="noVideo">
       <Icon type="ios-warning-outline" slot="icon"></Icon>No video detected. Try
       in another page!
     </Alert>
-    <Button v-if="!connecting && !noVideo" @click="createParty">Create a new party!</Button>
+    <Button v-if="!connecting && !noVideo" @click="createParty"
+      >Create a new party!</Button
+    >
     <Spin v-if="connecting">
       <Icon type="ios-loading" size="18" class="demo-spin-icon-load"></Icon>
       <div>Connecting to server...</div>
     </Spin>
-    <Button
-      ref="icon"
-      class="info-icn"
-      type="text"
-      shape="circle"
+    <TransparentHeaderButton
+      class="popup-info-btn"
+      ref="btn"
       icon="ios-information-circle-outline"
     />
     <div class="tooltip" ref="tooltip">
@@ -31,9 +30,15 @@
 <script lang="ts">
 import Vue from "vue";
 import { createPopper } from "@popperjs/core";
+import Header from "@/shared/Header.vue";
+import TransparentHeaderButton from "@/shared/TransparentLogoButton.vue";
 
 export default Vue.extend({
-  name: "App",
+  name: "Popup",
+  components: {
+    Header,
+    TransparentHeaderButton
+  },
   data() {
     return {
       connecting: false,
@@ -75,7 +80,7 @@ export default Vue.extend({
       }
     },
     registerTooltip() {
-      const iconBtn = (this.$refs.icon as Vue).$el;
+      const iconBtn = (this.$refs.btn as Vue).$el;
       const tooltip = this.$refs.tooltip as HTMLElement;
 
       createPopper(iconBtn, tooltip, {
@@ -125,33 +130,10 @@ html {
   justify-content: center;
 }
 
-.popup {
-  &-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 2px;
-  }
-
-  &-guide {
-    width: 230px;
-    margin-bottom: 15px;
-    text-align: center;
-  }
-}
-
-.info-icn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-
-  &:active,
-  &:focus {
-    box-shadow: none !important;
-  }
-
-  .ivu-icon {
-    font-size: 20px !important;
-  }
+.popup-guide {
+  width: 230px;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
 .tooltip {
@@ -171,5 +153,11 @@ html {
 
 .ivu-alert {
   display: flex;
+}
+
+.popup-info-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 </style>
