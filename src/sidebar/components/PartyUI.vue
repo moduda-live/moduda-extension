@@ -2,20 +2,17 @@
   <div class="party">
     <Topbar />
     <div class="divider" />
-    <SettingsMenu />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Topbar from "@/sidebar/components/Topbar.vue";
-import SettingsMenu from "@/sidebar/components/SettingsMenu.vue";
 
 export default Vue.extend({
   name: "PartyUI",
   components: {
-    Topbar,
-    SettingsMenu
+    Topbar
   },
   data() {
     return {};

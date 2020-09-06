@@ -1,28 +1,43 @@
 <template>
-  <div class="settings-menu">
-    <CellGroup>
-      <Cell title="Notifications">
-        <SwitchBtn size="small" v-model="showNotifications" slot="extra" />
-      </Cell>
-      <Cell
-        title="Github"
-        to="https://github.com/movens-app/movens-extension"
-        target="_blank"
-      >
-        <Icon slot="arrow" type="logo-github" size="18" />
-      </Cell>
-    </CellGroup>
-  </div>
+  <Popper>
+    <TransparentLogoButton
+      :color="primaryWhiteColor"
+      icon="ios-options-outline"
+      :size="18"
+    />
+
+    <div slot="tooltip" class="settings-menu">
+      <CellGroup>
+        <Cell title="Notifications">
+          <SwitchBtn size="small" v-model="showNotifications" slot="extra" />
+        </Cell>
+        <Cell
+          title="Github"
+          to="https://github.com/movens-app/movens-extension"
+          target="_blank"
+        >
+          <Icon slot="arrow" type="logo-github" size="18" />
+        </Cell>
+      </CellGroup>
+    </div>
+  </Popper>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import Popper from "@/shared/Popper.vue";
+import TransparentLogoButton from "@/shared/TransparentLogoButton.vue";
 
 export default Vue.extend({
   name: "SettingsMenu",
+  components: {
+    Popper,
+    TransparentLogoButton
+  },
   data() {
     return {
-      showNotifications: false
+      showNotifications: false,
+      primaryWhiteColor: "#c9c9c9"
     };
   }
 });

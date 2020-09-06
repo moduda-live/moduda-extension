@@ -16,22 +16,19 @@
       <div>Connecting to server...</div>
     </Spin>
     <TransparentHeaderButton
+      id="infoBtn"
       class="popup-info-btn"
-      ref="btn"
       icon="ios-information-circle-outline"
     />
-    <div class="tooltip" ref="tooltip">
-      If you are the host, click the button to get started! Otherwise, join
-      directly using an invite link.
-    </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import { createPopper } from "@popperjs/core";
 import Header from "@/shared/Header.vue";
 import TransparentHeaderButton from "@/shared/TransparentLogoButton.vue";
+import tippy from "tippy.js";
+import "tippy.js/animations/scale.css";
 
 export default Vue.extend({
   name: "Popup",
@@ -39,14 +36,21 @@ export default Vue.extend({
     Header,
     TransparentHeaderButton
   },
+  mounted() {
+    tippy("#infoBtn", {
+      content:
+        "If you are the host, click the button to get started! Otherwise, join directly using an invite link.",
+      placement: "left-end",
+      animation: "scale",
+      maxWidth: 200,
+      theme: "info"
+    });
+  },
   data() {
     return {
       connecting: false,
       noVideo: false
     };
-  },
-  mounted() {
-    this.registerTooltip();
   },
   methods: {
     async checkForVideo() {
@@ -58,7 +62,6 @@ export default Vue.extend({
       const res = await browser.tabs.executeScript(tabs[0].id as number, {
         code: `document.querySelectorAll("video").length`
       });
-      console.log("response: ", res);
 
       if (res === undefined) {
         return false;
@@ -78,33 +81,6 @@ export default Vue.extend({
       } else {
         this.noVideo = true;
       }
-    },
-    registerTooltip() {
-      const iconBtn = (this.$refs.btn as Vue).$el;
-      const tooltip = this.$refs.tooltip as HTMLElement;
-
-      createPopper(iconBtn, tooltip, {
-        placement: "left-start"
-      });
-
-      function show() {
-        tooltip.setAttribute("data-show", "");
-      }
-
-      function hide() {
-        tooltip.removeAttribute("data-show");
-      }
-
-      const showEvents = ["mouseenter", "focus"];
-      const hideEvents = ["mouseleave", "blur"];
-
-      showEvents.forEach(event => {
-        iconBtn.addEventListener(event, show);
-      });
-
-      hideEvents.forEach(event => {
-        iconBtn.addEventListener(event, hide);
-      });
     }
   }
 });
@@ -136,21 +112,6 @@ html {
   text-align: center;
 }
 
-.tooltip {
-  width: 200px;
-  color: #fff;
-  background-color: @navy;
-  opacity: 0.95;
-  padding: 6px;
-  border-radius: 2px;
-  display: none;
-  font-size: 11px;
-}
-
-.tooltip[data-show] {
-  display: flex;
-}
-
 .ivu-alert {
   display: flex;
 }
@@ -159,5 +120,14 @@ html {
   position: absolute;
   top: 10px;
   right: 10px;
+}
+
+.tippy-box[data-theme~="info"] {
+  background-color: @navy;
+  color: #fff;
+  padding: 6px;
+  border-radius: 2px;
+  font-size: 11px;
+  display: flex;
 }
 </style>
