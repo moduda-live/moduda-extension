@@ -1,6 +1,6 @@
 <template>
   <Popper>
-    <TransparentLogoButton
+    <AppLogoButton
       :color="primaryWhiteColor"
       icon="ios-options-outline"
       :size="18"
@@ -26,20 +26,20 @@
 <script lang="ts">
 import Vue from "vue";
 import Popper from "@/shared/Popper.vue";
-import TransparentLogoButton from "@/shared/TransparentLogoButton.vue";
+import AppLogoButton from "@/shared/AppLogoButton.vue";
 
 export default Vue.extend({
   name: "SettingsMenu",
   components: {
     Popper,
-    TransparentLogoButton
+    AppLogoButton,
   },
   data() {
     return {
       showNotifications: false,
-      primaryWhiteColor: "#c9c9c9"
+      primaryWhiteColor: "#c9c9c9",
     };
-  }
+  },
 });
 </script>
 
