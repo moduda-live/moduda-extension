@@ -1,6 +1,6 @@
 <template>
   <div id="popup">
-    <Header />
+    <AppHeader />
     <div class="popup-guide">
       Please ensure that you are on a page with the video you want to watch
     </div>
@@ -15,7 +15,7 @@
       <Icon type="ios-loading" size="18" class="demo-spin-icon-load"></Icon>
       <div>Connecting to server...</div>
     </Spin>
-    <TransparentHeaderButton
+    <AppLogoButton
       id="infoBtn"
       class="popup-info-btn"
       icon="ios-information-circle-outline"
@@ -25,16 +25,16 @@
 
 <script lang="ts">
 import Vue from "vue";
-import Header from "@/shared/Header.vue";
-import TransparentHeaderButton from "@/shared/TransparentLogoButton.vue";
+import AppHeader from "@/shared/AppHeader.vue";
+import AppLogoButton from "@/shared/AppLogoButton.vue";
 import tippy from "tippy.js";
 import "tippy.js/animations/scale.css";
 
 export default Vue.extend({
   name: "Popup",
   components: {
-    Header,
-    TransparentHeaderButton
+    AppHeader,
+    AppLogoButton
   },
   mounted() {
     tippy("#infoBtn", {

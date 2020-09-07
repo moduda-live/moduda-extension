@@ -9,8 +9,13 @@
 import Vue from "vue";
 
 export default Vue.extend({
-  name: "Header",
-  props: ["color"]
+  name: "AppHeader",
+  props: {
+    color: {
+      type: String,
+      required: false
+    }
+  }
 });
 </script>
 

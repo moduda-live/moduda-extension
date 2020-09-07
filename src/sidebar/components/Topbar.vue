@@ -1,6 +1,6 @@
 <template>
   <div class="topbar">
-    <Header :color="primaryWhiteColor" />
+    <AppHeader :color="primaryWhiteColor" />
     <CellGroup ref="menu">
       <Cell title="Notifications">
         <SwitchBtn size="small" v-model="showNotifications" slot="extra" />
@@ -13,7 +13,7 @@
         <Icon slot="arrow" type="logo-github" size="18" />
       </Cell>
     </CellGroup>
-    <TransparentLogoButton
+    <AppLogoButton
       id="settingsBtn"
       :color="primaryWhiteColor"
       icon="ios-options-outline"
@@ -24,16 +24,16 @@
 
 <script lang="ts">
 import Vue from "vue";
-import Header from "@/shared/Header.vue";
-import TransparentLogoButton from "@/shared/TransparentLogoButton.vue";
+import AppHeader from "@/shared/AppHeader.vue";
+import AppLogoButton from "@/shared/AppLogoButton.vue";
 import tippy from "tippy.js";
 import "tippy.js/animations/shift-away-subtle.css";
 
 export default Vue.extend({
   name: "Topbar",
   components: {
-    Header,
-    TransparentLogoButton
+    AppHeader,
+    AppLogoButton
   },
   mounted() {
     tippy("#settingsBtn", {
