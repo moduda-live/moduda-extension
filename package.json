@@ -1,5 +1,5 @@
 {
-  "name": "movens-ext",
+  "name": "Movens",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,6 +12,7 @@
   "dependencies": {
     "core-js": "^3.6.5",
     "iview": "^3.5.4",
+    "tippy.js": "^6.2.6",
     "vue": "^2.6.11",
     "vuex": "^3.4.0"
   },
