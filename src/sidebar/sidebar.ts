@@ -1,8 +1,21 @@
 import Vue from "vue";
 import Sidebar from "./Sidebar.vue";
-import { locale, Switch, Card, CellGroup, Cell, Icon, Badge, Button, Spin, Input, Divider } from "iview";
+import {
+  locale,
+  Switch,
+  Card,
+  CellGroup,
+  Cell,
+  Icon,
+  Badge,
+  Button,
+  Spin,
+  Input,
+  Divider
+} from "iview";
 import lang from "iview/dist/locale/en-US";
 import "../theme/index.less";
+import store from "./store";
 
 locale(lang);
 
@@ -19,5 +32,6 @@ Vue.component("Divider", Divider);
 
 new Vue({
   el: "#app",
-  render: (h) => h(Sidebar),
+  store,
+  render: h => h(Sidebar)
 });
