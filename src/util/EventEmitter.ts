@@ -1,4 +1,4 @@
-type Handler = (...args: any[]) => void
+type Handler = (...args: any[]) => void;
 
 export default class EventEmitter<T> {
   events: Map<T, Set<Handler>>;
@@ -12,10 +12,14 @@ export default class EventEmitter<T> {
   }
 
   emit(event: T) {
-    this.events.get(event)?.forEach(handler => handler())
+    this.events.get(event)?.forEach(handler => handler());
   }
 
-  off(event: T, handler: Handler){
-      this.events.get(event)?.delete(handler);
+  off(event: T, handler: Handler) {
+    this.events.get(event)?.delete(handler);
+  }
+
+  offAll() {
+    this.events.clear();
   }
 }
