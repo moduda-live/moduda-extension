@@ -1,10 +1,12 @@
 import Vue from "vue";
 import Vuex, { StoreOptions } from "vuex";
 import { RootState, ConnectionStatus } from "./types";
+import createPeerConnection from "./plugins/peerConnection";
 
 Vue.use(Vuex);
 
 const store: StoreOptions<RootState> = {
+  plugins: [createPeerConnection()],
   state: {
     id: "",
     chatMessages: [],
