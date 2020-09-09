@@ -15,6 +15,13 @@ describe("Utilities", () => {
       expect(onTest).toHaveBeenCalledTimes(1);
     });
 
+    it("should invoke callback with data when passed into emit()", () => {
+      const multiParamMockFn = jest.fn();
+      emitter.on("test", multiParamMockFn);
+      emitter.emit("test", 2, 3, 4);
+      expect(multiParamMockFn).toHaveBeenCalledWith(2, 3, 4);
+    });
+
     it("should call all callbacks upon emit if more than one callback is registered for the given event", () => {
       const firstCallback = jest.fn();
       const secondCallback = jest.fn();

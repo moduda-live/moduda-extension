@@ -11,8 +11,8 @@ export default class EventEmitter<T> {
     this.events.set(event, (this.events.get(event) ?? new Set()).add(handler));
   }
 
-  emit(event: T) {
-    this.events.get(event)?.forEach(handler => handler());
+  emit(event: T, ...data: any[]) {
+    this.events.get(event)?.forEach(handler => handler(...data));
   }
 
   off(event: T, handler: Handler) {
