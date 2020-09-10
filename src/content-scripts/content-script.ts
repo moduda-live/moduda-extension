@@ -3,11 +3,15 @@ import "../assets/styles/sidebar_wrapper.less";
 class Sidebar {
   iframe: HTMLIFrameElement;
 
-  constructor() {
+  constructor(partyId?: string) {
     const iframe = document.createElement("iframe");
     iframe.style.border = "none";
     iframe.id = "movens-iframe";
-    iframe.src = browser.runtime.getURL("sidebar.html");
+    const url = new URL(browser.runtime.getURL("sidebar.html"));
+    if (partyId) {
+      url.searchParams.append("partyId", partyId);
+    }
+    iframe.src = url.toString();
     this.iframe = iframe;
   }
 
@@ -24,7 +28,9 @@ class Sidebar {
 }
 
 const initParty = () => {
-  const sidebar = new Sidebar();
+  const searchParams = new URLSearchParams(window.location.search);
+  const partyId = searchParams.get("movensPartyId") ?? undefined;
+  const sidebar = new Sidebar(partyId);
   sidebar.attachToDom();
   (window as any).partyLoaded = true;
 };

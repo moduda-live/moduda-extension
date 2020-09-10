@@ -6,5 +6,6 @@ export enum PartyEvent {
   USER_LEFT,
   USER_PAUSED,
   USER_PLAYED,
-  ADD_CHAT_MSG
+  ADD_CHAT_MSG,
+  SET_USER_ID
 }

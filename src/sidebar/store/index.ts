@@ -6,15 +6,18 @@ import createPeerConnection from "./plugins/peerConnection";
 Vue.use(Vuex);
 
 const store: StoreOptions<RootState> = {
-  plugins: [createPeerConnection()],
   state: {
-    id: "",
+    partyId: "",
+    userId: "",
     chatMessages: [],
     serverConnectionStatus: ConnectionStatus.DISCONNECTED
   },
   actions: {
-    setId({ commit }, id) {
-      commit("SET_ID", id);
+    setPartyId({ commit }, partyId) {
+      commit("SET_PARTY_ID", partyId);
+    },
+    setUserId({ commit }, userId) {
+      commit("SET_USER_ID", userId);
     },
     addMessage({ commit }, msg) {
       commit("ADD_CHAT_MESSAGE", msg);
@@ -30,8 +33,11 @@ const store: StoreOptions<RootState> = {
     }
   },
   mutations: {
-    SET_ID(state, id) {
-      state.id = id;
+    SET_PARTY_ID(state, partyId) {
+      state.partyId = partyId;
+    },
+    SET_USER_ID(state, userId) {
+      state.userId = userId;
     },
     ADD_CHAT_MESSAGE(state, msg) {
       state.chatMessages.push(msg);
@@ -42,4 +48,7 @@ const store: StoreOptions<RootState> = {
   }
 };
 
-export default new Vuex.Store<RootState>(store);
+export default function createStore(partyId?: string) {
+  store.plugins = [createPeerConnection(partyId)];
+  return new Vuex.Store<RootState>(store);
+}

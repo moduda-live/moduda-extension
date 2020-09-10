@@ -10,7 +10,8 @@ export enum ConnectionStatus {
 }
 
 export interface RootState {
-  id: string;
+  partyId: string;
+  userId: string;
   chatMessages: Message[];
   serverConnectionStatus: ConnectionStatus;
 }

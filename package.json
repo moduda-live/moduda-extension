@@ -12,6 +12,7 @@
   "dependencies": {
     "core-js": "^3.6.5",
     "iview": "^3.5.4",
+    "short-uuid": "^4.1.0",
     "simple-peer": "^9.7.2",
     "tippy.js": "^6.2.6",
     "vue": "^2.6.11",

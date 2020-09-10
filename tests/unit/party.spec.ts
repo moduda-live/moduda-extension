@@ -21,7 +21,7 @@ describe("Party.ts", () => {
   });
 
   it("should set default id if not passed to constructor", () => {
-    expect(party.id).toBe("default");
+    expect(party.id).not.toBeUndefined();
   });
 
   it("should set correct id if provided via the constructor", () => {

@@ -1,19 +1,19 @@
+import short from "short-uuid";
 import EventEmitter from "@/util/EventEmitter";
 import { PartyEvent } from "./types";
 import { log } from "@/util/log";
 
 export default class Party extends EventEmitter<PartyEvent> {
-  wsUrl: string;
-  id: string;
+  wsUrl!: string;
+  id!: string;
   socket!: WebSocket;
 
   constructor(wsUrl: string, partyId?: string) {
     super();
-    this.id = partyId ?? "default";
     this.wsUrl = wsUrl;
-    /* ADD_CHAT_MSG, CONNECTING, CONNECTED, DISCONNECTED event handlers are reigstered in
-      src / sidebar / store / plugins / peerConnections.ts*/
+    this.id = partyId ?? short.generate();
 
+    // ADD_CHAT_MSG, CONNECTING, CONNECTED, DISCONNECTED event handlers are reigstered in vuex store plugin
     this.on(PartyEvent.USER_JOINED, () => {
       //TODO: implement user joined
       log("User joined");

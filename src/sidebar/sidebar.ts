@@ -15,8 +15,13 @@ import {
 } from "iview";
 import lang from "iview/dist/locale/en-US";
 import "../theme/index.less";
-import store from "./store";
+import createStore from "./store";
 
+// get partyId if it exists
+const searchParams = new URLSearchParams(window.location.search);
+const partyId = searchParams.get("partyId") ?? undefined;
+
+// set up Vue app
 locale(lang);
 
 Vue.component("SwitchBtn", Switch);
@@ -29,6 +34,8 @@ Vue.component("Button", Button);
 Vue.component("Spin", Spin);
 Vue.component("Input", Input);
 Vue.component("Divider", Divider);
+
+const store = createStore(partyId);
 
 new Vue({
   el: "#app",
