@@ -12,6 +12,14 @@ const store: StoreOptions<RootState> = {
     chatMessages: [],
     serverConnectionStatus: ConnectionStatus.DISCONNECTED
   },
+  getters: {
+    serverConnecting: state =>
+      state.serverConnectionStatus === ConnectionStatus.CONNECTING,
+    serverConnected: state =>
+      state.serverConnectionStatus === ConnectionStatus.CONNECTED,
+    serverDisconnected: state =>
+      state.serverConnectionStatus === ConnectionStatus.DISCONNECTED
+  },
   actions: {
     setPartyId({ commit }, partyId) {
       commit("SET_PARTY_ID", partyId);

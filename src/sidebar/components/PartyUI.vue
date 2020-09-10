@@ -23,6 +23,11 @@ export default Vue.extend({
 <style lang="less" scoped>
 @muted-dark: #2c3e50;
 
+.party {
+  width: 100%;
+  height: 100%;
+}
+
 .divider {
   height: 1px;
   width: 100%;
