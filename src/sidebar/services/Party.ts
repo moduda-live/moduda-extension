@@ -43,15 +43,6 @@ export default class Party extends EventEmitter<PartyEvent> {
     this.socket.onopen = () => {
       this.emit(PartyEvent.CONNECTED);
       this.socket.onmessage = this.handleMessage.bind(this);
-      const userJoinedMsg = {
-        type: "join",
-        payload: {
-          partyId: this.id
-        }
-      };
-      // server will send "currentPartyUsers" msg
-      this.socket.send(JSON.stringify(userJoinedMsg));
-      log("Requesting for list of users");
     };
 
     this.socket.onclose = () => {
@@ -88,9 +79,22 @@ export default class Party extends EventEmitter<PartyEvent> {
         this.emit(PartyEvent.ADD_CHAT_MSG);
         break;
       }
+      case "userId": {
+        const { userId } = msg.payload;
+        this.emit(PartyEvent.SET_USER_ID, userId);
+        // Once receiving userId, now request for list of other users in party
+        const requestUsersMsg = {
+          type: "getCurrentPartyUsers",
+          payload: {
+            partyId: this.id
+          }
+        };
+        // server will send "currentPartyUsers" message back;
+        this.socket.send(JSON.stringify(requestUsersMsg));
+        break;
+      }
       case "currentPartyUsers": {
-        // called once upon joining room
-        const users = msg.payload.users;
+        const { users } = msg.payload;
         console.log("Current number of party users: " + users.length);
         // TODO: Add users
       }
