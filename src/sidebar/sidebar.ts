@@ -14,7 +14,7 @@ import {
   Divider
 } from "iview";
 import lang from "iview/dist/locale/en-US";
-import "../theme/index.less";
+import "@/assets/styles/iview.less";
 import createStore from "./store";
 
 // get partyId if it exists

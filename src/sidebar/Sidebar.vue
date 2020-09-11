@@ -29,8 +29,6 @@ export default {
 </script>
 
 <style lang="less">
-@primary-dark: #242c34;
-
 html,
 body {
   height: 100%;
@@ -45,7 +43,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: @primary-dark;
+  background-color: @theme-primary-color;
 }
 
 .serverConnectError {

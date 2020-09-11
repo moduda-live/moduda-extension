@@ -1,8 +1,18 @@
 import Vue from "vue";
 import Popup from "./Popup.vue";
-import { locale, Button, Spin, Tabs, TabPane, Input, Icon, Divider, Alert } from "iview";
+import {
+  locale,
+  Button,
+  Spin,
+  Tabs,
+  TabPane,
+  Input,
+  Icon,
+  Divider,
+  Alert
+} from "iview";
 import lang from "iview/dist/locale/en-US";
-import "../theme/index.less";
+import "@/assets/styles/iview.less";
 
 locale(lang);
 
@@ -17,5 +27,5 @@ Vue.component("Alert", Alert);
 
 new Vue({
   el: "#app",
-  render: (h) => h(Popup),
+  render: h => h(Popup)
 });

@@ -7,7 +7,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import Topbar from "@/sidebar/components/Topbar.vue";
+import Topbar from "./Topbar.vue";
 
 export default Vue.extend({
   name: "PartyUI",
@@ -21,8 +21,6 @@ export default Vue.extend({
 </script>
 
 <style lang="less" scoped>
-@muted-dark: #2c3e50;
-
 .party {
   width: 100%;
   height: 100%;
@@ -31,6 +29,7 @@ export default Vue.extend({
 .divider {
   height: 1px;
   width: 100%;
-  background-color: @muted-dark;
+  background-color: @theme-muted-dark-color;
+  margin-bottom: 10px;
 }
 </style>
