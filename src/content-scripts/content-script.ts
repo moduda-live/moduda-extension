@@ -3,16 +3,18 @@ import "../assets/styles/sidebar_wrapper.less";
 class Sidebar {
   iframe: HTMLIFrameElement;
 
-  constructor(partyId?: string) {
+  constructor(videolink: string, partyId?: string) {
     const iframe = document.createElement("iframe");
     iframe.style.border = "none";
     iframe.id = "movens-iframe";
     const url = new URL(browser.runtime.getURL("sidebar.html"));
+    url.searchParams.append("videolink", videolink);
     if (partyId) {
       url.searchParams.append("partyId", partyId);
     }
     iframe.src = url.toString();
     this.iframe = iframe;
+    this.attachToDom();
   }
 
   attachToDom() {
@@ -30,8 +32,10 @@ class Sidebar {
 const initParty = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const partyId = searchParams.get("movensPartyId") ?? undefined;
-  const sidebar = new Sidebar(partyId);
-  sidebar.attachToDom();
+  searchParams.delete("movensPartyId");
+  const videolinkNoParams = window.location.href.split(/[?#]/)[0];
+  const videolink = videolinkNoParams + searchParams.toString();
+  new Sidebar(videolink, partyId);
   (window as any).partyLoaded = true;
 };
 
