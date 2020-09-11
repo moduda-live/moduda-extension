@@ -57,11 +57,6 @@ export default Vue.extend({
 </script>
 
 <style lang="less">
-@menu-background: #181b21;
-@primary-white: #c9c9c9;
-@switch-color: #e35036;
-@menu-item-hover: #2c3e50;
-
 .topbar {
   display: flex;
   align-items: center;
@@ -69,7 +64,7 @@ export default Vue.extend({
 }
 
 .tippy-box[data-theme~="settings"] {
-  background-color: @menu-background;
+  background-color: @theme-darker-primary-color;
   border-radius: 5px;
   padding: 7px;
 
@@ -80,18 +75,18 @@ export default Vue.extend({
 
     .ivu-cell {
       border-radius: 5px;
-      color: @primary-white;
+      color: @theme-white-color;
       padding: 6px 10px;
 
       &:hover,
       &:active {
-        background-color: @menu-item-hover;
+        background-color: @theme-menu-item-hover;
       }
     }
 
     .ivu-switch-checked {
-      border-color: @switch-color;
-      background-color: @switch-color;
+      border-color: @theme-bright-color;
+      background-color: @theme-bright-color;
     }
   }
 }

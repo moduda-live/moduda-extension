@@ -87,16 +87,16 @@ export default Vue.extend({
 </script>
 
 <style lang="less">
+@light-border-color: #cccecf;
+
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-@navy: #2c3e50;
-
 #popup {
-  border: 1px solid #cccecf;
-  color: @navy;
+  border: 1px solid @light-border-color;
+  color: @theme-primary-color;
   width: 360px;
   margin: 5px;
   padding: 1rem;
@@ -123,8 +123,8 @@ html {
 }
 
 .tippy-box[data-theme~="info"] {
-  background-color: @navy;
-  color: #fff;
+  background-color: @theme-primary-color;
+  color: @theme-white-color;
   padding: 6px;
   border-radius: 2px;
   font-size: 11px;
