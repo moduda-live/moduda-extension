@@ -1,7 +1,6 @@
 import Vue from "vue";
 import Vuex, { StoreOptions } from "vuex";
 import { RootState, ConnectionStatus } from "./types";
-import createPeerConnection from "./plugins/peerConnection";
 
 Vue.use(Vuex);
 
@@ -10,7 +9,7 @@ const store: StoreOptions<RootState> = {
     partyId: "",
     userId: "",
     chatMessages: [],
-    serverConnectionStatus: ConnectionStatus.DISCONNECTED
+    serverConnectionStatus: ConnectionStatus.CONNECTING
   },
   getters: {
     serverConnecting: state =>
@@ -56,7 +55,4 @@ const store: StoreOptions<RootState> = {
   }
 };
 
-export default function createStore(partyId?: string) {
-  store.plugins = [createPeerConnection(partyId)];
-  return new Vuex.Store<RootState>(store);
-}
+export default new Vuex.Store<RootState>(store);

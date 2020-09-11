@@ -1,5 +1,5 @@
 import Postmate, { ChildAPI } from "postmate";
-import Party from "./Party";
+import { Party } from "./Party";
 import { Communicator } from "./types";
 
 export default class ParentCommunicator implements Communicator {

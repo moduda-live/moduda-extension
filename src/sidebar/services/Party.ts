@@ -1,17 +1,26 @@
 import short from "short-uuid";
 import EventEmitter from "@/util/EventEmitter";
-import { PartyEvent } from "./types";
+import { Communicator, PartyEvent } from "./types";
+import { ConnectionStatus, RootState } from "../store/types";
 import { log } from "@/util/log";
+import { Store } from "vuex";
 
-export default class Party extends EventEmitter<PartyEvent> {
-  wsUrl!: string;
-  id!: string;
+export class Party extends EventEmitter<PartyEvent> {
+  wsUrl: string;
+  id: string;
   socket!: WebSocket;
+  parentCommunicator: Communicator;
 
-  constructor(wsUrl: string, partyId?: string) {
+  constructor(
+    wsUrl: string,
+    parentCommunicator: Communicator,
+    partyId?: string
+  ) {
     super();
     this.wsUrl = wsUrl;
     this.id = partyId ?? short.generate();
+    parentCommunicator.setParty(this);
+    this.parentCommunicator = parentCommunicator;
 
     // ADD_CHAT_MSG, CONNECTING, CONNECTED, DISCONNECTED event handlers are reigstered in vuex store plugin
     this.on(PartyEvent.USER_JOINED, () => {
@@ -32,11 +41,12 @@ export default class Party extends EventEmitter<PartyEvent> {
     });
   }
 
-  connect() {
+  async connect() {
     this.emit(PartyEvent.CONNECTING);
     log("Starting party...");
+    await this.parentCommunicator.init();
     this.socket = new WebSocket(this.wsUrl);
-    this.registerWebsocketHandlers();
+    this.registerWebsocketHandlers(); // onopen has to be in the same section due to EventLoop
   }
 
   registerWebsocketHandlers() {
@@ -104,4 +114,59 @@ export default class Party extends EventEmitter<PartyEvent> {
   destroy() {
     this.offAll();
   }
+}
+
+export default function createParty(
+  connectionUrl: string,
+  parentCommunicator: Communicator,
+  opts: Record<string, unknown> = {}
+) {
+  if (!connectionUrl) {
+    throw new Error("Could not create");
+  }
+
+  // create party
+  const partyId = opts.partyId as string;
+  const party = new Party(connectionUrl, parentCommunicator, partyId);
+
+  if (opts.store) {
+    // set up store
+    const store = opts.store as Store<RootState>;
+
+    store.subscribe((mutation: any, state: any) => {
+      if (state.serverConnectionStatus !== ConnectionStatus.CONNECTED) {
+        return;
+      }
+
+      if (
+        mutation.type === "ADD_CHAT_MSG" &&
+        mutation.payload.senderId === state.userId
+      ) {
+        // messsage from current user, emit to others in party
+      }
+    });
+
+    party.on(PartyEvent.CONNECTING, () => {
+      store.dispatch("connectingToServer");
+    });
+
+    party.on(PartyEvent.CONNECTED, () => {
+      store.dispatch("connectedToServer");
+    });
+
+    party.on(PartyEvent.DISCONNECTED, () => {
+      store.dispatch("disconnectedFromServer");
+    });
+
+    party.on(PartyEvent.ADD_CHAT_MSG, msg => {
+      store.dispatch("addMessage", msg);
+    });
+
+    party.on(PartyEvent.SET_USER_ID, userId => {
+      store.dispatch("setUserId", userId);
+    });
+  }
+
+  party.connect();
+  return party;
 }

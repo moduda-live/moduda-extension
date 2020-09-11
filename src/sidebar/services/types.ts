@@ -1,4 +1,4 @@
-import Party from "./Party";
+import { Party } from "./Party";
 
 export enum PartyEvent {
   CONNECTING,

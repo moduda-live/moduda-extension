@@ -15,7 +15,10 @@ import {
 } from "iview";
 import lang from "iview/dist/locale/en-US";
 import "@/assets/styles/iview.less";
-import createStore from "./store";
+import store from "./store";
+import partyPlugin from "./plugins/partyPlugin";
+import createParty from "./services/Party";
+import ParentCommunicator from "./services/ParentCommunicator";
 
 // get partyId if it exists
 const searchParams = new URLSearchParams(window.location.search);
@@ -35,10 +38,17 @@ Vue.component("Spin", Spin);
 Vue.component("Input", Input);
 Vue.component("Divider", Divider);
 
-const store = createStore(partyId);
+// custom party plugin
+Vue.use(partyPlugin);
+const parentCommunicator = new ParentCommunicator();
+const party = createParty("ws://localhost:8080", parentCommunicator, {
+  partyId,
+  store
+});
 
 new Vue({
   el: "#app",
+  party,
   store,
   render: h => h(Sidebar)
 });
