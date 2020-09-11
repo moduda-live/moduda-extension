@@ -1,31 +1,54 @@
 import "../assets/styles/sidebar_wrapper.less";
+import Postmate from "postmate";
 
 class Sidebar {
   iframe: HTMLIFrameElement;
 
-  constructor() {
+  constructor(videolink: string, partyId?: string) {
     const iframe = document.createElement("iframe");
     iframe.style.border = "none";
     iframe.id = "movens-iframe";
-    iframe.src = browser.runtime.getURL("sidebar.html");
+    const url = new URL(browser.runtime.getURL("sidebar.html"));
+    url.searchParams.append("videolink", videolink);
+    if (partyId) {
+      url.searchParams.append("partyId", partyId);
+    }
+    iframe.src = url.toString();
     this.iframe = iframe;
+    this.attachToDom();
   }
 
   attachToDom() {
-    const wrapper = document.createElement("div");
-    wrapper.id = "movens-sidebar";
-    wrapper.appendChild(this.iframe);
-    document.body.appendChild(wrapper);
+    // create iframe container
+    const container = document.createElement("div");
+    container.id = "movens-sidebar";
+    document.body.appendChild(container);
+    // set up document styles
     const style = document.createElement("script");
     style.type = "text/javascript";
     style.src = browser.runtime.getURL("js/styles.js");
     document.head.appendChild(style);
+    // create handshake between parent <-> iframe
+    const handshake = new Postmate({
+      container,
+      url: this.iframe.src,
+      name: "movens-sidebar",
+      classListArray: ["movens-iframe"]
+    });
+
+    handshake.then(child => {
+      // TODO: Set up listeners
+    });
   }
 }
 
 const initParty = () => {
-  const sidebar = new Sidebar();
-  sidebar.attachToDom();
+  const searchParams = new URLSearchParams(window.location.search);
+  const partyId = searchParams.get("movensPartyId") ?? undefined;
+  searchParams.delete("movensPartyId");
+  const videolinkNoParams = window.location.href.split(/[?#]/)[0];
+  const videolink = videolinkNoParams + searchParams.toString();
+  new Sidebar(videolink, partyId);
   (window as any).partyLoaded = true;
 };
 

@@ -1,9 +1,9 @@
 {
-  "name": "Movens",
-  "version": "0.1.0",
+  "name": "movens-extension",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service build --mode development --watch",
+    "dev": "vue-cli-service build --mode development --watch",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
     "test:e2e": "vue-cli-service test:e2e",
@@ -12,6 +12,9 @@
   "dependencies": {
     "core-js": "^3.6.5",
     "iview": "^3.5.4",
+    "postmate": "^1.5.2",
+    "short-uuid": "^4.1.0",
+    "simple-peer": "^9.7.2",
     "tippy.js": "^6.2.6",
     "vue": "^2.6.11",
     "vuex": "^3.4.0"
@@ -19,6 +22,8 @@
   "devDependencies": {
     "@types/firefox-webext-browser": "^67.0.2",
     "@types/jest": "^24.0.19",
+    "@types/postmate": "^1.5.1",
+    "@types/simple-peer": "^9.6.0",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",
     "@vue/cli-plugin-babel": "~4.5.0",
@@ -35,11 +40,27 @@
     "eslint": "^6.7.2",
     "eslint-plugin-prettier": "^3.1.3",
     "eslint-plugin-vue": "^6.2.2",
+    "husky": "^4.3.0",
+    "jest-websocket-mock": "^2.1.0",
     "less": "^3.0.4",
     "less-loader": "^5.0.0",
+    "lint-staged": "^10.3.0",
+    "mock-socket": "^9.0.3",
     "prettier": "^1.19.1",
+    "style-resources-loader": "^1.3.3",
     "typescript": "~3.9.3",
     "vue-cli-plugin-browser-extension": "~0.24.2",
     "vue-template-compiler": "^2.6.11"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx,json,vue}": [
+      "prettier --write",
+      "eslint --fix"
+    ]
   }
 }

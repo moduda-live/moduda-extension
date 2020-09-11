@@ -1,37 +1,50 @@
 /* eslint-disable prettier/prettier */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const path = require("path");
+
+function addStyleResource(rule) {
+  rule
+    .use("style-resource")
+    .loader("style-resources-loader")
+    .options({
+      patterns: [path.resolve(__dirname, "./src/assets/styles/variables.less")]
+    });
+}
+
 module.exports = {
   pages: {
     popup: {
       template: "public/index.html",
       entry: "./src/popup/popup.ts",
-      title: "Popup",
+      title: "Popup"
     },
-    sidebar: "./src/sidebar/sidebar.ts",
+    sidebar: "./src/sidebar/sidebar.ts"
+  },
+  chainWebpack: config => {
+    const types = ["vue-modules", "vue"];
+    types.forEach(type =>
+      addStyleResource(config.module.rule("less").oneOf(type))
+    );
   },
   css: {
     loaderOptions: {
       less: {
-        javascriptEnabled: true,
-      },
-    },
+        javascriptEnabled: true
+      }
+    }
   },
   pluginOptions: {
     browserExtension: {
       componentOptions: {
         background: {
-          entry: "src/background.ts",
+          entry: "src/background.ts"
         },
         contentScripts: {
           entries: {
-            "content-script": ["src/content-scripts/content-script.ts"],
-          },
-        },
-      },
-    },
-  },
-  configureWebpack: {
-    entry: {
-      styles: "./src/assets/styles/sidebar_wrapper.less",
-    },
-  },
+            "content-script": ["src/content-scripts/content-script.ts"]
+          }
+        }
+      }
+    }
+  }
 };
