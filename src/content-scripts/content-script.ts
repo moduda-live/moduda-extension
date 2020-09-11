@@ -1,4 +1,5 @@
 import "../assets/styles/sidebar_wrapper.less";
+import Postmate from "postmate";
 
 class Sidebar {
   iframe: HTMLIFrameElement;
@@ -18,14 +19,26 @@ class Sidebar {
   }
 
   attachToDom() {
-    const wrapper = document.createElement("div");
-    wrapper.id = "movens-sidebar";
-    wrapper.appendChild(this.iframe);
-    document.body.appendChild(wrapper);
+    // create iframe container
+    const container = document.createElement("div");
+    container.id = "movens-sidebar";
+    document.body.appendChild(container);
+    // set up document styles
     const style = document.createElement("script");
     style.type = "text/javascript";
     style.src = browser.runtime.getURL("js/styles.js");
     document.head.appendChild(style);
+    // create handshake between parent <-> iframe
+    const handshake = new Postmate({
+      container,
+      url: this.iframe.src,
+      name: "movens-sidebar",
+      classListArray: ["movens-iframe"]
+    });
+
+    handshake.then(child => {
+      // TODO: Set up listeners
+    });
   }
 }
 
