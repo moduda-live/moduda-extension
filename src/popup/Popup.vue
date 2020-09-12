@@ -15,11 +15,7 @@
       <Icon type="ios-loading" size="18" class="demo-spin-icon-load"></Icon>
       <div>Connecting to server...</div>
     </Spin>
-    <AppLogoButton
-      id="infoBtn"
-      class="popup-info-btn"
-      icon="ios-information-circle-outline"
-    />
+    <AppLogoButton id="info-btn" icon="ios-information-circle-outline" />
   </div>
 </template>
 
@@ -37,7 +33,7 @@ export default Vue.extend({
     AppLogoButton
   },
   mounted() {
-    tippy("#infoBtn", {
+    tippy("#info-btn", {
       content:
         "If you are the host, click the button to get started! Otherwise, join directly using an invite link.",
       placement: "left-end",
@@ -116,7 +112,7 @@ html {
   display: flex;
 }
 
-.popup-info-btn {
+#info-btn {
   position: absolute;
   top: 10px;
   right: 10px;
