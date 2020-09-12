@@ -28,6 +28,6 @@
     }
   ],
   "optional_permissions": ["http://*/*", "https://*/*"],
-  "web_accessible_resources": ["js/styles.js", "sidebar.html"],
+  "web_accessible_resources": ["sidebar.html"],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; connect-src 'self' http://localhost:8080 ws://localhost:8080; object-src 'self'"
 }
