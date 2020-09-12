@@ -2,17 +2,20 @@
   <div class="party">
     <Topbar />
     <div class="divider" />
+    <InviteLink />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Topbar from "./Topbar.vue";
+import InviteLink from "./InviteLink.vue";
 
 export default Vue.extend({
   name: "PartyUI",
   components: {
-    Topbar
+    Topbar,
+    InviteLink
   },
   data() {
     return {};

@@ -133,6 +133,9 @@ export default function createParty(
     // set up store
     const store = opts.store as Store<RootState>;
 
+    // Set store's partyId
+    store.dispatch("setPartyId", party.id);
+
     store.subscribe((mutation: any, state: any) => {
       if (state.serverConnectionStatus !== ConnectionStatus.CONNECTED) {
         return;
