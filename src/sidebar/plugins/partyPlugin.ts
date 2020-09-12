@@ -15,7 +15,7 @@ declare module "vue/types/options" {
 }
 
 export default {
-  async install(Vue: typeof _Vue) {
+  install(Vue: typeof _Vue) {
     Vue.mixin({
       beforeCreate() {
         const options = this.$options;
