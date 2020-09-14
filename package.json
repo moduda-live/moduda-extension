@@ -12,7 +12,7 @@
   "dependencies": {
     "core-js": "^3.6.5",
     "iview": "^3.5.4",
-    "postmate": "^1.5.2",
+    "penpal": "^5.2.1",
     "short-uuid": "^4.1.0",
     "simple-peer": "^9.7.2",
     "tippy.js": "^6.2.6",
@@ -22,7 +22,6 @@
   "devDependencies": {
     "@types/firefox-webext-browser": "^67.0.2",
     "@types/jest": "^24.0.19",
-    "@types/postmate": "^1.5.1",
     "@types/simple-peer": "^9.6.0",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
     "@typescript-eslint/parser": "^2.33.0",

@@ -1,8 +1,10 @@
-import "@/assets/styles/sidebar_wrapper.less";
-import Postmate from "postmate";
+import "@/assets/styles/sidebar.less";
+import { connectToChild } from "penpal";
+import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 
 class Sidebar {
   iframe: HTMLIFrameElement;
+  iframeConnection!: AsyncMethodReturns<CallSender, string>;
 
   constructor(videolink: string, partyId?: string) {
     const iframe = document.createElement("iframe");
@@ -14,25 +16,29 @@ class Sidebar {
       url.searchParams.append("partyId", partyId);
     }
     iframe.src = url.toString();
+    iframe.allow = "microphone";
     this.iframe = iframe;
+    this.setUpIframeConnection();
     this.attachToDom();
   }
 
   attachToDom() {
-    // create iframe container
     const container = document.createElement("div");
     container.id = "movens-sidebar";
+    container.appendChild(this.iframe);
     document.body.appendChild(container);
-    // create handshake between parent <-> iframe
-    const handshake = new Postmate({
-      container,
-      url: this.iframe.src,
-      name: "movens-sidebar",
-      classListArray: ["movens-iframe"]
-    });
+  }
 
-    handshake.then(child => {
-      // TODO: Set up listeners
+  setUpIframeConnection() {
+    const connection = connectToChild({
+      iframe: this.iframe,
+      childOrigin: browser.runtime.getURL("").slice(0, -1), // hacky workaround to make penpal work
+      methods: {
+        // TOOD: Implement parent methods
+      }
+    });
+    connection.promise.then(child => {
+      this.iframeConnection = child;
     });
   }
 }
