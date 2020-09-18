@@ -6,17 +6,23 @@ class Sidebar {
   iframe: HTMLIFrameElement;
   iframeConnection!: AsyncMethodReturns<CallSender, string>;
 
-  constructor(videolink: string, partyId?: string) {
+  constructor(videolink: string, debug: boolean, partyId?: string) {
     const iframe = document.createElement("iframe");
     iframe.style.border = "none";
     iframe.id = "movens-iframe";
     const url = new URL(browser.runtime.getURL("sidebar.html"));
     url.searchParams.append("videolink", videolink);
+
+    // DEBUG
+    url.searchParams.append("debug", String(debug));
+
     if (partyId) {
-      url.searchParams.append("partyId", partyId);
+      url.searchParams.append("movensPartyId", partyId);
     }
+
     iframe.src = url.toString();
     iframe.allow = "microphone";
+
     this.iframe = iframe;
     this.setUpIframeConnection();
     this.attachToDom();
@@ -47,9 +53,18 @@ const initParty = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const partyId = searchParams.get("movensPartyId") ?? undefined;
   searchParams.delete("movensPartyId");
+
+  let debug = false;
+  if (process.env.NODE_ENV === "development") {
+    // FOR DEBUGGING ONLY
+    // SPECIFY debug param to bring up devtools
+    debug = !!searchParams.get("debug");
+    searchParams.delete("debug");
+  }
+
   const videolinkNoParams = window.location.href.split(/[?#]/)[0];
   const videolink = videolinkNoParams + searchParams.toString();
-  new Sidebar(videolink, partyId);
+  new Sidebar(videolink, debug, partyId);
   (window as any).partyLoaded = true;
 };
 

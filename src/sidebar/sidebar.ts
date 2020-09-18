@@ -22,10 +22,21 @@ import ParentCommunicator from "./services/ParentCommunicator";
 
 // get partyId if it exists
 const searchParams = new URLSearchParams(window.location.search);
-const partyId = searchParams.get("partyId") ?? undefined;
+const partyId = searchParams.get("movensPartyId") ?? undefined;
+
+// DEBUG
+const debug = searchParams.get("debug") === "true";
+if (debug) {
+  const debugScript = document.createElement("script");
+
+  debugScript.setAttribute("src", "http://localhost:8098");
+  document.head.appendChild(debugScript);
+}
 
 // set up Vue app
 locale(lang);
+
+Vue.config.devtools = process.env.NODE_ENV === "development";
 
 Vue.component("SwitchBtn", Switch);
 Vue.component("Card", Card);
