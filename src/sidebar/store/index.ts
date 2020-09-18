@@ -2,6 +2,7 @@ import Vue from "vue";
 import Vuex, { StoreOptions } from "vuex";
 import { RootState, ConnectionStatus } from "./types";
 
+Vue.config.devtools = process.env.NODE_ENV === "development";
 Vue.use(Vuex);
 
 const store: StoreOptions<RootState> = {
