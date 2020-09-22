@@ -1,15 +1,20 @@
+import { Store, MutationPayload } from "vuex";
+import Peer, { SignalData } from "simple-peer";
 import short from "short-uuid";
 import EventEmitter from "@/util/EventEmitter";
-import { Communicator, PartyEvent } from "./types";
+import { SendMsgType, Communicator, PartyEvent } from "./types";
 import { ConnectionStatus, RootState } from "../store/types";
 import { log } from "@/util/log";
-import { Store } from "vuex";
+import { User, OwnUser, OtherUser } from "../models/User";
+import syncStoreAndParty from "./syncStoreAndParty";
 
 export class Party extends EventEmitter<PartyEvent> {
   wsUrl: string;
   id: string;
   socket!: WebSocket;
   parentCommunicator: Communicator;
+  users: Map<string, User>;
+  ownUser!: User;
 
   constructor(
     wsUrl: string,
@@ -19,24 +24,28 @@ export class Party extends EventEmitter<PartyEvent> {
     super();
     this.wsUrl = wsUrl;
     this.id = partyId ?? short.generate();
+    this.users = new Map<string, User>();
     parentCommunicator.setParty(this);
     this.parentCommunicator = parentCommunicator;
+  }
 
-    // ADD_CHAT_MSG, CONNECTING, CONNECTED, DISCONNECTED event handlers are reigstered in vuex store plugin
+  setUpEventHandlers() {
+    // ADD_CHAT_MSG, CONNECTING, CONNECTED, DISCONNECTED, SET_USER_ID event callbacks are registered in syncStoreAndParty.ts
     this.on(PartyEvent.USER_JOINED, () => {
-      //TODO: implement user joined
+      //TODO: Show notification via parentCommunicator
       log("User joined");
     });
-    this.on(PartyEvent.USER_LEFT, () => {
-      // TODO: implement user left
+    this.on(PartyEvent.USER_LEFT, userId => {
+      //TODO: Show notification via parentCommunicator
       log("User left");
+      this.users.delete(userId);
     });
     this.on(PartyEvent.USER_PAUSED, () => {
-      // TODO: implement user paused
+      //TODO: Show notification via parentCommunicator
       log("User paused");
     });
     this.on(PartyEvent.USER_PLAYED, () => {
-      // TODO: implement user played
+      //TODO: Show notification via parentCommunicator
       log("User played");
     });
   }
@@ -45,6 +54,7 @@ export class Party extends EventEmitter<PartyEvent> {
     this.emit(PartyEvent.CONNECTING);
     log("Starting party...");
     await this.parentCommunicator.init();
+    this.setUpEventHandlers();
     this.socket = new WebSocket(this.wsUrl);
     this.registerWebsocketHandlers(); // onopen has to be in the same section due to EventLoop
   }
@@ -91,28 +101,113 @@ export class Party extends EventEmitter<PartyEvent> {
       }
       case "userId": {
         const { userId } = msg.payload;
-        this.emit(PartyEvent.SET_USER_ID, userId);
+        this.emit(PartyEvent.SET_MY_USER_ID, userId);
+
+        this.ownUser = new OwnUser(userId, this);
+        this.users.set(userId, this.ownUser);
+
         // Once receiving userId, now request for list of other users in party
-        const requestUsersMsg = {
-          type: "getCurrentPartyUsers",
-          payload: {
-            partyId: this.id
-          }
-        };
-        // server will send "currentPartyUsers" message back;
-        this.socket.send(JSON.stringify(requestUsersMsg));
+        // server will send "currentPartyUsers" message back
+        this.socket.send(
+          JSON.stringify({
+            type: SendMsgType.GET_CURRENT_PARTY_USERS,
+            payload: {
+              partyId: this.id
+            }
+          })
+        );
         break;
       }
       case "currentPartyUsers": {
+        // from pov of initiator
         const { users } = msg.payload;
-        console.log("Current number of party users: " + users.length);
-        // TODO: Add users
+        log("Current number of party users: " + users.length);
+        users.forEach((userId: string) => {
+          const user = this.connectToPeer(userId);
+          this.users.set(userId, user);
+        });
+        this.emit(PartyEvent.SET_USERS, Array.from(this.users.values()));
+        break;
+      }
+      case "returnedSignal": {
+        const { senderId, signal } = msg.payload;
+        log(`Received returned signal from user ${senderId}`);
+        this.users.get(senderId)?.peer?.signal(signal);
+        break;
+      }
+      case "newForeignSignal": {
+        const { senderId, signal } = msg.payload;
+        log(`Received new signal from foreign user ${senderId}`);
+        console.log("signal: ", signal);
+        const user = this.users.get(senderId);
+        if (user) {
+          // User exists already, don't create new Peer again
+          // instead, signal it again
+          user.peer?.signal(signal);
+        } else {
+          const user = this.addNewPeer(senderId, signal);
+          this.users.set(senderId, user);
+          this.emit(PartyEvent.USER_JOINED, user);
+        }
+        break;
       }
     }
   }
 
-  destroy() {
-    this.offAll();
+  addNewPeer(senderId: string, receivedSignal: SignalData): User {
+    log("Adding peer: " + senderId);
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream: this.ownUser.stream
+    });
+
+    peer.on("signal", signal => {
+      // Hacky workaround until issue #670 of simple-peer gets fixed
+      if (signal.renegotiate || signal.transceiverRequest) return;
+      log(`Signalling as non-initiator: ${senderId}`);
+      console.log("my non-initiator signal: ", signal);
+      this.socket.send(
+        JSON.stringify({
+          type: SendMsgType.RETURN_SIGNAL,
+          payload: {
+            senderId: this.ownUser.id,
+            recipientId: senderId,
+            signal
+          }
+        })
+      );
+    });
+
+    peer.signal(receivedSignal);
+
+    return new OtherUser(senderId, this, peer);
+  }
+
+  connectToPeer(userId: string): User {
+    log("Connecting to peer: " + userId);
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream: this.ownUser.stream
+    });
+
+    peer.on("signal", signal => {
+      log(`Signalling as initiator: ${userId}`);
+      console.log("my initiator signal: ", signal);
+      this.socket.send(
+        JSON.stringify({
+          type: SendMsgType.NEW_SIGNAL,
+          payload: {
+            senderId: this.ownUser.id,
+            recipientId: userId,
+            signal
+          }
+        })
+      );
+    });
+
+    return new OtherUser(userId, this, peer);
   }
 }
 
@@ -130,13 +225,11 @@ export default function createParty(
   const party = new Party(connectionUrl, parentCommunicator, partyId);
 
   if (opts.store) {
-    // set up store
     const store = opts.store as Store<RootState>;
 
-    // Set store's partyId
     store.dispatch("setPartyId", party.id);
 
-    store.subscribe((mutation: any, state: any) => {
+    store.subscribe((mutation: MutationPayload, state: RootState) => {
       if (state.serverConnectionStatus !== ConnectionStatus.CONNECTED) {
         return;
       }
@@ -148,28 +241,10 @@ export default function createParty(
         // messsage from current user, emit to others in party
       }
     });
-
-    party.on(PartyEvent.CONNECTING, () => {
-      store.dispatch("connectingToServer");
-    });
-
-    party.on(PartyEvent.CONNECTED, () => {
-      store.dispatch("connectedToServer");
-    });
-
-    party.on(PartyEvent.DISCONNECTED, () => {
-      store.dispatch("disconnectedFromServer");
-    });
-
-    party.on(PartyEvent.ADD_CHAT_MSG, msg => {
-      store.dispatch("addMessage", msg);
-    });
-
-    party.on(PartyEvent.SET_USER_ID, userId => {
-      store.dispatch("setUserId", userId);
-    });
+    syncStoreAndParty(store, party);
   }
 
   party.connect();
+
   return party;
 }

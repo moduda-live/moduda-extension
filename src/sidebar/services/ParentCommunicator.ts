@@ -7,7 +7,7 @@ export default class ParentCommunicator implements Communicator {
   party!: Party;
   parentConnection!: AsyncMethodReturns<CallSender, string>;
 
-  async init() {
+  init() {
     const connection = connectToParent({
       methods: {
         forwardPlay: this.forwardPlay,
@@ -15,7 +15,9 @@ export default class ParentCommunicator implements Communicator {
         forwardSeek: this.forwardSeek
       }
     });
-    this.parentConnection = await connection.promise;
+    return connection.promise.then(parent => {
+      this.parentConnection = parent;
+    });
   }
 
   setParty(party: Party) {
