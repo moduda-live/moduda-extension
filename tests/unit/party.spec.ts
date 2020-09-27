@@ -26,7 +26,10 @@ function setUpParty(partyId?: string, userIdToAdd?: string) {
   const mockedParent: jest.Mocked<CommunicatorMock> = new CommunicatorMock() as any;
   const party = new Party("ws://localhost:8080", mockedParent, partyId);
   if (userIdToAdd) {
-    party.users.set(userIdToAdd, new OtherUser(userIdToAdd, party, new Peer()));
+    party.users.set(
+      userIdToAdd,
+      new OtherUser(userIdToAdd, "mockedUsername", party, new Peer())
+    );
   }
   return party;
 }
@@ -113,7 +116,8 @@ describe("Party.ts", () => {
       await expect(mockServer).toReceiveMessage({
         type: "getCurrentPartyUsers",
         payload: {
-          partyId: party.id
+          partyId: party.id,
+          username: undefined
         }
       });
     });
@@ -127,26 +131,24 @@ describe("Party.ts", () => {
       mockServer.send({
         type: "currentPartyUsers",
         payload: {
-          users: ["user1", "user2", "user3"]
+          users: [1, 2, 3].map(number => {
+            return JSON.stringify({
+              userId: `userId${number}`,
+              username: `username${number}`
+            });
+          })
         }
       });
-      expect(onSetUsers).toHaveBeenCalledWith([
-        expect.objectContaining({
-          id: "user1",
-          isOwn: false,
-          isAdmin: false
-        }),
-        expect.objectContaining({
-          id: "user2",
-          isOwn: false,
-          isAdmin: false
-        }),
-        expect.objectContaining({
-          id: "user3",
-          isOwn: false,
-          isAdmin: false
-        })
-      ]);
+      expect(onSetUsers).toHaveBeenCalledWith(
+        [1, 2, 3].map(number =>
+          expect.objectContaining({
+            id: `userId${number}`,
+            username: `username${number}`,
+            isAdmin: false,
+            isOwn: false
+          })
+        )
+      );
     });
 
     it("should emit PartyEvent.USER_JOINED if the server sends a new foreign signal from an unregistered user", async () => {
@@ -158,13 +160,15 @@ describe("Party.ts", () => {
       mockServer.send({
         type: "newForeignSignal",
         payload: {
-          senderId: "user1",
+          senderId: "userId1",
+          username: "username1",
           signal: "signalFromUser1"
         }
       });
       expect(onUserJoined).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: "user1",
+          id: "userId1",
+          username: "username1",
           isOwn: false,
           isAdmin: false
         })
@@ -181,6 +185,7 @@ describe("Party.ts", () => {
         type: "newForeignSignal",
         payload: {
           senderId: "user1",
+          username: "mockedUsername",
           signal: "signalFromUser1"
         }
       });

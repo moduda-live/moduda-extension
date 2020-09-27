@@ -3,46 +3,71 @@ import { Party } from "../services/Party";
 import { PartyEvent } from "../services/types";
 
 export class User {
-  id: string;
+  id: string | undefined;
+  username: string;
   peer?: Peer.Instance;
   isOwn!: boolean;
   isAdmin: boolean;
   stream!: MediaStream;
   party: Party;
+  isMuted: boolean;
+  isSpeaking: boolean;
 
-  constructor(id: string, party: Party, isOwn: boolean, peer?: Peer.Instance) {
+  constructor(
+    id: string | undefined,
+    username: string,
+    party: Party,
+    isOwn: boolean,
+    peer?: Peer.Instance
+  ) {
     this.id = id;
+    this.username = username;
     this.isAdmin = false; // initially other users are not admins
     this.peer = peer;
     this.party = party;
     this.isOwn = isOwn;
+    this.isMuted = false;
+    this.isSpeaking = false;
   }
 }
 
 export class OwnUser extends User {
-  constructor(id: string, party: Party) {
-    super(id, party, true);
-    window.navigator.mediaDevices
-      .getUserMedia({
+  private mediaStreamPromise: Promise<MediaStream>;
+
+  constructor(username: string, party: Party) {
+    super(undefined, username, party, true);
+    this.mediaStreamPromise = (async () => {
+      return window.navigator.mediaDevices.getUserMedia({
         video: false,
         audio: {
           noiseSuppression: true,
           echoCancellation: true,
           autoGainControl: true
         }
-      })
-      .then(stream => {
-        this.stream = stream;
-      })
-      .catch(err => {
-        this.stream = new MediaStream();
       });
+    })();
+  }
+
+  get mediaStreamInitialized(): Promise<OwnUser> {
+    return this.mediaStreamPromise
+      .then((stream: MediaStream) => {
+        this.stream = stream;
+        return this;
+      })
+      .catch(() => {
+        this.stream = new MediaStream();
+        return this;
+      });
+  }
+
+  setId(id: string) {
+    this.id = id;
   }
 }
 
 export class OtherUser extends User {
-  constructor(id: string, party: Party, peer: Peer.Instance) {
-    super(id, party, false, peer);
+  constructor(id: string, username: string, party: Party, peer: Peer.Instance) {
+    super(id, username, party, false, peer);
     this.addPeerEventListeners();
   }
 
@@ -53,8 +78,9 @@ export class OtherUser extends User {
 
     this.peer.on("connect", () => {
       console.log("Connected with " + this.id);
-      console.log("Add streams now...");
-      this.peer?.addStream(this.party.ownUser.stream);
+      // console.log("Add streams now...");
+      // this.peer?.addStream(this.party.ownUser.stream);
+      this.peer?.send("test");
     });
 
     this.peer.on("data", data => {

@@ -6,7 +6,12 @@ class Sidebar {
   iframe: HTMLIFrameElement;
   iframeConnection!: AsyncMethodReturns<CallSender, string>;
 
-  constructor(videolink: string, debug: boolean, partyId?: string) {
+  constructor(
+    username: string,
+    videolink: string,
+    debug: boolean,
+    partyId?: string
+  ) {
     const iframe = document.createElement("iframe");
     iframe.style.border = "none";
     iframe.id = "movens-iframe";
@@ -24,7 +29,7 @@ class Sidebar {
     iframe.allow = "microphone";
 
     this.iframe = iframe;
-    this.setUpIframeConnection();
+    this.setUpIframeConnection(username);
     this.attachToDom();
   }
 
@@ -35,12 +40,15 @@ class Sidebar {
     document.body.appendChild(container);
   }
 
-  setUpIframeConnection() {
+  setUpIframeConnection(username: string) {
     const connection = connectToChild({
       iframe: this.iframe,
       childOrigin: browser.runtime.getURL("").slice(0, -1), // hacky workaround to make penpal work
       methods: {
-        // TOOD: Implement parent methods
+        // TODO: Implement parent methods
+        getUsername() {
+          return username;
+        }
       }
     });
     connection.promise.then(child => {
@@ -49,8 +57,9 @@ class Sidebar {
   }
 }
 
-const initParty = () => {
+const initParty = (username: string) => {
   const searchParams = new URLSearchParams(window.location.search);
+
   const partyId = searchParams.get("movensPartyId") ?? undefined;
   searchParams.delete("movensPartyId");
 
@@ -64,14 +73,16 @@ const initParty = () => {
 
   const videolinkNoParams = window.location.href.split(/[?#]/)[0];
   const videolink = videolinkNoParams + searchParams.toString();
-  new Sidebar(videolink, debug, partyId);
+  new Sidebar(username, videolink, debug, partyId);
   (window as any).partyLoaded = true;
 };
 
+browser.runtime.onMessage.addListener(message => {
+  if (message.username && !(window as any).partyLoaded) {
+    initParty(message.username);
+  }
+});
+
 if (/movens.app\/join\//.test(window.location.href)) {
   console.log("Redirect");
-} else {
-  if (!(window as any).partyLoaded) {
-    initParty();
-  }
 }

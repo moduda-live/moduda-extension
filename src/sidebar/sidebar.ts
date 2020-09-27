@@ -11,7 +11,8 @@ import {
   Button,
   Spin,
   Input,
-  Divider
+  Divider,
+  Avatar
 } from "iview";
 import lang from "iview/dist/locale/en-US";
 import "@/assets/styles/iview.less";
@@ -48,6 +49,7 @@ Vue.component("Button", Button);
 Vue.component("Spin", Spin);
 Vue.component("Input", Input);
 Vue.component("Divider", Divider);
+Vue.component("Avatar", Avatar);
 
 // custom party plugin
 Vue.use(partyPlugin);

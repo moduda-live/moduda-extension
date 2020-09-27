@@ -2,7 +2,7 @@ import { Store, MutationPayload } from "vuex";
 import Peer, { SignalData } from "simple-peer";
 import short from "short-uuid";
 import EventEmitter from "@/util/EventEmitter";
-import { SendMsgType, Communicator, PartyEvent } from "./types";
+import { SendMsgType, Communicator, PartyEvent, UserInfo } from "./types";
 import { ConnectionStatus, RootState } from "../store/types";
 import { log } from "@/util/log";
 import { User, OwnUser, OtherUser } from "../models/User";
@@ -14,7 +14,7 @@ export class Party extends EventEmitter<PartyEvent> {
   socket!: WebSocket;
   parentCommunicator: Communicator;
   users: Map<string, User>;
-  ownUser!: User;
+  ownUser!: OwnUser;
 
   constructor(
     wsUrl: string,
@@ -55,6 +55,8 @@ export class Party extends EventEmitter<PartyEvent> {
     log("Starting party...");
     await this.parentCommunicator.init();
     this.setUpEventHandlers();
+    const username = await this.parentCommunicator.getUsername();
+    this.ownUser = await new OwnUser(username, this).mediaStreamInitialized;
     this.socket = new WebSocket(this.wsUrl);
     this.registerWebsocketHandlers(); // onopen has to be in the same section due to EventLoop
   }
@@ -76,7 +78,7 @@ export class Party extends EventEmitter<PartyEvent> {
     };
   }
 
-  handleMessage(this: Party, event: MessageEvent) {
+  async handleMessage(this: Party, event: MessageEvent) {
     let msg;
     try {
       msg = JSON.parse(event.data);
@@ -103,27 +105,30 @@ export class Party extends EventEmitter<PartyEvent> {
         const { userId } = msg.payload;
         this.emit(PartyEvent.SET_MY_USER_ID, userId);
 
-        this.ownUser = new OwnUser(userId, this);
+        this.ownUser.setId(userId);
         this.users.set(userId, this.ownUser);
-
         // Once receiving userId, now request for list of other users in party
         // server will send "currentPartyUsers" message back
         this.socket.send(
           JSON.stringify({
             type: SendMsgType.GET_CURRENT_PARTY_USERS,
             payload: {
-              partyId: this.id
+              partyId: this.id,
+              username: this.ownUser.username
             }
           })
         );
+
         break;
       }
       case "currentPartyUsers": {
         // from pov of initiator
         const { users } = msg.payload;
         log("Current number of party users: " + users.length);
-        users.forEach((userId: string) => {
-          const user = this.connectToPeer(userId);
+        users.forEach((userInfoString: string) => {
+          const userInfo: UserInfo = JSON.parse(userInfoString);
+          const { userId, username } = userInfo;
+          const user = this.connectToPeer(userId, username);
           this.users.set(userId, user);
         });
         this.emit(PartyEvent.SET_USERS, Array.from(this.users.values()));
@@ -136,7 +141,7 @@ export class Party extends EventEmitter<PartyEvent> {
         break;
       }
       case "newForeignSignal": {
-        const { senderId, signal } = msg.payload;
+        const { senderId, username, signal } = msg.payload;
         log(`Received new signal from foreign user ${senderId}`);
         console.log("signal: ", signal);
         const user = this.users.get(senderId);
@@ -145,7 +150,7 @@ export class Party extends EventEmitter<PartyEvent> {
           // instead, signal it again
           user.peer?.signal(signal);
         } else {
-          const user = this.addNewPeer(senderId, signal);
+          const user = this.addNewPeer(senderId, username, signal);
           this.users.set(senderId, user);
           this.emit(PartyEvent.USER_JOINED, user);
         }
@@ -154,7 +159,11 @@ export class Party extends EventEmitter<PartyEvent> {
     }
   }
 
-  addNewPeer(senderId: string, receivedSignal: SignalData): User {
+  addNewPeer(
+    senderId: string,
+    username: string,
+    receivedSignal: SignalData
+  ): User {
     log("Adding peer: " + senderId);
     const peer = new Peer({
       initiator: false,
@@ -181,10 +190,10 @@ export class Party extends EventEmitter<PartyEvent> {
 
     peer.signal(receivedSignal);
 
-    return new OtherUser(senderId, this, peer);
+    return new OtherUser(senderId, username, this, peer);
   }
 
-  connectToPeer(userId: string): User {
+  connectToPeer(userId: string, username: string): User {
     log("Connecting to peer: " + userId);
     const peer = new Peer({
       initiator: true,
@@ -200,6 +209,7 @@ export class Party extends EventEmitter<PartyEvent> {
           type: SendMsgType.NEW_SIGNAL,
           payload: {
             senderId: this.ownUser.id,
+            username: this.ownUser.username,
             recipientId: userId,
             signal
           }
@@ -207,7 +217,7 @@ export class Party extends EventEmitter<PartyEvent> {
       );
     });
 
-    return new OtherUser(userId, this, peer);
+    return new OtherUser(userId, username, this, peer);
   }
 }
 

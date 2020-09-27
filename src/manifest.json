@@ -29,5 +29,5 @@
   ],
   "optional_permissions": ["http://*/*", "https://*/*"],
   "web_accessible_resources": ["sidebar.html"],
-  "content_security_policy": "script-src 'self' 'unsafe-eval' http://localhost:8098; connect-src 'self' http://localhost:8098 ws://localhost:8098 http://localhost:8080 ws://localhost:8080; object-src 'self'"
+  "content_security_policy": "script-src 'self' http://localhost:8098; connect-src 'self' http://localhost:8098 ws://localhost:8098 http://localhost:8080 ws://localhost:8080; object-src 'self'"
 }
