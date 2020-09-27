@@ -20,6 +20,10 @@ export default class ParentCommunicator implements Communicator {
     });
   }
 
+  getUsername(): Promise<string> {
+    return this.parentConnection.getUsername();
+  }
+
   setParty(party: Party) {
     this.party = party;
   }

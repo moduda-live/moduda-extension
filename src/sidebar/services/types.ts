@@ -1,4 +1,10 @@
 import { Party } from "./Party";
+import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
+
+export interface UserInfo {
+  userId: string;
+  username: string;
+}
 
 export enum PartyEvent {
   CONNECTING,
@@ -21,7 +27,10 @@ export enum SendMsgType {
 }
 
 export interface Communicator {
+  party: Party;
+  parentConnection: AsyncMethodReturns<CallSender, string>;
   init(): Promise<void>;
+  getUsername(): Promise<string>;
   setParty(party: Party): void;
   forwardPlay(): void;
   forwardPause(): void;
