@@ -16,5 +16,5 @@ export interface RootState {
   userId: string;
   chatMessages: Message[];
   serverConnectionStatus: ConnectionStatus;
-  users: User[];
+  users: Record<string, User>;
 }

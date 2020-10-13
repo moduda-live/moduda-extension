@@ -43,7 +43,7 @@ export default Vue.extend({
       const videolink = searchParams.get("videolink") ?? "";
       baseUrl.searchParams.append("videolink", videolink);
       const partyId = this.$store.state.partyId;
-      baseUrl.searchParams.append("partyId", partyId);
+      baseUrl.searchParams.append("movensPartyId", partyId);
       return baseUrl.toString();
     }
   },
@@ -89,7 +89,7 @@ export default Vue.extend({
 }
 </style>
 
-<style lang="less">
+<style lang="less" scoped>
 @border-radius: 5px;
 ::-webkit-scrollbar {
   height: 1px;
@@ -99,7 +99,6 @@ export default Vue.extend({
   display: flex;
   align-items: center;
   margin-bottom: 4px;
-  margin-left: 4px;
   color: @theme-white-color;
 }
 

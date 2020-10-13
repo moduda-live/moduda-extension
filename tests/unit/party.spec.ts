@@ -139,16 +139,17 @@ describe("Party.ts", () => {
           })
         }
       });
-      expect(onSetUsers).toHaveBeenCalledWith(
-        [1, 2, 3].map(number =>
-          expect.objectContaining({
-            id: `userId${number}`,
-            username: `username${number}`,
-            isAdmin: false,
-            isOwn: false
-          })
-        )
-      );
+
+      let expectedUsers: any = {};
+      [1, 2, 3].forEach((number: number) => {
+        expectedUsers[`userId${number}`] = expect.objectContaining({
+          id: `userId${number}`,
+          username: `username${number}`,
+          isAdmin: false,
+          isOwn: false
+        });
+      });
+      expect(onSetUsers.mock.calls[0][0]).toMatchObject(expectedUsers);
     });
 
     it("should emit PartyEvent.USER_JOINED if the server sends a new foreign signal from an unregistered user", async () => {

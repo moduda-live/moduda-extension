@@ -24,14 +24,14 @@ export default function syncStoreAndParty(
     .on(PartyEvent.SET_MY_USER_ID, userId => {
       store.dispatch("setUserId", userId);
     })
-    .on(PartyEvent.SET_USERS, (users: User[]) => {
+    .on(PartyEvent.SET_USERS, (users: Record<string, User>) => {
       store.dispatch("setUsers", users);
     })
     .on(PartyEvent.USER_JOINED, (user: User) => {
       store.dispatch("addUser", user);
     })
-    .on(PartyEvent.USER_LEFT, (user: User) => {
-      store.dispatch("removeUser", user);
+    .on(PartyEvent.USER_LEFT, (userId: string) => {
+      store.dispatch("removeUser", userId);
     })
     .on(
       PartyEvent.UPDATE_USER_STREAM,

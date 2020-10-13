@@ -131,7 +131,7 @@ export class Party extends EventEmitter<PartyEvent> {
           const user = this.connectToPeer(userId, username);
           this.users.set(userId, user);
         });
-        this.emit(PartyEvent.SET_USERS, Array.from(this.users.values()));
+        this.emit(PartyEvent.SET_USERS, Object.fromEntries(this.users));
         break;
       }
       case "returnedSignal": {

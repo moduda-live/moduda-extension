@@ -12,7 +12,7 @@ const store: StoreOptions<RootState> = {
     userId: "",
     chatMessages: [],
     serverConnectionStatus: ConnectionStatus.CONNECTING,
-    users: []
+    users: {}
   },
   getters: {
     serverConnecting: state =>
@@ -21,8 +21,8 @@ const store: StoreOptions<RootState> = {
       state.serverConnectionStatus === ConnectionStatus.CONNECTED,
     serverDisconnected: state =>
       state.serverConnectionStatus === ConnectionStatus.DISCONNECTED,
-    otherUsers: state => state.users.filter(user => !user.isOwn),
-    myUser: state => state.users.filter(user => user.isOwn)
+    otherUsers: state => Object.values(state.users).filter(user => !user.isOwn),
+    myUser: state => Object.values(state.users).filter(user => user.isOwn)
   },
   actions: {
     setPartyId({ commit }, partyId) {
@@ -43,16 +43,19 @@ const store: StoreOptions<RootState> = {
     disconnectedFromServer({ commit }) {
       commit("SET_CONNECTION_STATUS", ConnectionStatus.DISCONNECTED);
     },
-    setUsers({ commit }, users) {
+    setUsers({ commit }, users: Record<string, User>) {
       commit("SET_USERS", users);
     },
-    addUser({ commit }, user) {
+    addUser({ commit }, user: User) {
       commit("ADD_USER", user);
     },
-    removeUser({ commit }, user) {
-      commit("REMOVE_USER", user);
+    removeUser({ commit }, userId: string) {
+      commit("REMOVE_USER", userId);
     },
-    updateUserStream({ commit }, data) {
+    updateUserStream(
+      { commit },
+      data: { userId: string; stream: MediaStream }
+    ) {
       commit("UPDATE_USER_STREAM", data);
     }
   },
@@ -69,19 +72,31 @@ const store: StoreOptions<RootState> = {
     SET_CONNECTION_STATUS(state, status) {
       state.serverConnectionStatus = status;
     },
-    SET_USERS(state, users: User[]) {
+    SET_USERS(state, users: Record<string, User>) {
       state.users = users;
     },
-    ADD_USER(state, user: User) {
-      state.users.push(user);
+    ADD_USER(state, user) {
+      Vue.set(state.users, user.id, user);
     },
     REMOVE_USER(state, userId: string) {
-      state.users = state.users.filter(u => u.id !== userId);
+      delete state.users[userId];
     },
     UPDATE_USER_STREAM(state, { userId, stream }) {
-      const user = state.users.filter(user => user.id === userId);
-      const userWithStream = { ...user, stream };
-      Vue.set(state.users, userId, userWithStream);
+      const user = state.users[userId];
+      if (user) {
+        const userWithStream = { ...user, stream };
+        Vue.set(state.users, userId, userWithStream);
+      }
+    },
+    TOGGLE_MUTE_USER(state, userId) {
+      const user = state.users[userId];
+      if (user) {
+        user.stream
+          .getAudioTracks()
+          .forEach(track => (track.enabled = !track.enabled));
+        user.isMuted = !user.isMuted;
+        user.isSpeaking = false;
+      }
     }
   }
 };

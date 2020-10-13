@@ -29,6 +29,18 @@ export class User {
     this.isMuted = false;
     this.isSpeaking = false;
   }
+
+  // mute() {
+  //   this.stream?.getAudioTracks().forEach(track => (track.enabled = false));
+  //   this.isMuted = true;
+  //   this.isSpeaking = false;
+  // }
+
+  // unmute() {
+  //   this.stream?.getAudioTracks().forEach(track => (track.enabled = true));
+  //   this.isMuted = false;
+  //   this.isSpeaking = false; // false initially because AudioWorklet will take care of this
+  // }
 }
 
 export class OwnUser extends User {
@@ -78,8 +90,6 @@ export class OtherUser extends User {
 
     this.peer.on("connect", () => {
       console.log("Connected with " + this.id);
-      // console.log("Add streams now...");
-      // this.peer?.addStream(this.party.ownUser.stream);
       this.peer?.send("test");
     });
 
@@ -95,7 +105,7 @@ export class OtherUser extends User {
     });
 
     this.peer.on("error", err => {
-      console.log("Error: " + (err as any).code);
+      console.log("Error: ", (err as any).code);
       // TODO: Attempt to reconnect
     });
 
