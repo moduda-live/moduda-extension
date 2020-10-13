@@ -1,3 +1,5 @@
+import { User } from "../models/User";
+
 export interface Message {
   senderId: string;
   content: string;
@@ -14,4 +16,5 @@ export interface RootState {
   userId: string;
   chatMessages: Message[];
   serverConnectionStatus: ConnectionStatus;
+  users: Record<string, User>;
 }

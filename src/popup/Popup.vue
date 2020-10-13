@@ -4,22 +4,25 @@
     <div class="popup-guide">
       Please ensure that you are on a page with the video you want to watch
     </div>
-    <Alert type="error" show-icon v-if="noVideo">
-      <Icon type="ios-warning-outline" slot="icon"></Icon>No video detected. Try
-      in another page!
-    </Alert>
-    <Button v-if="!connecting && !noVideo" @click="createParty"
+    <Alert type="error" v-show="error">{{ error }}</Alert>
+    <Input
+      v-model="username"
+      v-if="!connecting && !error"
+      style="width: 200px; margin-bottom: 12px;"
+      autofocus
+      class="username-input"
+      prefix="ios-contact"
+      maxlength="17"
+      placeholder="Enter username to join with"
+    />
+    <Button v-if="!connecting && !error" @click="createParty"
       >Create a new party!</Button
     >
     <Spin v-if="connecting">
       <Icon type="ios-loading" size="18" class="demo-spin-icon-load"></Icon>
       <div>Connecting to server...</div>
     </Spin>
-    <AppLogoButton
-      id="infoBtn"
-      class="popup-info-btn"
-      icon="ios-information-circle-outline"
-    />
+    <AppLogoButton id="info-btn" icon="ios-information-circle-outline" />
   </div>
 </template>
 
@@ -37,7 +40,7 @@ export default Vue.extend({
     AppLogoButton
   },
   mounted() {
-    tippy("#infoBtn", {
+    tippy("#info-btn", {
       content:
         "If you are the host, click the button to get started! Otherwise, join directly using an invite link.",
       placement: "left-end",
@@ -49,37 +52,31 @@ export default Vue.extend({
   data() {
     return {
       connecting: false,
-      noVideo: false
+      username: "",
+      error: ""
     };
   },
   methods: {
-    async checkForVideo() {
-      const tabs = await browser.tabs.query({
-        active: true,
-        currentWindow: true
-      });
-
-      const res = await browser.tabs.executeScript(tabs[0].id as number, {
-        code: `document.querySelectorAll("video").length`
-      });
-
-      if (res === undefined) {
-        return false;
-      }
-
-      const numOfVideos: number | null = res[0];
-      return !!numOfVideos;
-    },
     async createParty() {
-      const hasVideo = await this.checkForVideo();
+      this.connecting = true;
 
-      if (hasVideo) {
-        this.connecting = true;
+      try {
+        const tabs = await browser.tabs.query({
+          active: true,
+          currentWindow: true
+        });
+
+        const currentTabId = tabs[0].id as number;
+
         await browser.tabs.executeScript({
           file: "js/content-script.js"
         });
-      } else {
-        this.noVideo = true;
+
+        browser.tabs.sendMessage(currentTabId, {
+          username: this.username
+        });
+      } catch (err) {
+        this.error = "Failed to create party. Try later!";
       }
     }
   }
@@ -116,7 +113,7 @@ html {
   display: flex;
 }
 
-.popup-info-btn {
+#info-btn {
   position: absolute;
   top: 10px;
   right: 10px;

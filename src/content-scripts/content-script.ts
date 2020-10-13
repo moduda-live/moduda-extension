@@ -1,61 +1,88 @@
-import "../assets/styles/sidebar_wrapper.less";
-import Postmate from "postmate";
+import "@/assets/styles/sidebar.less";
+import { connectToChild } from "penpal";
+import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 
 class Sidebar {
   iframe: HTMLIFrameElement;
+  iframeConnection!: AsyncMethodReturns<CallSender, string>;
 
-  constructor(videolink: string, partyId?: string) {
+  constructor(
+    username: string,
+    videolink: string,
+    debug: boolean,
+    partyId?: string
+  ) {
     const iframe = document.createElement("iframe");
     iframe.style.border = "none";
     iframe.id = "movens-iframe";
     const url = new URL(browser.runtime.getURL("sidebar.html"));
     url.searchParams.append("videolink", videolink);
+
+    // DEBUG
+    url.searchParams.append("debug", String(debug));
+
     if (partyId) {
-      url.searchParams.append("partyId", partyId);
+      url.searchParams.append("movensPartyId", partyId);
     }
+
     iframe.src = url.toString();
+    iframe.allow = "microphone";
+
     this.iframe = iframe;
+    this.setUpIframeConnection(username);
     this.attachToDom();
   }
 
   attachToDom() {
-    // create iframe container
     const container = document.createElement("div");
     container.id = "movens-sidebar";
+    container.appendChild(this.iframe);
     document.body.appendChild(container);
-    // set up document styles
-    const style = document.createElement("script");
-    style.type = "text/javascript";
-    style.src = browser.runtime.getURL("js/styles.js");
-    document.head.appendChild(style);
-    // create handshake between parent <-> iframe
-    const handshake = new Postmate({
-      container,
-      url: this.iframe.src,
-      name: "movens-sidebar",
-      classListArray: ["movens-iframe"]
-    });
+  }
 
-    handshake.then(child => {
-      // TODO: Set up listeners
+  setUpIframeConnection(username: string) {
+    const connection = connectToChild({
+      iframe: this.iframe,
+      childOrigin: browser.runtime.getURL("").slice(0, -1), // hacky workaround to make penpal work
+      methods: {
+        // TODO: Implement parent methods
+        getUsername() {
+          return username;
+        }
+      }
+    });
+    connection.promise.then(child => {
+      this.iframeConnection = child;
     });
   }
 }
 
-const initParty = () => {
+const initParty = (username: string) => {
   const searchParams = new URLSearchParams(window.location.search);
+
   const partyId = searchParams.get("movensPartyId") ?? undefined;
   searchParams.delete("movensPartyId");
+
+  let debug = false;
+  if (process.env.NODE_ENV === "development") {
+    // FOR DEBUGGING ONLY
+    // SPECIFY debug param to bring up devtools
+    debug = !!searchParams.get("debug");
+    searchParams.delete("debug");
+  }
+
   const videolinkNoParams = window.location.href.split(/[?#]/)[0];
   const videolink = videolinkNoParams + searchParams.toString();
-  new Sidebar(videolink, partyId);
+  new Sidebar(username, videolink, debug, partyId);
   (window as any).partyLoaded = true;
 };
 
+browser.runtime.onMessage.addListener(message => {
+  if (message.username && !(window as any).partyLoaded) {
+    initParty(message.username);
+  }
+});
+
 if (/movens.app\/join\//.test(window.location.href)) {
   console.log("Redirect");
-} else {
-  if (!(window as any).partyLoaded) {
-    initParty();
-  }
 }

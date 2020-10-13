@@ -1,19 +1,19 @@
-@primary-dark: #242c34;
+@import "./variables.less";
 
 #movens-sidebar {
   position: fixed;
   top: 0;
   bottom: 0;
   right: 0;
-  width: 280px;
+  width: 270px;
   height: 100vh;
   z-index: 999999;
-  background-color: @primary-dark;
-  padding: 9px;
+  background-color: @theme-primary-color;
+  padding: 16px;
   overflow: hidden;
 }
 
-.movens-iframe {
+#movens-iframe {
   height: 100vh;
   width: 100%;
   display: block;

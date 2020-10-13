@@ -2,17 +2,23 @@
   <div class="party">
     <Topbar />
     <div class="divider" />
+    <InviteLink />
+    <VoiceChatPanel />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Topbar from "./Topbar.vue";
+import InviteLink from "./InviteLink.vue";
+import VoiceChatPanel from "./VoiceChatPanel.vue";
 
 export default Vue.extend({
   name: "PartyUI",
   components: {
-    Topbar
+    Topbar,
+    InviteLink,
+    VoiceChatPanel
   },
   data() {
     return {};

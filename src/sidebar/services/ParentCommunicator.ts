@@ -1,18 +1,27 @@
-import Postmate, { ChildAPI } from "postmate";
 import { Party } from "./Party";
 import { Communicator } from "./types";
+import { connectToParent } from "penpal";
+import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 
 export default class ParentCommunicator implements Communicator {
-  parent!: ChildAPI;
   party!: Party;
+  parentConnection!: AsyncMethodReturns<CallSender, string>;
 
-  async init() {
-    const handshake = new Postmate.Model({
-      forwardPlay: this.forwardPlay,
-      forwardPause: this.forwardPause,
-      forwardSeek: this.forwardSeek
+  init() {
+    const connection = connectToParent({
+      methods: {
+        forwardPlay: this.forwardPlay,
+        forwardPause: this.forwardPause,
+        forwardSeek: this.forwardSeek
+      }
     });
-    this.parent = await handshake;
+    return connection.promise.then(parent => {
+      this.parentConnection = parent;
+    });
+  }
+
+  getUsername(): Promise<string> {
+    return this.parentConnection.getUsername();
   }
 
   setParty(party: Party) {

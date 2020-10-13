@@ -25,6 +25,13 @@ module.exports = {
     types.forEach(type =>
       addStyleResource(config.module.rule("less").oneOf(type))
     );
+
+    // config.module
+    //   .rule("worklet")
+    //   .test(/Worklet.ts$/)
+    //   .use("worklet-loader")
+    //   .loader("worklet-loader")
+    //   .end();
   },
   css: {
     loaderOptions: {
