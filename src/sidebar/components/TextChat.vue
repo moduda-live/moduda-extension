@@ -1,19 +1,20 @@
 <template>
-  <div class="textChat">
-    <AppLogoButton id="sendMsgBtn" icon="ios-happy" />
+  <div class="text-chat-section">
+    <ChatMessageArea />
     <ChatInputArea v-model="message" @sendMsg="sendMessage" />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import AppLogoButton from "@/shared/AppLogoButton.vue";
+import { mapGetters, mapActions } from "vuex";
+import ChatMessageArea from "./ChatMessageArea.vue";
 import ChatInputArea from "./ChatInputArea.vue";
 
 export default Vue.extend({
   name: "TextChat",
   components: {
-    AppLogoButton,
+    ChatMessageArea,
     ChatInputArea
   },
   data() {
@@ -21,12 +22,23 @@ export default Vue.extend({
       message: ""
     };
   },
+  computed: {
+    ...mapGetters(["myUser"])
+  },
   methods: {
+    ...mapActions(["addMessage"]),
     sendMessage() {
       if (!this.message) {
         return;
       }
+
       console.log("send message: ", this.message);
+      const messageObj = {
+        senderUsername: this.myUser.username,
+        content: this.message
+      };
+      this.addMessage(messageObj);
+
       this.message = "";
     }
   }
@@ -34,25 +46,10 @@ export default Vue.extend({
 </script>
 
 <style lang="less" scoped>
-.textChat {
-  margin-top: auto;
-  position: relative;
+.text-chat-section {
+  flex: 1;
   display: flex;
   flex-direction: column;
-}
-
-#sendMsgBtn {
-  position: absolute;
-  right: 5px;
-  height: 28px;
-  width: 28px;
-  z-index: 2;
-  color: @theme-grey-color;
-  transition: all 0.4s ease-in-out;
-
-  :hover {
-    color: @theme-white-color;
-    transform: scale(1.1);
-  }
+  overflow: hidden;
 }
 </style>

@@ -22,16 +22,16 @@ const store: StoreOptions<RootState> = {
     serverDisconnected: state =>
       state.serverConnectionStatus === ConnectionStatus.DISCONNECTED,
     otherUsers: state => Object.values(state.users).filter(user => !user.isOwn),
-    myUser: state => Object.values(state.users).filter(user => user.isOwn)
+    myUser: state => Object.values(state.users).filter(user => user.isOwn)[0]
   },
   actions: {
-    setPartyId({ commit }, partyId) {
+    setPartyId({ commit }, partyId: string) {
       commit("SET_PARTY_ID", partyId);
     },
-    setUserId({ commit }, userId) {
+    setUserId({ commit }, userId: string) {
       commit("SET_USER_ID", userId);
     },
-    addMessage({ commit }, msg) {
+    addMessage({ commit }, msg: Message) {
       commit("ADD_CHAT_MESSAGE", msg);
     },
     connectingToServer({ commit }) {
