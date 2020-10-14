@@ -48,7 +48,7 @@ export default Vue.extend({
   name: "VoiceChatPanel",
   props: ["user"],
   mounted() {
-    // is this user is our own, initi analyseAudio ourself since the watcher wont be triggered
+    // is this user is our own, call analyseAudio ourself since the watcher wont be triggered
     if (this.user.isOwn) {
       this.analyseAudio(this.user.stream);
     }
@@ -82,7 +82,6 @@ export default Vue.extend({
     }
   },
   created() {
-    console.log("at created:", this.user);
     this.detectUserSpeaking = throttle(this.detectUserSpeaking, THROTTLE_RATE);
   },
   methods: {
