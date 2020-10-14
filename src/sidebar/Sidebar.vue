@@ -29,12 +29,17 @@ export default {
 </script>
 
 <style lang="less">
+* {
+  box-sizing: border-box;
+}
+
 html,
 body {
   height: 100%;
   width: 100%;
   border: 0px;
   margin: 0px;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -44,6 +49,7 @@ body {
   align-items: center;
   justify-content: center;
   background-color: @theme-primary-color;
+  overflow: hidden;
 }
 
 .serverConnectError {

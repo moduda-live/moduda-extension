@@ -6,16 +6,18 @@
   bottom: 0;
   right: 0;
   width: 270px;
-  height: 100vh;
+  height: calc(100vh - 32px);
   z-index: 999999;
   background-color: @theme-primary-color;
   padding: 16px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 #movens-iframe {
-  height: 100vh;
-  width: 100%;
-  display: block;
+  display: flex;
+  flex: 1;
   box-sizing: border-box;
+  overflow: hidden;
 }
