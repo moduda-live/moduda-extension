@@ -83,4 +83,13 @@ body {
     font-size: 15px;
   }
 }
+
+// global tippy theme
+.tippy-box[data-theme~="dark"] {
+  background-color: @theme-darker-primary-color;
+  color: @theme-white-color;
+  padding: 3px 5px;
+  border-radius: 2px;
+  font-size: 11px;
+}
 </style>

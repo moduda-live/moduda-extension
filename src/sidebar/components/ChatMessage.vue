@@ -1,12 +1,12 @@
 <template>
   <div class="message-container">
-    <!-- <Icon
+    <Icon
       type="logo-angular"
       color="#B42000"
-      class="admin-logo"
-      v-if="isAdmin"
-      ref="adminLogo"
-    /> -->
+      class="admin-icon"
+      v-if="message.isSenderAdmin"
+      id="admin-icon"
+    />
     <div class="username">{{ message.senderUsername }}</div>
     <span style="white-space: pre-wrap;">:&nbsp;&nbsp;</span>
     <span class="content">{{ message.content }}</span>
@@ -15,10 +15,22 @@
 
 <script lang="ts">
 import Vue from "vue";
+import tippy from "tippy.js";
+import "tippy.js/animations/scale.css";
 
 export default Vue.extend({
   name: "ChatMessage",
-  props: ["message"]
+  props: ["message", "isAdmin"],
+  mounted() {
+    tippy("#admin-icon", {
+      content: "Admin",
+      placement: "top",
+      animation: "scale",
+      offset: [0, 3],
+      maxWidth: 50,
+      theme: "dark"
+    });
+  }
 });
 </script>
 
@@ -28,6 +40,9 @@ export default Vue.extend({
   margin-bottom: 5px;
 }
 
+.admin-icon {
+  margin-right: 4px;
+}
 .username {
   font-weight: 700;
   display: inline-block;

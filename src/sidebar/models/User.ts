@@ -7,7 +7,7 @@ export class User {
   username: string;
   peer?: Peer.Instance;
   isOwn!: boolean;
-  isAdmin: boolean;
+  isAdmin!: boolean;
   stream!: MediaStream;
   party: Party;
   isMuted: boolean;
@@ -17,15 +17,12 @@ export class User {
     id: string | undefined,
     username: string,
     party: Party,
-    isOwn: boolean,
     peer?: Peer.Instance
   ) {
     this.id = id;
     this.username = username;
-    this.isAdmin = false; // initially other users are not admins
     this.peer = peer;
     this.party = party;
-    this.isOwn = isOwn;
     this.isMuted = false;
     this.isSpeaking = false;
   }
@@ -47,7 +44,9 @@ export class OwnUser extends User {
   private mediaStreamPromise: Promise<MediaStream>;
 
   constructor(username: string, party: Party) {
-    super(undefined, username, party, true);
+    super(undefined, username, party);
+    this.isAdmin = true;
+    this.isOwn = true;
     this.mediaStreamPromise = (async () => {
       return window.navigator.mediaDevices.getUserMedia({
         video: false,
@@ -79,7 +78,9 @@ export class OwnUser extends User {
 
 export class OtherUser extends User {
   constructor(id: string, username: string, party: Party, peer: Peer.Instance) {
-    super(id, username, party, false, peer);
+    super(id, username, party, peer);
+    this.isAdmin = false;
+    this.isOwn = false;
     this.addPeerEventListeners();
   }
 

@@ -34,6 +34,7 @@ export default Vue.extend({
 
       console.log("send message: ", this.message);
       const messageObj = {
+        isSenderAdmin: this.myUser.isAdmin,
         senderUsername: this.myUser.username,
         content: this.message
       };
