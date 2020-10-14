@@ -1,26 +1,33 @@
 <template>
-  <div class="chatInputArea">
-    <textarea
-      placeholder="Your message"
-      :value="value"
-      @input="$emit('input', $event.target.value)"
-      ref="textArea"
-    ></textarea>
-    <textarea
-      :value="value"
-      class="hidden"
-      tabindex="0"
-      ref="hiddenArea"
-    ></textarea>
+  <div class="chatInputContainer">
+    <AppLogoButton id="sendMsgBtn" icon="ios-happy" />
+    <div class="chatInputArea">
+      <textarea
+        placeholder="Your message"
+        :value="value"
+        @input="$emit('input', $event.target.value)"
+        ref="textArea"
+      ></textarea>
+      <textarea
+        :value="value"
+        class="hidden"
+        tabindex="0"
+        ref="hiddenArea"
+      ></textarea>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import AppLogoButton from "@/shared/AppLogoButton.vue";
 
 // Adapted from https://www.scottstadt.com/2019/06/03/vue-autosize-textarea.html
 export default Vue.extend({
   name: "ChatInputArea",
+  components: {
+    AppLogoButton
+  },
   props: ["value"],
   mounted() {
     const textArea = this.$refs.textArea as HTMLTextAreaElement;
@@ -51,6 +58,12 @@ export default Vue.extend({
 </script>
 
 <style lang="less" scoped>
+.chatInputContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
 .chatInputArea {
   position: relative;
   height: 100%;
@@ -79,6 +92,21 @@ export default Vue.extend({
       opacity: 0;
       margin: 0;
     }
+  }
+}
+
+#sendMsgBtn {
+  position: absolute;
+  right: 5px;
+  height: 28px;
+  width: 28px;
+  z-index: 2;
+  color: @theme-grey-color;
+  transition: all 0.4s ease-in-out;
+
+  :hover {
+    color: @theme-white-color;
+    transform: scale(1.1);
   }
 }
 </style>

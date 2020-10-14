@@ -1,12 +1,12 @@
 <template>
-  <div class="voiceChatPanel">
+  <div class="voicechat-panel">
     <div class="channel">
       <Icon size="18" type="md-bonfire" />
-      <h3 class="channelText">
+      <h3 class="channel-usercount">
         {{ `${participantCount} currently in the room` }}
       </h3>
     </div>
-    <div class="usersInRoom">
+    <div class="channel-users">
       <UserView v-for="user in users" :key="user.id" :user="user" />
     </div>
   </div>
@@ -39,27 +39,12 @@ export default Vue.extend({
 <style lang="less" scoped>
 @maxUsersBeforeScroll: 5;
 
-.usersInRoom {
-  height: calc(36px * @maxUsersBeforeScroll);
+.channel-users {
+  max-height: calc(36px * @maxUsersBeforeScroll);
   overflow-y: auto;
-
-  &::-webkit-scrollbar {
-    background-color: transparent;
-    width: 5px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    border-radius: 2px;
-  }
-
-  &:hover {
-    &::-webkit-scrollbar-thumb {
-      background-color: @theme-darker-primary-color;
-    }
-  }
 }
 
-.voiceChatPanel {
+.voicechat-panel {
   margin-top: 18px;
 }
 
@@ -72,7 +57,7 @@ export default Vue.extend({
   cursor: pointer;
 }
 
-.channelText {
+.channel-usercount {
   margin-left: 4px;
   font-weight: 500;
   font-size: 12px;

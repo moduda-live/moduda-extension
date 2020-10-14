@@ -31,6 +31,22 @@ export default {
 <style lang="less">
 * {
   box-sizing: border-box;
+  > * {
+    &::-webkit-scrollbar {
+      background-color: transparent;
+      width: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+      border-radius: 2px;
+    }
+
+    &:hover {
+      &::-webkit-scrollbar-thumb {
+        background-color: @theme-darker-primary-color;
+      }
+    }
+  }
 }
 
 html,
