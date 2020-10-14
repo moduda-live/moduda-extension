@@ -1,6 +1,7 @@
 import { User } from "../models/User";
 
 export interface Message {
+  isSenderAdmin: boolean;
   senderUsername: string;
   content: string;
 }

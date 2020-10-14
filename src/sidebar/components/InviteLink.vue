@@ -33,7 +33,7 @@ export default Vue.extend({
       placement: "right",
       animation: "scale",
       maxWidth: 240,
-      theme: "invitelink-help"
+      theme: "dark"
     });
   },
   computed: {
@@ -78,16 +78,6 @@ export default Vue.extend({
   }
 });
 </script>
-
-<style lang="less">
-.tippy-box[data-theme~="invitelink-help"] {
-  background-color: @theme-darker-primary-color;
-  color: @theme-white-color;
-  padding: 3px 5px;
-  border-radius: 2px;
-  font-size: 11px;
-}
-</style>
 
 <style lang="less" scoped>
 @border-radius: 5px;
