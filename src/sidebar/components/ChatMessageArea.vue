@@ -1,8 +1,7 @@
 <template>
-  <div class="chatMessageContainer">
-    <div class="welcomeTxt">
-      <div>Welcome to the room!</div>
-      <Icon type="ios-settings" :size="18" />
+  <div class="chat-area">
+    <div class="chat-welcome">
+      Welcome to the room!
     </div>
     <ChatMessage
       v-for="(message, index) in chatMessages"
@@ -29,17 +28,17 @@ export default Vue.extend({
 </script>
 
 <style lang="less" scoped>
-.chatMessageContainer {
-  background-color: @theme-less-darker;
+.chat-area {
   flex: 1;
   margin: 15px 0 10px 0;
   border-radius: 5px;
   padding: 12px 15px;
   overflow-x: hidden;
   overflow-y: auto;
+  background-color: @theme-less-darker;
 }
 
-.welcomeTxt {
+.chat-welcome {
   margin-bottom: 6px;
   display: flex;
   flex-direction: row;

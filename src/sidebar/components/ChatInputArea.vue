@@ -3,7 +3,7 @@
     <AppLogoButton id="sendMsgBtn" icon="ios-happy" />
     <div class="chatInputArea">
       <textarea
-        placeholder="Your message"
+        :placeholder="defaultPlaceholderTxt"
         :value="value"
         @input="$emit('input', $event.target.value)"
         ref="textArea"
@@ -22,6 +22,13 @@
 import Vue from "vue";
 import AppLogoButton from "@/shared/AppLogoButton.vue";
 
+// messages per ten seconds before triggering wait
+const MAX_NUM_MESSAGES_PAST_TEN_SEC = 15;
+// count messages duration
+const COUNT_DURATION_MS = 10 * 1000;
+
+const COOLDOWN_PERIOD_MS = 2000;
+
 // Adapted from https://www.scottstadt.com/2019/06/03/vue-autosize-textarea.html
 export default Vue.extend({
   name: "ChatInputArea",
@@ -29,14 +36,80 @@ export default Vue.extend({
     AppLogoButton
   },
   props: ["value"],
+  data() {
+    return {
+      defaultPlaceholderTxt: "Start typing your message...",
+      allowUserMsg: true,
+      lastTimeMsgSent: new Date(),
+      numMessagesPastTenSeconds: 0,
+      countingMessages: false,
+      countingTimeout: -1
+    };
+  },
+  watch: {
+    allowUserMsg() {
+      // by default, immediate: false, which is the behaviour we want
+      const textArea = this.$refs.textArea as HTMLTextAreaElement;
+      if (this.allowUserMsg) {
+        textArea.placeholder = this.defaultPlaceholderTxt;
+        textArea.classList.remove("warning-placeholder");
+      }
+    }
+  },
   mounted() {
     const textArea = this.$refs.textArea as HTMLTextAreaElement;
 
     textArea.addEventListener("keydown", e => {
       if (e.keyCode === 13 && !e.shiftKey) {
         e.preventDefault();
-        this.$emit("sendMsg");
-        textArea.style.height = `28px`;
+        if (this.value.trim().length === 0) {
+          return;
+        }
+
+        if (this.numMessagesPastTenSeconds >= MAX_NUM_MESSAGES_PAST_TEN_SEC) {
+          // Reset so that this branch isnt triggered everytime after max threshold breached
+          this.numMessagesPastTenSeconds = 0;
+
+          // reset countingTimeout and countingMessages
+          if (this.countingTimeout !== -1) {
+            clearTimeout(this.countingTimeout);
+            this.countingTimeout = -1;
+            this.countingMessages = false;
+          }
+
+          // Start preventing user from sending for 2s
+          this.allowUserMsg = false;
+          this.lastTimeMsgSent = new Date();
+          setTimeout(() => {
+            this.allowUserMsg = true;
+          }, COOLDOWN_PERIOD_MS);
+        }
+
+        if (this.allowUserMsg) {
+          this.$emit("sendMsg");
+          textArea.style.height = `28px`;
+          if (this.countingMessages) {
+            this.numMessagesPastTenSeconds += 1;
+            console.log("Count: ", this.numMessagesPastTenSeconds);
+          } else {
+            // start counting
+            this.countingMessages = true;
+            console.log("Counting started: ");
+            this.numMessagesPastTenSeconds = 1;
+            this.countingTimeout = window.setTimeout(() => {
+              console.log("Counting ended: ");
+              this.countingMessages = false;
+              this.numMessagesPastTenSeconds = 0;
+            }, COUNT_DURATION_MS);
+          }
+        } else {
+          const msLeft =
+            COOLDOWN_PERIOD_MS - (+new Date() - +this.lastTimeMsgSent);
+          const secondsLeft = (msLeft / 1000).toFixed(1);
+          textArea.placeholder = `Messaging too quick! Wait ${secondsLeft}s...`;
+          textArea.classList.add("warning-placeholder");
+          this.$emit("clearMsg");
+        }
       }
     });
 
@@ -107,6 +180,12 @@ export default Vue.extend({
   :hover {
     color: @theme-white-color;
     transform: scale(1.1);
+  }
+}
+
+.warning-placeholder {
+  &::placeholder {
+    color: @theme-white-color;
   }
 }
 </style>
