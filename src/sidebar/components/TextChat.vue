@@ -1,11 +1,7 @@
 <template>
   <div class="text-chat-section">
     <ChatMessageArea />
-    <ChatInputArea
-      v-model="message"
-      @sendMsg="sendMessage"
-      @clearMsg="clearMessage"
-    />
+    <ChatInputArea v-model="message" @sendMsg="sendMessage" />
   </div>
 </template>
 
@@ -44,9 +40,6 @@ export default Vue.extend({
       };
       this.addMessage(messageObj);
 
-      this.message = "";
-    },
-    clearMessage() {
       this.message = "";
     }
   }

@@ -1,14 +1,21 @@
 <template>
-  <div class="chatInputContainer">
-    <AppLogoButton id="sendMsgBtn" icon="ios-happy" />
-    <div class="chatInputArea">
+  <div class="input-container">
+    <div class="chat-side">
+      <AppLogoButton id="send-btn" icon="ios-happy" />
+      <div class="char-count" v-show="showCharCount">
+        {{ `${value.length}/1k` }}
+      </div>
+    </div>
+    <div class="input-area">
       <textarea
+        :maxlength="MAX_CHAR_COUNT"
         :placeholder="defaultPlaceholderTxt"
         :value="value"
         @input="$emit('input', $event.target.value)"
         ref="textArea"
       ></textarea>
       <textarea
+        :maxlength="MAX_CHAR_COUNT"
         :value="value"
         class="hidden"
         tabindex="0"
@@ -28,6 +35,8 @@ const MAX_NUM_MESSAGES_PAST_TEN_SEC = 15;
 const COUNT_DURATION_MS = 10 * 1000;
 
 const COOLDOWN_PERIOD_MS = 2000;
+const MAX_CHAR_COUNT = 1000;
+const CHAR_COUNT_DIFF_THRESHOLD = 100;
 
 // Adapted from https://www.scottstadt.com/2019/06/03/vue-autosize-textarea.html
 export default Vue.extend({
@@ -43,7 +52,9 @@ export default Vue.extend({
       lastTimeMsgSent: new Date(),
       numMessagesPastTenSeconds: 0,
       countingMessages: false,
-      countingTimeout: -1
+      countingTimeout: -1,
+      showCharCount: false,
+      MAX_CHAR_COUNT
     };
   },
   watch: {
@@ -52,7 +63,17 @@ export default Vue.extend({
       const textArea = this.$refs.textArea as HTMLTextAreaElement;
       if (this.allowUserMsg) {
         textArea.placeholder = this.defaultPlaceholderTxt;
-        textArea.classList.remove("warning-placeholder");
+        textArea.classList.remove("js-warning-placeholder");
+      }
+    },
+    value() {
+      if (
+        this.MAX_CHAR_COUNT - this.value.length <=
+        CHAR_COUNT_DIFF_THRESHOLD
+      ) {
+        this.showCharCount = true;
+      } else {
+        this.showCharCount = false;
       }
     }
   },
@@ -62,7 +83,7 @@ export default Vue.extend({
     textArea.addEventListener("keydown", e => {
       if (e.keyCode === 13 && !e.shiftKey) {
         e.preventDefault();
-        if (this.value.trim().length === 0) {
+        if (textArea.value.trim().length === 0) {
           return;
         }
 
@@ -107,8 +128,8 @@ export default Vue.extend({
             COOLDOWN_PERIOD_MS - (+new Date() - +this.lastTimeMsgSent);
           const secondsLeft = (msLeft / 1000).toFixed(1);
           textArea.placeholder = `Messaging too quick! Wait ${secondsLeft}s...`;
-          textArea.classList.add("warning-placeholder");
-          this.$emit("clearMsg");
+          textArea.classList.add("js-warning-placeholder");
+          textArea.value = "";
         }
       }
     });
@@ -131,13 +152,13 @@ export default Vue.extend({
 </script>
 
 <style lang="less" scoped>
-.chatInputContainer {
+.input-container {
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
-.chatInputArea {
+.input-area {
   position: relative;
   height: 100%;
 
@@ -168,12 +189,24 @@ export default Vue.extend({
   }
 }
 
-#sendMsgBtn {
+.chat-side {
+  display: flex;
+  flex-direction: column;
   position: absolute;
+  align-items: center;
   right: 5px;
+  z-index: 2;
+  width: 32px;
+}
+
+.char-count {
+  font-size: 8px;
+  color: @theme-bright-color;
+}
+
+#send-btn {
   height: 28px;
   width: 28px;
-  z-index: 2;
   color: @theme-grey-color;
   transition: all 0.4s ease-in-out;
 
@@ -183,7 +216,7 @@ export default Vue.extend({
   }
 }
 
-.warning-placeholder {
+.js-warning-placeholder {
   &::placeholder {
     color: @theme-white-color;
   }
