@@ -89,15 +89,15 @@ export default Vue.extend({
   display: flex;
   align-items: center;
   margin-bottom: 4px;
-  color: @theme-white-color;
+  color: @theme-white;
 }
 
 .link-container {
   display: flex;
   align-items: center;
   border-radius: @border-radius;
-  background-color: @theme-less-darker;
-  color: @theme-dark-text-color;
+  background-color: @theme-primary-dark-less;
+  color: @theme-dark-text;
   height: 2em;
   width: 100%;
 }
@@ -107,7 +107,7 @@ export default Vue.extend({
   padding: 3px;
   margin-left: 3px;
   margin-right: 0px;
-  color: @theme-white-color;
+  color: @theme-white;
   flex: 1 1 auto;
 }
 
@@ -134,12 +134,12 @@ button {
 
 .copy-button {
   border-radius: 0 @border-radius @border-radius 0;
-  color: @theme-white-color;
+  color: @theme-white;
   //background-color: darken(@theme-primary-color, 8%);
   background-image: linear-gradient(
     to right,
-    @theme-less-darker,
-    darken(@theme-primary-color, 7%) 55%
+    @theme-primary-dark-less,
+    @theme-primary-dark-medium 55%
   );
   height: 100%;
   flex: 0 0 60px;

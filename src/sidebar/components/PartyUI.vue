@@ -40,7 +40,7 @@ export default Vue.extend({
 .divider {
   height: 1px;
   width: 100%;
-  background-color: @theme-muted-dark-color;
+  background-color: @theme-dark-muted;
   margin-bottom: 10px;
 }
 </style>

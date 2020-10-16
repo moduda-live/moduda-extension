@@ -131,7 +131,7 @@ export default Vue.extend({
 
 <style lang="less" scoped>
 .partyUser {
-  color: @theme-grey-color;
+  color: @theme-grey;
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -153,7 +153,7 @@ export default Vue.extend({
 
 .userSpeaking {
   .userName {
-    color: @theme-white-color;
+    color: @theme-white;
   }
 }
 
@@ -180,7 +180,7 @@ export default Vue.extend({
   transition: 0.2s all ease;
 
   &:hover {
-    background-color: @theme-less-darker;
+    background-color: @theme-primary-dark-less;
   }
 }
 </style>

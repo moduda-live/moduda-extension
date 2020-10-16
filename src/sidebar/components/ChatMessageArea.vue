@@ -35,7 +35,7 @@ export default Vue.extend({
   padding: 12px 15px;
   overflow-x: hidden;
   overflow-y: auto;
-  background-color: @theme-less-darker;
+  background-color: @theme-primary-dark-less;
 }
 
 .chat-welcome {

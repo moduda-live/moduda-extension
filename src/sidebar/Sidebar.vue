@@ -43,7 +43,7 @@ export default {
 
     &:hover {
       &::-webkit-scrollbar-thumb {
-        background-color: @theme-darker-primary-color;
+        background-color: @theme-primary-dark;
       }
     }
   }
@@ -84,12 +84,21 @@ body {
   }
 }
 
-// global tippy theme
+// global tippy styles
+.tippy-box {
+  outline: none;
+}
+
 .tippy-box[data-theme~="dark"] {
-  background-color: @theme-darker-primary-color;
-  color: @theme-white-color;
+  background-color: @theme-primary-dark;
+  color: @theme-white;
   padding: 3px 5px;
   border-radius: 2px;
   font-size: 11px;
+}
+
+.tippy-box[data-reference-hidden],
+.tippy-box[data-escaped] {
+  opacity: 0;
 }
 </style>

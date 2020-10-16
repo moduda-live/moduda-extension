@@ -1,7 +1,13 @@
 <template>
   <div class="input-container">
     <div class="chat-side">
-      <AppLogoButton id="send-btn" icon="ios-happy" />
+      <TwitchEmotePicker ref="emotePicker" />
+      <AppLogoButton
+        ref="emoteBtn"
+        id="emote-btn"
+        icon="ios-happy"
+        :size="19"
+      />
       <div class="char-count" v-show="showCharCount">
         {{ `${value.length}/1k` }}
       </div>
@@ -28,6 +34,9 @@
 <script lang="ts">
 import Vue from "vue";
 import AppLogoButton from "@/shared/AppLogoButton.vue";
+import TwitchEmotePicker from "./TwitchEmotePicker.vue";
+import tippy from "tippy.js";
+import "tippy.js/animations/shift-away-subtle.css";
 
 // messages per ten seconds before triggering wait
 const MAX_NUM_MESSAGES_PAST_TEN_SEC = 15;
@@ -42,7 +51,8 @@ const CHAR_COUNT_DIFF_THRESHOLD = 100;
 export default Vue.extend({
   name: "ChatInputArea",
   components: {
-    AppLogoButton
+    AppLogoButton,
+    TwitchEmotePicker
   },
   props: ["value"],
   data() {
@@ -78,9 +88,37 @@ export default Vue.extend({
     }
   },
   mounted() {
+    this.setUpEmotePicker();
     const textArea = this.$refs.textArea as HTMLTextAreaElement;
+    textArea.addEventListener("keydown", this.handleKeydown);
+    textArea.addEventListener("input", () => {
+      this.resizeInputHeight();
+    });
 
-    textArea.addEventListener("keydown", e => {
+    // init
+    this.resizeInputHeight();
+  },
+  methods: {
+    setUpEmotePicker() {
+      const emoteBtn = (this.$refs.emoteBtn as Vue).$el;
+      tippy("#emote-btn", {
+        content: (this.$refs.emotePicker as Vue).$el,
+        placement: "top-end",
+        appendTo: () => document.body,
+        animation: "shift-away-subtle",
+        interactive: true,
+        offset: [0, 13],
+        trigger: "click",
+        onShow: () => {
+          emoteBtn.classList.add("scaled-white-btn");
+        },
+        onHide: () => {
+          emoteBtn.classList.remove("scaled-white-btn");
+        }
+      });
+    },
+    handleKeydown(e: KeyboardEvent) {
+      const textArea = this.$refs.textArea as HTMLTextAreaElement;
       if (e.keyCode === 13 && !e.shiftKey) {
         e.preventDefault();
         if (textArea.value.trim().length === 0) {
@@ -132,16 +170,7 @@ export default Vue.extend({
           textArea.value = "";
         }
       }
-    });
-
-    textArea.addEventListener("input", () => {
-      this.resizeInputHeight();
-    });
-
-    // init
-    this.resizeInputHeight();
-  },
-  methods: {
+    },
     resizeInputHeight() {
       const textArea = this.$refs.textArea as HTMLTextAreaElement;
       const hiddenArea = this.$refs.hiddenArea as HTMLTextAreaElement;
@@ -172,7 +201,7 @@ export default Vue.extend({
     overflow-y: auto;
     background-color: @theme-primary-brighter;
     border-radius: 5px;
-    color: @theme-white-color;
+    color: @theme-white;
     height: 0;
     max-height: 100px;
     cursor: text;
@@ -201,24 +230,25 @@ export default Vue.extend({
 
 .char-count {
   font-size: 8px;
-  color: @theme-bright-color;
+  color: @theme-orange;
 }
 
-#send-btn {
+#emote-btn {
   height: 28px;
   width: 28px;
-  color: @theme-grey-color;
+  color: @theme-grey;
   transition: all 0.4s ease-in-out;
+}
 
-  :hover {
-    color: @theme-white-color;
-    transform: scale(1.1);
-  }
+#emote-btn:hover,
+.scaled-white-btn {
+  color: @theme-white !important;
+  transform: scale(1.1);
 }
 
 .js-warning-placeholder {
   &::placeholder {
-    color: @theme-white-color;
+    color: @theme-white;
   }
 }
 </style>

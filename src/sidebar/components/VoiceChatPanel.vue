@@ -53,7 +53,7 @@ export default Vue.extend({
   flex-direction: row;
   align-items: center;
   margin-bottom: 6px;
-  color: @theme-bright-color;
+  color: @theme-orange;
   cursor: pointer;
 }
 
