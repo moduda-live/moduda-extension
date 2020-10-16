@@ -1,5 +1,5 @@
 <template>
-  <div ref="emote">
+  <div ref="emote" @click="$emit('click', emoteInfo.name)">
     <img class="emote-img" :src="imageUrl" />
   </div>
 </template>
@@ -32,6 +32,7 @@ export default Vue.extend({
     this.tippyInstance = tippy(this.$refs.emote as HTMLDivElement, {
       content: this.emoteInfo.name,
       offset: [0, 1],
+      hideOnClick: false,
       theme: "dark",
       placement: "top",
       animation: "shift-away-subtle",

@@ -6,6 +6,7 @@
         :key="index"
         :emoteInfo="emote"
         class="emote"
+        @click="emitEmoteNameToParent"
       />
     </div>
   </div>
@@ -13,7 +14,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { emoteInfoList } from "@/util/constants";
+import { emoteInfoMap } from "@/util/constants";
 import Emote from "./Emote.vue";
 
 export type EmoteInfo = {
@@ -28,9 +29,14 @@ export default Vue.extend({
   },
   data() {
     return {
-      emotes: emoteInfoList as EmoteInfo[],
+      emotes: Array.from(emoteInfoMap.values()) as EmoteInfo[],
       errorMsg: ""
     };
+  },
+  methods: {
+    emitEmoteNameToParent(emoteName: string) {
+      this.$emit("emote-clicked", emoteName);
+    }
   }
 });
 </script>

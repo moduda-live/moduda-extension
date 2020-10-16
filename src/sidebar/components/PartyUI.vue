@@ -13,7 +13,7 @@ import Vue from "vue";
 import Topbar from "./Topbar.vue";
 import InviteLink from "./InviteLink.vue";
 import VoiceChatPanel from "./VoiceChatPanel.vue";
-import TextChat from "./TextChat.vue";
+import TextChat from "./text-chat/TextChat.vue";
 
 export default Vue.extend({
   name: "PartyUI",
