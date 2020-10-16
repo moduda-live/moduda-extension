@@ -1,7 +1,7 @@
 <template>
   <div class="input-container">
     <div class="chat-side">
-      <TwitchEmotePicker ref="emotePicker" />
+      <TwitchEmotePicker ref="emotePicker" @emote-clicked="onEmoteClicked" />
       <AppLogoButton
         ref="emoteBtn"
         id="emote-btn"
@@ -93,12 +93,30 @@ export default Vue.extend({
     textArea.addEventListener("keydown", this.handleKeydown);
     textArea.addEventListener("input", () => {
       this.resizeInputHeight();
+      this.scrollToBottom(textArea);
     });
 
     // init
     this.resizeInputHeight();
   },
   methods: {
+    onEmoteClicked(emoteName: string) {
+      const textArea = this.$refs.textArea as HTMLTextAreaElement;
+      const hiddenArea = this.$refs.hiddenArea as HTMLTextAreaElement;
+      const textAreaIsEmpty = this.value.length === 0;
+
+      const textToAdd = textAreaIsEmpty ? `:${emoteName}:` : ` :${emoteName}:`;
+      hiddenArea.value += textToAdd;
+      // manually sync since we are not triggering emit on input
+      this.$emit("input", this.value + textToAdd);
+
+      // manually trigger resize and scroll
+      this.resizeInputHeight();
+      this.scrollToBottom(textArea);
+    },
+    scrollToBottom(textArea: HTMLTextAreaElement) {
+      textArea.scrollTop = textArea.scrollHeight;
+    },
     setUpEmotePicker() {
       const emoteBtn = (this.$refs.emoteBtn as Vue).$el;
       tippy("#emote-btn", {
