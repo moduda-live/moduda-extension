@@ -36,7 +36,7 @@ export default Vue.extend({
 
 <style lang="less" scoped>
 .message-container {
-  color: @theme-white-color;
+  color: @theme-white;
   margin-bottom: 5px;
 }
 

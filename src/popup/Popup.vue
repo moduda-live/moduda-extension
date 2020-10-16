@@ -121,7 +121,7 @@ html {
 
 .tippy-box[data-theme~="info"] {
   background-color: @theme-primary-color;
-  color: @theme-white-color;
+  color: @theme-white;
   padding: 6px;
   border-radius: 2px;
   font-size: 11px;
