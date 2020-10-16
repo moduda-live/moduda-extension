@@ -2,6 +2,7 @@ import Vue from "vue";
 import Vuex, { StoreOptions } from "vuex";
 import { Message, RootState, ConnectionStatus } from "./types";
 import { User } from "../models/User";
+import { MAX_NUM_CHAT_MESSAGES } from "@/util/constants";
 
 Vue.config.devtools = process.env.NODE_ENV === "development";
 Vue.use(Vuex);
@@ -67,6 +68,12 @@ const store: StoreOptions<RootState> = {
       state.userId = userId;
     },
     ADD_CHAT_MESSAGE(state, msg: Message) {
+      if (state.chatMessages.length >= MAX_NUM_CHAT_MESSAGES) {
+        // O(N), but for small array size, Chrome's V8 takes it to constant time
+        // https://bugs.chromium.org/p/v8/issues/detail?id=3059
+        // if the size was bigger, I'd consider using a CircularBuffer-based implementation of Queue
+        state.chatMessages.shift();
+      }
       state.chatMessages.push(msg);
     },
     SET_CONNECTION_STATUS(state, status) {

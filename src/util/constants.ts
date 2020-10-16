@@ -1,3 +1,5 @@
+export const MAX_NUM_CHAT_MESSAGES = 200;
+
 export const emoteInfoMap = new Map([
   ["monkaS", { id: "56e9f494fff3cc5c35e5287e", name: "monkaS" }],
   ["OMEGALUL", { id: "583089f4737a8e61abb0186b", name: "OMEGALUL" }],
