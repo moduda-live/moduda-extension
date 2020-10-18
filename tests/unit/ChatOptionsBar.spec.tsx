@@ -21,7 +21,12 @@ describe("ChatOptionsBar.vue", () => {
       HIDE_CHAT: jest.fn()
     };
     store = new Vuex.Store({
-      mutations
+      modules: {
+        chat: {
+          namespaced: true,
+          mutations
+        }
+      }
     });
     wrapper = mount(ChatOptionsBar, {
       localVue,
@@ -33,28 +38,21 @@ describe("ChatOptionsBar.vue", () => {
     wrapper.destroy();
   });
 
-  it("should render 4 options", () => {
-    const optionIcons = wrapper.findAllComponents(Icon);
-    expect(optionIcons.length).toBe(4);
-  });
-
   it("should commit a CLEAR_CHAT mutation when clearChat icon is clicked", () => {
     const btn = wrapper.findComponent({ ref: "clearChat" });
     btn.trigger("click");
     expect(mutations.CLEAR_CHAT).toHaveBeenCalled();
   });
 
-  describe("hide/show chat", () => {
-    it("should commit a HIDE_CHAT mutation when hideChat icon is clicked", () => {
-      const btn = wrapper.findComponent({ ref: "hideChat" });
-      btn.trigger("click");
-      expect(mutations.HIDE_CHAT).toHaveBeenCalled();
-    });
+  it("should commit a HIDE_CHAT mutation when hideChat icon is clicked", () => {
+    const btn = wrapper.findComponent({ ref: "hideChat" });
+    btn.trigger("click");
+    expect(mutations.HIDE_CHAT).toHaveBeenCalled();
+  });
 
-    it("should commit a SHOW_CHAT mutation when showChat icon is clicked", () => {
-      const showChatIcon = wrapper.findComponent({ ref: "showChat" });
-      showChatIcon.trigger("click");
-      expect(mutations.SHOW_CHAT).toHaveBeenCalled();
-    });
+  it("should commit a SHOW_CHAT mutation when showChat icon is clicked", () => {
+    const showChatIcon = wrapper.findComponent({ ref: "showChat" });
+    showChatIcon.trigger("click");
+    expect(mutations.SHOW_CHAT).toHaveBeenCalled();
   });
 });

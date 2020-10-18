@@ -20,10 +20,12 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { mapState } from "vuex";
+import { createNamespacedHelpers } from "vuex";
 import ChatMessage from "./ChatMessage.vue";
 import ChatOptionsBar from "./ChatOptionsBar.vue";
 import ChatHiddenIndicator from "./ChatHiddenIndicator.vue";
+
+const { mapState } = createNamespacedHelpers("chat");
 
 // # of pixels from the bottom of the .chat-area div for chat area to auto scroll to bottom upon new messages (if anchor enabled)
 const OFFSET_FROM_BOTTOM_TO_TRIGGER_ANCHOR = 80;

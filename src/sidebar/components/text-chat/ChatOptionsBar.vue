@@ -40,8 +40,10 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { mapState, mapMutations } from "vuex";
+import { createNamespacedHelpers } from "vuex";
 import tippy from "tippy.js";
+
+const { mapState, mapMutations } = createNamespacedHelpers("chat");
 
 declare module "vue/types/vue" {
   interface Vue {
