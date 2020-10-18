@@ -27,6 +27,10 @@ export class User {
     this.isSpeaking = false;
   }
 
+  setIsAdmin(isAdmin: boolean) {
+    this.isAdmin = isAdmin;
+  }
+
   // mute() {
   //   this.stream?.getAudioTracks().forEach(track => (track.enabled = false));
   //   this.isMuted = true;
@@ -45,7 +49,6 @@ export class OwnUser extends User {
 
   constructor(username: string, party: Party) {
     super(undefined, username, party);
-    this.isAdmin = true;
     this.isOwn = true;
     this.mediaStreamPromise = (async () => {
       return window.navigator.mediaDevices.getUserMedia({
@@ -79,7 +82,6 @@ export class OwnUser extends User {
 export class OtherUser extends User {
   constructor(id: string, username: string, party: Party, peer: Peer.Instance) {
     super(id, username, party, peer);
-    this.isAdmin = false;
     this.isOwn = false;
     this.addPeerEventListeners();
   }

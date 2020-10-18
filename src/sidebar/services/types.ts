@@ -4,6 +4,7 @@ import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 export interface UserInfo {
   userId: string;
   username: string;
+  isAdmin: boolean;
 }
 
 export enum PartyEvent {
