@@ -8,4 +8,5 @@ export interface ChatState {
   chatMessages: Message[];
   chatHidden: boolean;
   chatAnchored: boolean;
+  chatScrollPosition: number;
 }

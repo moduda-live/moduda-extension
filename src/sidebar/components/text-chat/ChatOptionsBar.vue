@@ -15,7 +15,7 @@
       type="md-eye"
       :data-tippy-content="hideChatContent"
       ref="hideChat"
-      @click="hideChat"
+      @click="emitHideChat"
       v-show="!chatHidden"
     />
     <Icon
@@ -86,11 +86,13 @@ export default Vue.extend({
   methods: {
     ...mapMutations({
       showChat: "SHOW_CHAT",
-      hideChat: "HIDE_CHAT",
       clearChat: "CLEAR_CHAT",
       activateAnchor: "ACTIVATE_CHAT_ANCHOR",
       deactivateAnchor: "DEACTIVATE_CHAT_ANCHOR"
     }),
+    emitHideChat() {
+      this.$emit("hideChat");
+    },
     toggleChatAnchor() {
       if (this.chatAnchored) {
         this.deactivateAnchor();
