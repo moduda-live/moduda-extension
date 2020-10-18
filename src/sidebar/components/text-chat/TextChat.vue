@@ -33,7 +33,6 @@ export default Vue.extend({
       }
 
       const trimmedMsg = this.message.trim();
-      console.log("send message: ", trimmedMsg);
       const messageObj = {
         isSenderAdmin: this.myUser.isAdmin,
         senderUsername: this.myUser.username,
