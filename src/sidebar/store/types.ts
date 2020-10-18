@@ -1,10 +1,5 @@
 import { User } from "../models/User";
 
-export interface Message {
-  senderId: string;
-  content: string;
-}
-
 export enum ConnectionStatus {
   DISCONNECTED,
   CONNECTING,
@@ -14,7 +9,6 @@ export enum ConnectionStatus {
 export interface RootState {
   partyId: string;
   userId: string;
-  chatMessages: Message[];
   serverConnectionStatus: ConnectionStatus;
   users: Record<string, User>;
 }

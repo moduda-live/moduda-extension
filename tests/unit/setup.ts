@@ -1,3 +1,5 @@
+import "@testing-library/jest-dom";
+
 const mockMediaStream = {
   getAudioTracks: jest.fn(),
   getVideoTracks: jest.fn(),

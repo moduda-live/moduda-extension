@@ -1,12 +1,9 @@
-import { Store, MutationPayload } from "vuex";
 import Peer, { SignalData } from "simple-peer";
 import short from "short-uuid";
 import EventEmitter from "@/util/EventEmitter";
 import { SendMsgType, Communicator, PartyEvent, UserInfo } from "./types";
-import { ConnectionStatus, RootState } from "../store/types";
 import { log } from "@/util/log";
 import { User, OwnUser, OtherUser } from "../models/User";
-import syncStoreAndParty from "./syncStoreAndParty";
 
 export class Party extends EventEmitter<PartyEvent> {
   wsUrl: string;
@@ -125,10 +122,18 @@ export class Party extends EventEmitter<PartyEvent> {
         // from pov of initiator
         const { users } = msg.payload;
         log("Current number of party users: " + users.length);
+        if (users.length === 0) {
+          // own user is the creator of the party, and is thus automatically an admin
+          // reflects same code in server side
+          this.ownUser.setIsAdmin(true);
+        } else {
+          this.ownUser.setIsAdmin(false);
+        }
+
         users.forEach((userInfoString: string) => {
           const userInfo: UserInfo = JSON.parse(userInfoString);
-          const { userId, username } = userInfo;
-          const user = this.connectToPeer(userId, username);
+          const { userId, username, isAdmin } = userInfo;
+          const user = this.connectToPeer(userId, username, isAdmin);
           this.users.set(userId, user);
         });
         this.emit(PartyEvent.SET_USERS, Object.fromEntries(this.users));
@@ -143,7 +148,7 @@ export class Party extends EventEmitter<PartyEvent> {
       case "newForeignSignal": {
         const { senderId, username, signal } = msg.payload;
         log(`Received new signal from foreign user ${senderId}`);
-        console.log("signal: ", signal);
+        log("signal: " + signal);
         const user = this.users.get(senderId);
         if (user) {
           // User exists already, don't create new Peer again
@@ -153,6 +158,21 @@ export class Party extends EventEmitter<PartyEvent> {
           const user = this.addNewPeer(senderId, username, signal);
           this.users.set(senderId, user);
           this.emit(PartyEvent.USER_JOINED, user);
+        }
+        break;
+      }
+      case "newForeignMessage": {
+        const { senderId, content } = msg.payload;
+        log(`Received new messsage from foreign user ${senderId}`);
+        log(`content: ${content}`);
+        const sender = this.users.get(senderId);
+        if (sender) {
+          this.emit(PartyEvent.ADD_CHAT_MSG, {
+            isSenderAdmin: sender.isAdmin,
+            senderUsername: sender.username,
+            senderId: sender.id,
+            content
+          });
         }
         break;
       }
@@ -190,11 +210,14 @@ export class Party extends EventEmitter<PartyEvent> {
 
     peer.signal(receivedSignal);
 
-    return new OtherUser(senderId, username, this, peer);
+    const otherUser = new OtherUser(senderId, username, this, peer);
+    // first time new user joins, user is not given admin privileges
+    otherUser.setIsAdmin(false);
+    return otherUser;
   }
 
-  connectToPeer(userId: string, username: string): User {
-    log("Connecting to peer: " + userId);
+  connectToPeer(userId: string, username: string, isAdmin: boolean): User {
+    log(`Connecting to peer with id: ${userId}, isAdmin: ${isAdmin}`);
     const peer = new Peer({
       initiator: true,
       trickle: false,
@@ -217,7 +240,22 @@ export class Party extends EventEmitter<PartyEvent> {
       );
     });
 
-    return new OtherUser(userId, username, this, peer);
+    const otherUser = new OtherUser(userId, username, this, peer);
+    otherUser.setIsAdmin(isAdmin);
+    return otherUser;
+  }
+
+  sendMessage(senderId: string, content: string) {
+    console.log(`sender: ${senderId}`);
+    this.socket.send(
+      JSON.stringify({
+        type: SendMsgType.BROADCAST_MESSAGE,
+        payload: {
+          senderId,
+          content
+        }
+      })
+    );
   }
 }
 
@@ -233,28 +271,5 @@ export default function createParty(
   // create party
   const partyId = opts.partyId as string;
   const party = new Party(connectionUrl, parentCommunicator, partyId);
-
-  if (opts.store) {
-    const store = opts.store as Store<RootState>;
-
-    store.dispatch("setPartyId", party.id);
-
-    store.subscribe((mutation: MutationPayload, state: RootState) => {
-      if (state.serverConnectionStatus !== ConnectionStatus.CONNECTED) {
-        return;
-      }
-
-      if (
-        mutation.type === "ADD_CHAT_MSG" &&
-        mutation.payload.senderId === state.userId
-      ) {
-        // messsage from current user, emit to others in party
-      }
-    });
-    syncStoreAndParty(store, party);
-  }
-
-  party.connect();
-
   return party;
 }

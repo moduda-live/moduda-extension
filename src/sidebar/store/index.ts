@@ -1,16 +1,21 @@
 import Vue from "vue";
+import { Party } from "../services/Party";
 import Vuex, { StoreOptions } from "vuex";
-import { Message, RootState, ConnectionStatus } from "./types";
+import { RootState, ConnectionStatus } from "./types";
 import { User } from "../models/User";
+import { chat } from "./chat";
+import createSyncPartyAndStorePlugin from "./plugin/syncPartyAndStorePlugin";
 
 Vue.config.devtools = process.env.NODE_ENV === "development";
 Vue.use(Vuex);
 
 const store: StoreOptions<RootState> = {
+  modules: {
+    chat
+  },
   state: {
     partyId: "",
     userId: "",
-    chatMessages: [],
     serverConnectionStatus: ConnectionStatus.CONNECTING,
     users: {}
   },
@@ -22,17 +27,14 @@ const store: StoreOptions<RootState> = {
     serverDisconnected: state =>
       state.serverConnectionStatus === ConnectionStatus.DISCONNECTED,
     otherUsers: state => Object.values(state.users).filter(user => !user.isOwn),
-    myUser: state => Object.values(state.users).filter(user => user.isOwn)
+    myUser: state => Object.values(state.users).filter(user => user.isOwn)[0]
   },
   actions: {
-    setPartyId({ commit }, partyId) {
+    setPartyId({ commit }, partyId: string) {
       commit("SET_PARTY_ID", partyId);
     },
-    setUserId({ commit }, userId) {
+    setUserId({ commit }, userId: string) {
       commit("SET_USER_ID", userId);
-    },
-    addMessage({ commit }, msg) {
-      commit("ADD_CHAT_MESSAGE", msg);
     },
     connectingToServer({ commit }) {
       commit("SET_CONNECTION_STATUS", ConnectionStatus.CONNECTING);
@@ -66,9 +68,6 @@ const store: StoreOptions<RootState> = {
     SET_USER_ID(state, userId: string) {
       state.userId = userId;
     },
-    ADD_CHAT_MESSAGE(state, msg: Message) {
-      state.chatMessages.push(msg);
-    },
     SET_CONNECTION_STATUS(state, status) {
       state.serverConnectionStatus = status;
     },
@@ -101,4 +100,9 @@ const store: StoreOptions<RootState> = {
   }
 };
 
-export default new Vuex.Store<RootState>(store);
+export default function createStoreWithParty(party: Party) {
+  return new Vuex.Store<RootState>({
+    ...store,
+    plugins: [createSyncPartyAndStorePlugin(party)]
+  });
+}
