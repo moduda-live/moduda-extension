@@ -1,19 +1,19 @@
 import Vue from "vue";
 import Vuex, { StoreOptions } from "vuex";
-import { Message, RootState, ConnectionStatus } from "./types";
+import { RootState, ConnectionStatus } from "./types";
 import { User } from "../models/User";
-import { MAX_NUM_CHAT_MESSAGES } from "@/util/constants";
+import { chat } from "./chat";
 
 Vue.config.devtools = process.env.NODE_ENV === "development";
 Vue.use(Vuex);
 
 const store: StoreOptions<RootState> = {
+  modules: {
+    chat
+  },
   state: {
     partyId: "",
     userId: "",
-    chatMessages: [],
-    chatHidden: false,
-    chatAnchored: false,
     serverConnectionStatus: ConnectionStatus.CONNECTING,
     users: {}
   },
@@ -33,9 +33,6 @@ const store: StoreOptions<RootState> = {
     },
     setUserId({ commit }, userId: string) {
       commit("SET_USER_ID", userId);
-    },
-    addMessage({ commit }, msg: Message) {
-      commit("ADD_CHAT_MESSAGE", msg);
     },
     connectingToServer({ commit }) {
       commit("SET_CONNECTION_STATUS", ConnectionStatus.CONNECTING);
@@ -68,30 +65,6 @@ const store: StoreOptions<RootState> = {
     },
     SET_USER_ID(state, userId: string) {
       state.userId = userId;
-    },
-    ADD_CHAT_MESSAGE(state, msg: Message) {
-      if (state.chatMessages.length >= MAX_NUM_CHAT_MESSAGES) {
-        // O(N), but for small array size, Chrome's V8 takes it to constant time
-        // https://bugs.chromium.org/p/v8/issues/detail?id=3059
-        // if the size was bigger, I'd consider using a CircularBuffer-based implementation of Queue
-        state.chatMessages.shift();
-      }
-      state.chatMessages.push(msg);
-    },
-    CLEAR_CHAT(state) {
-      state.chatMessages = [];
-    },
-    HIDE_CHAT(state) {
-      state.chatHidden = true;
-    },
-    SHOW_CHAT(state) {
-      state.chatHidden = false;
-    },
-    ACTIVATE_CHAT_ANCHOR(state) {
-      state.chatAnchored = true;
-    },
-    DEACTIVATE_CHAT_ANCHOR(state) {
-      state.chatAnchored = false;
     },
     SET_CONNECTION_STATUS(state, status) {
       state.serverConnectionStatus = status;

@@ -26,7 +26,7 @@ export default Vue.extend({
     ...mapGetters(["myUser"])
   },
   methods: {
-    ...mapActions(["addMessage"]),
+    ...mapActions("chat", ["addMessage"]),
     sendMessage() {
       if (!this.message) {
         return;

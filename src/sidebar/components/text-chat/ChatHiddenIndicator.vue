@@ -2,7 +2,7 @@
   <div class="chat-hidden">
     <Icon size="35" type="md-eye-off" class="chat-hidden__icon" />
     <div class="chat-hidden__header">Chat hidden</div>
-    <Button @click="parent.$store.commit('SHOW_CHAT')" ghost size="small"
+    <Button @click="parent.$store.commit('chat/SHOW_CHAT')" ghost size="small"
       >Show again</Button
     >
   </div>
