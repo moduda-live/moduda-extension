@@ -1,13 +1,12 @@
-<template>
-  <span>{{ content }}</span>
+<template functional>
+  <span>{{ props.content }}</span>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 
 export default Vue.extend({
-  name: "RenderedText",
-  props: ["content"]
+  name: "RenderedText"
 });
 </script>
 
