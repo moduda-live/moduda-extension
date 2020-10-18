@@ -1,8 +1,10 @@
 import Vue from "vue";
+import { Party } from "../services/Party";
 import Vuex, { StoreOptions } from "vuex";
 import { RootState, ConnectionStatus } from "./types";
 import { User } from "../models/User";
 import { chat } from "./chat";
+import createSyncPartyAndStorePlugin from "./plugin/syncPartyAndStorePlugin";
 
 Vue.config.devtools = process.env.NODE_ENV === "development";
 Vue.use(Vuex);
@@ -98,4 +100,9 @@ const store: StoreOptions<RootState> = {
   }
 };
 
-export default new Vuex.Store<RootState>(store);
+export default function createStoreWithParty(party: Party) {
+  return new Vuex.Store<RootState>({
+    ...store,
+    plugins: [createSyncPartyAndStorePlugin(party)]
+  });
+}

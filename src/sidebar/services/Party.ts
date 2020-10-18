@@ -1,12 +1,9 @@
-import { Store, MutationPayload } from "vuex";
 import Peer, { SignalData } from "simple-peer";
 import short from "short-uuid";
 import EventEmitter from "@/util/EventEmitter";
 import { SendMsgType, Communicator, PartyEvent, UserInfo } from "./types";
-import { ConnectionStatus, RootState } from "../store/types";
 import { log } from "@/util/log";
 import { User, OwnUser, OtherUser } from "../models/User";
-import syncStoreAndParty from "./syncStoreAndParty";
 
 export class Party extends EventEmitter<PartyEvent> {
   wsUrl: string;
@@ -233,28 +230,5 @@ export default function createParty(
   // create party
   const partyId = opts.partyId as string;
   const party = new Party(connectionUrl, parentCommunicator, partyId);
-
-  if (opts.store) {
-    const store = opts.store as Store<RootState>;
-
-    store.dispatch("setPartyId", party.id);
-
-    store.subscribe((mutation: MutationPayload, state: RootState) => {
-      if (state.serverConnectionStatus !== ConnectionStatus.CONNECTED) {
-        return;
-      }
-
-      if (
-        mutation.type === "ADD_CHAT_MSG" &&
-        mutation.payload.senderId === state.userId
-      ) {
-        // messsage from current user, emit to others in party
-      }
-    });
-    syncStoreAndParty(store, party);
-  }
-
-  party.connect();
-
   return party;
 }

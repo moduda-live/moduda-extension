@@ -16,10 +16,10 @@ import {
 } from "iview";
 import lang from "iview/dist/locale/en-US";
 import "@/assets/styles/iview.less";
-import store from "./store";
 import partyPlugin from "./plugins/partyPlugin";
 import createParty from "./services/Party";
 import ParentCommunicator from "./services/ParentCommunicator";
+import createStoreWithParty from "./store";
 
 // get partyId if it exists
 const searchParams = new URLSearchParams(window.location.search);
@@ -51,13 +51,19 @@ Vue.component("Input", Input);
 Vue.component("Divider", Divider);
 Vue.component("Avatar", Avatar);
 
-// custom party plugin
+// custom vue plugin to expose Party singleton as $party
 Vue.use(partyPlugin);
+
 const parentCommunicator = new ParentCommunicator();
 const party = createParty("ws://localhost:8080", parentCommunicator, {
-  partyId,
-  store
+  partyId
 });
+
+// vuex
+const store = createStoreWithParty(party);
+
+// now connect party, after setting up store-party sync
+party.connect();
 
 new Vue({
   el: "#app",
