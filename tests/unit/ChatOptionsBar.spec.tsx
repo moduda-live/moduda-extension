@@ -17,8 +17,7 @@ describe("ChatOptionsBar.vue", () => {
   beforeEach(() => {
     mutations = {
       CLEAR_CHAT: jest.fn(),
-      SHOW_CHAT: jest.fn(),
-      HIDE_CHAT: jest.fn()
+      SHOW_CHAT: jest.fn()
     };
     store = new Vuex.Store({
       modules: {
@@ -42,12 +41,6 @@ describe("ChatOptionsBar.vue", () => {
     const btn = wrapper.findComponent({ ref: "clearChat" });
     btn.trigger("click");
     expect(mutations.CLEAR_CHAT).toHaveBeenCalled();
-  });
-
-  it("should commit a HIDE_CHAT mutation when hideChat icon is clicked", () => {
-    const btn = wrapper.findComponent({ ref: "hideChat" });
-    btn.trigger("click");
-    expect(mutations.HIDE_CHAT).toHaveBeenCalled();
   });
 
   it("should commit a SHOW_CHAT mutation when showChat icon is clicked", () => {

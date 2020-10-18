@@ -8,7 +8,8 @@ export const chat: Module<ChatState, RootState> = {
   state: {
     chatMessages: [],
     chatHidden: false,
-    chatAnchored: false
+    chatAnchored: false,
+    chatScrollPosition: 0
   },
   actions: {
     addMessage({ commit }, msg: Message) {
@@ -26,9 +27,11 @@ export const chat: Module<ChatState, RootState> = {
       state.chatMessages.push(msg);
     },
     CLEAR_CHAT(state) {
+      state.chatScrollPosition = 0;
       state.chatMessages = [];
     },
-    HIDE_CHAT(state) {
+    HIDE_CHAT(state, currentScrollPosition: number) {
+      state.chatScrollPosition = currentScrollPosition;
       state.chatHidden = true;
     },
     SHOW_CHAT(state) {
