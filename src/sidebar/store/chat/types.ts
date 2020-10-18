@@ -1,6 +1,7 @@
 export interface Message {
   isSenderAdmin: boolean;
   senderUsername: string;
+  senderId: string;
   content: string;
 }
 

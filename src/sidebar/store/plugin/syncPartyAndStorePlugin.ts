@@ -3,6 +3,7 @@ import { PartyEvent } from "@/sidebar/services/types";
 import { Store, MutationPayload } from "vuex";
 import { ConnectionStatus, RootState } from "../types";
 import { User } from "@/sidebar/models/User";
+import { Message } from "../chat/types";
 
 export default function createSyncPartyAndStorePlugin(party: Party) {
   return (store: Store<RootState>) => {
@@ -17,8 +18,8 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
       .on(PartyEvent.DISCONNECTED, () => {
         store.dispatch("disconnectedFromServer");
       })
-      .on(PartyEvent.ADD_CHAT_MSG, msg => {
-        store.dispatch("addMessage", msg);
+      .on(PartyEvent.ADD_CHAT_MSG, (msg: Message) => {
+        store.dispatch("chat/addMessage", msg);
       })
       .on(PartyEvent.SET_MY_USER_ID, userId => {
         store.dispatch("setUserId", userId);
@@ -47,11 +48,13 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
         return;
       }
 
+      console.log(`mutation: ${mutation.type}`);
       if (
-        mutation.type === "ADD_CHAT_MSG" &&
+        mutation.type === "chat/ADD_CHAT_MESSAGE" &&
         mutation.payload.senderId === state.userId
       ) {
         // messsage from current user, emit to others in party
+        party.sendMessage(mutation.payload.senderId, mutation.payload.content);
       }
     });
   };
