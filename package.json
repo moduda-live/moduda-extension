@@ -21,6 +21,7 @@
     "vuex": "^3.4.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^5.11.4",
     "@types/firefox-webext-browser": "^67.0.2",
     "@types/jest": "^24.0.19",
     "@types/lodash.throttle": "^4.1.6",

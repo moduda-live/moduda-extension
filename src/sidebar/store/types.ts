@@ -16,6 +16,8 @@ export interface RootState {
   partyId: string;
   userId: string;
   chatMessages: Message[];
+  chatHidden: boolean;
+  chatAnchored: boolean;
   serverConnectionStatus: ConnectionStatus;
   users: Record<string, User>;
 }

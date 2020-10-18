@@ -12,6 +12,8 @@ const store: StoreOptions<RootState> = {
     partyId: "",
     userId: "",
     chatMessages: [],
+    chatHidden: false,
+    chatAnchored: false,
     serverConnectionStatus: ConnectionStatus.CONNECTING,
     users: {}
   },
@@ -75,6 +77,21 @@ const store: StoreOptions<RootState> = {
         state.chatMessages.shift();
       }
       state.chatMessages.push(msg);
+    },
+    CLEAR_CHAT(state) {
+      state.chatMessages = [];
+    },
+    HIDE_CHAT(state) {
+      state.chatHidden = true;
+    },
+    SHOW_CHAT(state) {
+      state.chatHidden = false;
+    },
+    ACTIVATE_CHAT_ANCHOR(state) {
+      state.chatAnchored = true;
+    },
+    DEACTIVATE_CHAT_ANCHOR(state) {
+      state.chatAnchored = false;
     },
     SET_CONNECTION_STATUS(state, status) {
       state.serverConnectionStatus = status;
