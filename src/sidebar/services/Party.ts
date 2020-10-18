@@ -122,10 +122,18 @@ export class Party extends EventEmitter<PartyEvent> {
         // from pov of initiator
         const { users } = msg.payload;
         log("Current number of party users: " + users.length);
+        if (users.length === 0) {
+          // own user is the creator of the party, and is thus automatically an admin
+          // reflects same code in server side
+          this.ownUser.setIsAdmin(true);
+        } else {
+          this.ownUser.setIsAdmin(false);
+        }
+
         users.forEach((userInfoString: string) => {
           const userInfo: UserInfo = JSON.parse(userInfoString);
-          const { userId, username } = userInfo;
-          const user = this.connectToPeer(userId, username);
+          const { userId, username, isAdmin } = userInfo;
+          const user = this.connectToPeer(userId, username, isAdmin);
           this.users.set(userId, user);
         });
         this.emit(PartyEvent.SET_USERS, Object.fromEntries(this.users));
@@ -202,11 +210,14 @@ export class Party extends EventEmitter<PartyEvent> {
 
     peer.signal(receivedSignal);
 
-    return new OtherUser(senderId, username, this, peer);
+    const otherUser = new OtherUser(senderId, username, this, peer);
+    // first time new user joins, user is not given admin privileges
+    otherUser.setIsAdmin(false);
+    return otherUser;
   }
 
-  connectToPeer(userId: string, username: string): User {
-    log("Connecting to peer: " + userId);
+  connectToPeer(userId: string, username: string, isAdmin: boolean): User {
+    log(`Connecting to peer with id: ${userId}, isAdmin: ${isAdmin}`);
     const peer = new Peer({
       initiator: true,
       trickle: false,
@@ -229,7 +240,9 @@ export class Party extends EventEmitter<PartyEvent> {
       );
     });
 
-    return new OtherUser(userId, username, this, peer);
+    const otherUser = new OtherUser(userId, username, this, peer);
+    otherUser.setIsAdmin(isAdmin);
+    return otherUser;
   }
 
   sendMessage(senderId: string, content: string) {
