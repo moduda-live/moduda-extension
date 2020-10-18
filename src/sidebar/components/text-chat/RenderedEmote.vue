@@ -1,6 +1,6 @@
-<template>
+<template functional>
   <div class="chat-emote__container">
-    <img class="chat-emote__image" :src="content" />
+    <img class="chat-emote__image" :src="props.content" />
   </div>
 </template>
 
@@ -8,8 +8,7 @@
 import Vue from "vue";
 
 export default Vue.extend({
-  name: "RenderedTextEmote",
-  props: ["content"]
+  name: "RenderedTextEmote"
 });
 </script>
 
