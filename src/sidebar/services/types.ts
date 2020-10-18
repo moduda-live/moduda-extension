@@ -23,7 +23,8 @@ export enum PartyEvent {
 export enum SendMsgType {
   GET_CURRENT_PARTY_USERS = "getCurrentPartyUsers",
   RETURN_SIGNAL = "returnSignal",
-  NEW_SIGNAL = "newSignal"
+  NEW_SIGNAL = "newSignal",
+  BROADCAST_MESSAGE = "broadcastMessage"
 }
 
 export interface Communicator {

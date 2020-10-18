@@ -140,7 +140,7 @@ export class Party extends EventEmitter<PartyEvent> {
       case "newForeignSignal": {
         const { senderId, username, signal } = msg.payload;
         log(`Received new signal from foreign user ${senderId}`);
-        console.log("signal: ", signal);
+        log("signal: " + signal);
         const user = this.users.get(senderId);
         if (user) {
           // User exists already, don't create new Peer again
@@ -150,6 +150,21 @@ export class Party extends EventEmitter<PartyEvent> {
           const user = this.addNewPeer(senderId, username, signal);
           this.users.set(senderId, user);
           this.emit(PartyEvent.USER_JOINED, user);
+        }
+        break;
+      }
+      case "newForeignMessage": {
+        const { senderId, content } = msg.payload;
+        log(`Received new messsage from foreign user ${senderId}`);
+        log(`content: ${content}`);
+        const sender = this.users.get(senderId);
+        if (sender) {
+          this.emit(PartyEvent.ADD_CHAT_MSG, {
+            isSenderAdmin: sender.isAdmin,
+            senderUsername: sender.username,
+            senderId: sender.id,
+            content
+          });
         }
         break;
       }
@@ -215,6 +230,19 @@ export class Party extends EventEmitter<PartyEvent> {
     });
 
     return new OtherUser(userId, username, this, peer);
+  }
+
+  sendMessage(senderId: string, content: string) {
+    console.log(`sender: ${senderId}`);
+    this.socket.send(
+      JSON.stringify({
+        type: SendMsgType.BROADCAST_MESSAGE,
+        payload: {
+          senderId,
+          content
+        }
+      })
+    );
   }
 }
 
