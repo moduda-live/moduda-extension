@@ -26,10 +26,14 @@ function setUpParty(partyId?: string, userIdToAdd?: string) {
   const mockedParent: jest.Mocked<CommunicatorMock> = new CommunicatorMock() as any;
   const party = new Party("ws://localhost:8080", mockedParent, partyId);
   if (userIdToAdd) {
-    party.users.set(
+    const otherUser = new OtherUser(
       userIdToAdd,
-      new OtherUser(userIdToAdd, "mockedUsername", party, new Peer())
+      "mockedUsername",
+      party,
+      new Peer()
     );
+    otherUser.setIsAdmin(false);
+    party.users.set(userIdToAdd, otherUser);
   }
   return party;
 }
@@ -122,30 +126,46 @@ describe("Party.ts", () => {
       });
     });
 
-    it("should emit PartyEvent.SET_OTHER_USERS the list of current party users received from server", async () => {
+    it("should emit PartyEvent.SET_USERS with the own user and list of current party users received from server", async () => {
       const party = setUpParty();
       const onSetUsers = jest.fn();
       party.on(PartyEvent.SET_USERS, onSetUsers);
       party.connect();
       await mockServer.connected;
+      // first send fake userId to init own user
+      const fakeOwnUserId = short.uuid();
+      mockServer.send({
+        type: "userId",
+        payload: {
+          userId: fakeOwnUserId
+        }
+      });
       mockServer.send({
         type: "currentPartyUsers",
         payload: {
           users: [1, 2, 3].map(number => {
             return JSON.stringify({
               userId: `userId${number}`,
-              username: `username${number}`
+              username: `username${number}`,
+              isAdmin: number === 1
             });
           })
         }
       });
 
-      let expectedUsers: any = {};
+      let expectedUsers: any = {
+        [fakeOwnUserId]: expect.objectContaining({
+          id: fakeOwnUserId,
+          username: undefined, // parentCommunicator mock doesnt mock getUsername()
+          isAdmin: false,
+          isOwn: true
+        })
+      };
       [1, 2, 3].forEach((number: number) => {
         expectedUsers[`userId${number}`] = expect.objectContaining({
           id: `userId${number}`,
           username: `username${number}`,
-          isAdmin: false,
+          isAdmin: number === 1,
           isOwn: false
         });
       });
@@ -191,6 +211,21 @@ describe("Party.ts", () => {
         }
       });
       expect(onUserJoined).not.toHaveBeenCalled();
+    });
+
+    it("should send 'broadcastMessage' message to websocket server after sendMesasge() ", async () => {
+      const party = setUpParty();
+      party.connect();
+      await mockServer.connected;
+
+      party.sendMessage("testUserId", "TestContent");
+      await expect(mockServer).toReceiveMessage({
+        type: "broadcastMessage",
+        payload: {
+          senderId: "testUserId",
+          content: "TestContent"
+        }
+      });
     });
   });
 });

@@ -4,6 +4,7 @@
     <div class="divider" />
     <InviteLink />
     <VoiceChatPanel />
+    <TextChat />
   </div>
 </template>
 
@@ -12,13 +13,15 @@ import Vue from "vue";
 import Topbar from "./Topbar.vue";
 import InviteLink from "./InviteLink.vue";
 import VoiceChatPanel from "./VoiceChatPanel.vue";
+import TextChat from "./text-chat/TextChat.vue";
 
 export default Vue.extend({
   name: "PartyUI",
   components: {
     Topbar,
     InviteLink,
-    VoiceChatPanel
+    VoiceChatPanel,
+    TextChat
   },
   data() {
     return {};
@@ -30,12 +33,14 @@ export default Vue.extend({
 .party {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .divider {
   height: 1px;
   width: 100%;
-  background-color: @theme-muted-dark-color;
+  background-color: @theme-dark-muted;
   margin-bottom: 10px;
 }
 </style>

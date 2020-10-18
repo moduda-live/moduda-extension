@@ -64,7 +64,7 @@ export default Vue.extend({
 }
 
 .tippy-box[data-theme~="settings"] {
-  background-color: @theme-darker-primary-color;
+  background-color: @theme-primary-dark;
   border-radius: 5px;
   padding: 7px;
 
@@ -75,7 +75,7 @@ export default Vue.extend({
 
     .ivu-cell {
       border-radius: 5px;
-      color: @theme-white-color;
+      color: @theme-white;
       padding: 6px 10px;
 
       &:hover,
@@ -85,8 +85,8 @@ export default Vue.extend({
     }
 
     .ivu-switch-checked {
-      border-color: @theme-bright-color;
-      background-color: @theme-bright-color;
+      border-color: @theme-orange;
+      background-color: @theme-orange;
     }
   }
 }

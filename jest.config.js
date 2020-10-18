@@ -3,5 +3,5 @@ module.exports = {
   // restoreMocks: true,
   // clearMocks: true,
   // resetMocks: true,
-  setupFiles: ["<rootDir>/tests/unit/setup.ts"]
+  setupFilesAfterEnv: ["<rootDir>/tests/unit/setup.ts"]
 };

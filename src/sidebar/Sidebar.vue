@@ -29,12 +29,33 @@ export default {
 </script>
 
 <style lang="less">
+* {
+  box-sizing: border-box;
+  > * {
+    &::-webkit-scrollbar {
+      background-color: transparent;
+      width: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+      border-radius: 2px;
+    }
+
+    &:hover {
+      &::-webkit-scrollbar-thumb {
+        background-color: @theme-primary-dark;
+      }
+    }
+  }
+}
+
 html,
 body {
   height: 100%;
   width: 100%;
   border: 0px;
   margin: 0px;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -44,6 +65,7 @@ body {
   align-items: center;
   justify-content: center;
   background-color: @theme-primary-color;
+  overflow: hidden;
 }
 
 .serverConnectError {
@@ -60,5 +82,23 @@ body {
     margin-top: 5px;
     font-size: 15px;
   }
+}
+
+// global tippy styles
+.tippy-box {
+  outline: none;
+}
+
+.tippy-box[data-theme~="dark"] {
+  background-color: @theme-primary-dark;
+  color: @theme-white;
+  padding: 3px 5px;
+  border-radius: 2px;
+  font-size: 11px;
+}
+
+.tippy-box[data-reference-hidden],
+.tippy-box[data-escaped] {
+  opacity: 0;
 }
 </style>
