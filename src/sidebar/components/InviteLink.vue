@@ -116,6 +116,12 @@ export default Vue.extend({
   white-space: nowrap;
   overflow-x: scroll;
   overflow-y: hidden;
+
+  &:hover {
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+    }
+  }
 }
 
 button {
