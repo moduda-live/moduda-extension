@@ -1,17 +1,17 @@
 <template>
-  <div class="partyUser" :class="{ userSpeaking: user.isSpeaking }">
+  <div class="user" :class="{ 'user--speaking': user.isSpeaking }">
     <Avatar
       style="color: #f56a00;background-color: #fde3cf"
       size="small"
-      class="userAvatar"
+      class="user__avatar"
       >{{ usernameFirstChar }}</Avatar
     >
-    <h4 class="userName">{{ user.username }}</h4>
+    <h4 class="user__name">{{ user.username }}</h4>
     <audio autoplay ref="userAudio" />
     <div class="mic">
       <Icon
         size="17"
-        class="userSpeakingIndicator icon"
+        class="icon--speaking"
         type="md-megaphone"
         v-show="user.isSpeaking"
       />
@@ -130,7 +130,7 @@ export default Vue.extend({
 </script>
 
 <style lang="less" scoped>
-.partyUser {
+.user {
   color: @theme-grey;
   display: flex;
   flex-direction: row;
@@ -146,18 +146,18 @@ export default Vue.extend({
   }
 }
 
-.userAvatar {
+.user__avatar {
   margin-right: 8px;
   box-sizing: border-box;
 }
 
-.userSpeaking {
-  .userName {
+.user--speaking {
+  .user__name {
     color: @theme-white;
   }
 }
 
-.userName {
+.user__name {
   font-size: 13px;
   font-weight: 400;
   display: flex;
@@ -170,10 +170,6 @@ export default Vue.extend({
   align-items: center;
 }
 
-.userSpeakingIndicator {
-  margin-right: 5px;
-}
-
 .icon {
   padding: 3px;
   border-radius: 3px;
@@ -181,6 +177,13 @@ export default Vue.extend({
 
   &:hover {
     background-color: @theme-primary-dark-less;
+  }
+
+  &--speaking {
+    padding: 3px;
+    border-radius: 3px;
+    cursor: default;
+    margin-right: 5px;
   }
 }
 </style>
