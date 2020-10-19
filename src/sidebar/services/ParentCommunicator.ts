@@ -15,6 +15,7 @@ export default class ParentCommunicator implements Communicator {
         forwardSeek: this.forwardSeek
       }
     });
+
     return connection.promise.then(parent => {
       this.parentConnection = parent;
     });
@@ -28,15 +29,27 @@ export default class ParentCommunicator implements Communicator {
     this.party = party;
   }
 
+  async selectVideo(autoResolveToLargestVideo: boolean) {
+    const result = await this.parentConnection.selectVideo(
+      autoResolveToLargestVideo
+    );
+    if (result instanceof Error) {
+      throw result;
+    }
+  }
+
   forwardPlay() {
     console.log("Forwarding play event");
+    this.parentConnection.forwardPlay();
   }
 
   forwardPause() {
     console.log("Forwarding pause event");
+    this.parentConnection.forwardPause();
   }
 
   forwardSeek() {
     console.log("Forwarding seek event");
+    this.parentConnection.forwardSeek();
   }
 }

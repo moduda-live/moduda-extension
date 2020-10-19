@@ -8,6 +8,7 @@ export interface UserInfo {
 }
 
 export enum PartyEvent {
+  VIDEO_NOT_FOUND,
   CONNECTING,
   CONNECTED,
   DISCONNECTED,
@@ -34,6 +35,7 @@ export interface Communicator {
   init(): Promise<void>;
   getUsername(): Promise<string>;
   setParty(party: Party): void;
+  selectVideo(autoResolveToLargestVideo: boolean): Promise<any>;
   forwardPlay(): void;
   forwardPause(): void;
   forwardSeek(): void;

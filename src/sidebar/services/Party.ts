@@ -27,35 +27,45 @@ export class Party extends EventEmitter<PartyEvent> {
   }
 
   setUpEventHandlers() {
-    // ADD_CHAT_MSG, CONNECTING, CONNECTED, DISCONNECTED, SET_USER_ID event callbacks are registered in syncStoreAndParty.ts
+    // Note: More event handlers registered in store / plugin / syncPartyAndStorePlugin.ts
+
     this.on(PartyEvent.USER_JOINED, () => {
       //TODO: Show notification via parentCommunicator
-      log("User joined");
+      log("User joined [inside Party]");
     });
     this.on(PartyEvent.USER_LEFT, userId => {
       //TODO: Show notification via parentCommunicator
-      log("User left");
+      log("User left [inside Party]");
       this.users.delete(userId);
     });
     this.on(PartyEvent.USER_PAUSED, () => {
       //TODO: Show notification via parentCommunicator
-      log("User paused");
+      log("User paused [inside Party]");
     });
     this.on(PartyEvent.USER_PLAYED, () => {
       //TODO: Show notification via parentCommunicator
-      log("User played");
+      log("User played [inside Party]");
     });
   }
 
   async connect() {
-    this.emit(PartyEvent.CONNECTING);
     log("Starting party...");
+
     await this.parentCommunicator.init();
-    this.setUpEventHandlers();
+    try {
+      await this.parentCommunicator.selectVideo(true);
+    } catch (err) {
+      this.emit(PartyEvent.VIDEO_NOT_FOUND);
+      return;
+    }
     const username = await this.parentCommunicator.getUsername();
+    this.emit(PartyEvent.CONNECTING);
+
+    // user selected video to track, now let's connect
+    this.setUpEventHandlers();
     this.ownUser = await new OwnUser(username, this).mediaStreamInitialized;
     this.socket = new WebSocket(this.wsUrl);
-    this.registerWebsocketHandlers(); // onopen has to be in the same section due to EventLoop
+    this.registerWebsocketHandlers(); // onopen has to be in the same section to execute in same EventLoop
   }
 
   registerWebsocketHandlers() {

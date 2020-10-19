@@ -67,18 +67,30 @@ describe("Party.ts", () => {
       mockServer = new WS("ws://localhost:8080", {
         jsonProtocol: true
       });
-      //(CommunicatorMock as jest.Mock).mockClear();
     });
 
     afterEach(() => {
       WS.clean();
     });
 
-    it("should emit PartyEvent.CONNECTING event", () => {
+    it("should emit PartyEvent.VIDEO_NOT_FOUND if no video on screen", async () => {
+      jest
+        .spyOn(CommunicatorMock.prototype, "selectVideo")
+        .mockImplementationOnce(() => {
+          throw new Error("Video not found");
+        });
+      const party = setUpParty();
+      const onVideoNotFound = jest.fn();
+      party.on(PartyEvent.VIDEO_NOT_FOUND, onVideoNotFound);
+      await party.connect();
+      expect(onVideoNotFound).toHaveBeenCalled();
+    });
+
+    it("should emit PartyEvent.CONNECTING event", async () => {
       const party = setUpParty();
       const onConnecting = jest.fn();
       party.on(PartyEvent.CONNECTING, onConnecting);
-      party.connect();
+      await party.connect();
       expect(onConnecting).toHaveBeenCalled();
     });
 
@@ -86,7 +98,7 @@ describe("Party.ts", () => {
       const party = setUpParty();
       const onConnected = jest.fn();
       party.on(PartyEvent.CONNECTED, onConnected);
-      party.connect();
+      await party.connect();
       await mockServer.connected;
       expect(onConnected).toHaveBeenCalled();
     });
@@ -95,7 +107,7 @@ describe("Party.ts", () => {
       const party = setUpParty();
       const onSetUserId = jest.fn();
       party.on(PartyEvent.SET_MY_USER_ID, onSetUserId);
-      party.connect();
+      await party.connect();
       await mockServer.connected;
       const userId = short.uuid();
       mockServer.send({
@@ -109,7 +121,7 @@ describe("Party.ts", () => {
 
     it("should send 'getCurrentPartyUsers' message to websocket server after receiving userId from server", async () => {
       const party = setUpParty();
-      party.connect();
+      await party.connect();
       await mockServer.connected;
       mockServer.send({
         type: "userId",
@@ -130,7 +142,7 @@ describe("Party.ts", () => {
       const party = setUpParty();
       const onSetUsers = jest.fn();
       party.on(PartyEvent.SET_USERS, onSetUsers);
-      party.connect();
+      await party.connect();
       await mockServer.connected;
       // first send fake userId to init own user
       const fakeOwnUserId = short.uuid();
@@ -176,7 +188,7 @@ describe("Party.ts", () => {
       const party = setUpParty();
       const onUserJoined = jest.fn();
       party.on(PartyEvent.USER_JOINED, onUserJoined);
-      party.connect();
+      await party.connect();
       await mockServer.connected;
       mockServer.send({
         type: "newForeignSignal",
@@ -200,7 +212,7 @@ describe("Party.ts", () => {
       const party = setUpParty(undefined, "user1");
       const onUserJoined = jest.fn();
       party.on(PartyEvent.USER_JOINED, onUserJoined);
-      party.connect();
+      await party.connect();
       await mockServer.connected;
       mockServer.send({
         type: "newForeignSignal",
@@ -215,7 +227,7 @@ describe("Party.ts", () => {
 
     it("should send 'broadcastMessage' message to websocket server after sendMesasge() ", async () => {
       const party = setUpParty();
-      party.connect();
+      await party.connect();
       await mockServer.connected;
 
       party.sendMessage("testUserId", "TestContent");

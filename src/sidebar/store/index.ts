@@ -14,12 +14,15 @@ const store: StoreOptions<RootState> = {
     chat
   },
   state: {
+    videoNotFound: false,
     partyId: "",
     userId: "",
-    serverConnectionStatus: ConnectionStatus.CONNECTING,
+    serverConnectionStatus: ConnectionStatus.BEFORE_CONNECT,
     users: {}
   },
   getters: {
+    serverBeforeConnect: state =>
+      state.serverConnectionStatus === ConnectionStatus.BEFORE_CONNECT,
     serverConnecting: state =>
       state.serverConnectionStatus === ConnectionStatus.CONNECTING,
     serverConnected: state =>
@@ -30,6 +33,9 @@ const store: StoreOptions<RootState> = {
     myUser: state => Object.values(state.users).filter(user => user.isOwn)[0]
   },
   actions: {
+    setVideoNotFound({ commit }, isVideoNotFound: boolean) {
+      commit("SET_VIDEO_NOT_FOUND", isVideoNotFound);
+    },
     setPartyId({ commit }, partyId: string) {
       commit("SET_PARTY_ID", partyId);
     },
@@ -62,6 +68,9 @@ const store: StoreOptions<RootState> = {
     }
   },
   mutations: {
+    SET_VIDEO_NOT_FOUND(state, isVideoNotFound: boolean) {
+      state.videoNotFound = isVideoNotFound;
+    },
     SET_PARTY_ID(state, partyId: string) {
       state.partyId = partyId;
     },
