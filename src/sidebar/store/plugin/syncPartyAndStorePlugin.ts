@@ -9,6 +9,9 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
   return (store: Store<RootState>) => {
     // Sync party -> store
     party
+      .on(PartyEvent.VIDEO_NOT_FOUND, () => {
+        store.dispatch("setVideoNotFound", true);
+      })
       .on(PartyEvent.CONNECTING, () => {
         store.dispatch("connectingToServer");
       })

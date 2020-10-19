@@ -1,29 +1,41 @@
 <template>
   <div class="sidebar">
+    <ErrorView :message="videoNotFoundErrorMsg" v-if="videoNotFound" />
+    <SetupView v-if="!videoNotFound && serverBeforeConnect" />
     <ServerConnectionLoadIndicator v-if="serverConnecting" />
     <PartyUI v-if="serverConnected" />
-    <div v-if="serverDisconnected" class="serverConnectError">
-      <Icon type="md-warning" />
-      <div class="connectErrorText">
-        Could not connect to server. Try again later.
-      </div>
-    </div>
+    <ErrorView :message="serverConnectErrorMsg" v-if="serverDisconnected" />
   </div>
 </template>
 
 <script>
 import ServerConnectionLoadIndicator from "@/sidebar/components/ServerConnectionLoadIndicator.vue";
-import PartyUI from "@/sidebar/components/PartyUI.vue";
-import { mapGetters } from "vuex";
+import PartyUI from "./components/PartyUI.vue";
+import SetupView from "./components/SetupView.vue";
+import ErrorView from "./components/ErrorView.vue";
+import { mapState, mapGetters } from "vuex";
 
 export default {
   name: "Sidebar",
   components: {
     ServerConnectionLoadIndicator,
-    PartyUI
+    PartyUI,
+    SetupView,
+    ErrorView
+  },
+  created() {
+    this.serverConnectErrorMsg =
+      "Could not connect to server.\nTry again later.";
+    this.videoNotFoundErrorMsg = "Video not found.\nTry again in another page.";
   },
   computed: {
-    ...mapGetters(["serverConnecting", "serverConnected", "serverDisconnected"])
+    ...mapState(["videoNotFound"]),
+    ...mapGetters([
+      "serverBeforeConnect",
+      "serverConnecting",
+      "serverConnected",
+      "serverDisconnected"
+    ])
   }
 };
 </script>
@@ -58,32 +70,6 @@ body {
   overflow: hidden;
 }
 
-.sidebar {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: @theme-primary-color;
-  overflow: hidden;
-}
-
-.serverConnectError {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: #fff;
-  font-size: 25px;
-  max-width: 200px;
-
-  .connectErrorText {
-    margin-top: 5px;
-    font-size: 15px;
-  }
-}
-
 // global tippy styles
 .tippy-box {
   outline: none;
@@ -100,5 +86,17 @@ body {
 .tippy-box[data-reference-hidden],
 .tippy-box[data-escaped] {
   opacity: 0;
+}
+</style>
+
+<style lang="less" scoped>
+.sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: @theme-primary-color;
+  overflow: hidden;
 }
 </style>
