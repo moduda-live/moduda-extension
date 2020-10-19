@@ -176,7 +176,7 @@ export default Vue.extend({
   transition: 0.2s all ease;
 
   &:hover {
-    background-color: @theme-primary-dark-less;
+    background-color: @theme-primary-dark-medium;
   }
 
   &--speaking {
