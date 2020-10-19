@@ -78,7 +78,7 @@ const store: StoreOptions<RootState> = {
       Vue.set(state.users, user.id, user);
     },
     REMOVE_USER(state, userId: string) {
-      delete state.users[userId];
+      Vue.delete(state.users, userId);
     },
     UPDATE_USER_STREAM(state, { userId, stream }) {
       const user = state.users[userId];
