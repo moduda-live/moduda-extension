@@ -2,6 +2,8 @@ import "@/assets/styles/sidebar.less";
 import { connectToChild } from "penpal";
 import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 import DeferredPromise from "@/util/DeferredPromise";
+import ScreenFormatterFactory from "../models/ScreenFormatterFactory";
+import ScreenFormatter from "@/models/ScreenFormatter";
 
 // ms to delay resolving/rejecting of DeferredPromise<HTMLVideoElement>
 const ARTIFICIAL_DELAY = 1000;
@@ -12,6 +14,7 @@ class Sidebar {
   videoSelected!: HTMLVideoElement;
   videoClickPromise!: DeferredPromise<HTMLVideoElement>;
   autoResolve!: boolean;
+  screenFormatter!: ScreenFormatter;
 
   constructor(
     username: string,
@@ -39,6 +42,18 @@ class Sidebar {
 
     this.setUpIframeConnection(username);
     this.attachToDom();
+
+    this.screenFormatter = ScreenFormatterFactory.createScreenFormatter(
+      window.location.href
+    );
+    this.screenFormatter.adjustScreenFormat();
+  }
+
+  attachToDom() {
+    const container = document.createElement("div");
+    container.id = "movens-sidebar";
+    container.appendChild(this.iframe);
+    document.body.appendChild(container);
   }
 
   getLargestVideo(videos: Array<HTMLVideoElement>): HTMLVideoElement {
@@ -126,13 +141,6 @@ class Sidebar {
     this.highlightAllVideos();
 
     return this.videoClickPromise;
-  }
-
-  attachToDom() {
-    const container = document.createElement("div");
-    container.id = "movens-sidebar";
-    container.appendChild(this.iframe);
-    document.body.appendChild(container);
   }
 
   setUpIframeConnection(username: string) {

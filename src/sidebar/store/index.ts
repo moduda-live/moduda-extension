@@ -1,5 +1,5 @@
 import Vue from "vue";
-import { Party } from "../services/Party";
+import { Party } from "../models/Party";
 import Vuex, { StoreOptions } from "vuex";
 import { RootState, ConnectionStatus } from "./types";
 import { User } from "../models/User";
