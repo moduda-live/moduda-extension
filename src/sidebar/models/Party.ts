@@ -3,7 +3,7 @@ import short from "short-uuid";
 import EventEmitter from "@/util/EventEmitter";
 import { SendMsgType, Communicator, PartyEvent, UserInfo } from "./types";
 import { log } from "@/util/log";
-import { User, OwnUser, OtherUser } from "../models/User";
+import { User, OwnUser, OtherUser } from "./User";
 
 export class Party extends EventEmitter<PartyEvent> {
   wsUrl: string;

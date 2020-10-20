@@ -1,6 +1,6 @@
 import Peer from "simple-peer";
-import { Party } from "../services/Party";
-import { PartyEvent } from "../services/types";
+import { Party } from "./Party";
+import { PartyEvent } from "./types";
 
 export class User {
   id: string | undefined;

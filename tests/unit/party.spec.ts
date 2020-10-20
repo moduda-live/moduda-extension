@@ -1,12 +1,12 @@
-import { Party } from "@/sidebar/services/Party";
-import { PartyEvent } from "@/sidebar/services/types";
+import { Party } from "@/sidebar/models/Party";
+import { PartyEvent } from "@/sidebar/models/types";
 import WS from "jest-websocket-mock";
 import short from "short-uuid";
-import CommunicatorMock from "@/sidebar/services/ParentCommunicator";
+import CommunicatorMock from "@/sidebar/models/ParentCommunicator";
 import { OtherUser } from "@/sidebar/models/User";
 import Peer from "simple-peer";
 
-jest.mock("@/sidebar/services/ParentCommunicator");
+jest.mock("@/sidebar/models/ParentCommunicator");
 jest.mock("simple-peer");
 // jest.mock("@/sidebar/services/User", () => ({
 //   __esModule: true,

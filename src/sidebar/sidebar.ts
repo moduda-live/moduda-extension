@@ -17,8 +17,8 @@ import {
 import lang from "iview/dist/locale/en-US";
 import "@/assets/styles/iview.less";
 import partyPlugin from "./plugins/partyPlugin";
-import createParty from "./services/Party";
-import ParentCommunicator from "./services/ParentCommunicator";
+import createParty from "./models/Party";
+import ParentCommunicator from "./models/ParentCommunicator";
 import createStoreWithParty from "./store";
 
 // get partyId if it exists

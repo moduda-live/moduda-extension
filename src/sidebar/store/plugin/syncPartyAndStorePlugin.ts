@@ -1,5 +1,5 @@
-import { Party } from "@/sidebar/services/Party";
-import { PartyEvent } from "@/sidebar/services/types";
+import { Party } from "@/sidebar/models/Party";
+import { PartyEvent } from "@/sidebar/models/types";
 import { Store, MutationPayload } from "vuex";
 import { ConnectionStatus, RootState } from "../types";
 import { User } from "@/sidebar/models/User";
