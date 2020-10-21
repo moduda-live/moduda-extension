@@ -4,6 +4,7 @@ import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 import DeferredPromise from "@/util/DeferredPromise";
 import ScreenFormatterFactory from "../models/ScreenFormatterFactory";
 import ScreenFormatter from "@/models/ScreenFormatter";
+import { getLargestVideo, recursiveQueryVideos } from "@/util/dom";
 
 // ms to delay resolving/rejecting of DeferredPromise<HTMLVideoElement>
 const ARTIFICIAL_DELAY = 1000;
@@ -61,21 +62,6 @@ class Sidebar {
     this.sidebarContainer = container;
   }
 
-  getLargestVideo(videos: Array<HTMLVideoElement>): HTMLVideoElement {
-    let largestVideoArea = videos[0].offsetHeight * videos[0].offsetWidth;
-
-    const largestVideo = videos.reduce((prev, current) => {
-      const currentVideoArea = current.offsetHeight * current.offsetWidth;
-      if (currentVideoArea > largestVideoArea) {
-        largestVideoArea = currentVideoArea;
-        return current;
-      }
-      return prev;
-    });
-
-    return largestVideo;
-  }
-
   addVideoHoveredIndicator(event: MouseEvent) {
     (event.target as HTMLVideoElement).classList.add("video--selected");
   }
@@ -117,7 +103,7 @@ class Sidebar {
   }
 
   highlightAllVideos() {
-    const videos = Array.from(document.querySelectorAll("video"));
+    const videos = recursiveQueryVideos(document, []);
     if (videos.length === 0) {
       setTimeout(() => {
         this.videoClickPromise.reject("There are no videos on the page");
@@ -126,7 +112,7 @@ class Sidebar {
     }
 
     if (this.autoResolve) {
-      const largestVideo = this.getLargestVideo(videos);
+      const largestVideo = getLargestVideo(videos);
       largestVideo.classList.add("video--selected");
       console.log("Largest video on page:", largestVideo);
       setTimeout(() => {
@@ -165,6 +151,7 @@ class Sidebar {
             this.cleanupVideos();
             return null;
           } catch (err) {
+            console.log("error:", err);
             // no video available
             return new Error("Could not find video");
           }
