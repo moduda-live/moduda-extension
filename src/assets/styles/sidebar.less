@@ -1,6 +1,6 @@
 @import "./variables.less";
 
-#movens-sidebar {
+.movens-sidebar {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -9,15 +9,43 @@
   height: calc(100vh - 32px);
   z-index: 999999;
   background-color: @theme-primary-color;
-  padding: 16px;
+  padding: 16px 21px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.4s ease;
+  transition: all 0.2s ease;
 }
 
-.movens-sidebar-hidden {
-  right: calc(-1 * (270px + 2 * 16px)) !important;
+.movens-sidebar--teasing__pseudo {
+  display: block;
+  font-size: 11px;
+  color: @theme-white;
+  position: absolute;
+  writing-mode: tb-rl;
+  left: 3px;
+}
+
+.movens-sidebar--teasing {
+  cursor: pointer;
+
+  &:before {
+    &:extend(.movens-sidebar--teasing__pseudo);
+    content: "Click to open";
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  &:after {
+    &:extend(.movens-sidebar--teasing__pseudo);
+    content: "movens";
+    font-weight: 700;
+    top: 50%;
+    transform: translateY(100%) translateY(-2px);
+  }
+
+  &:hover {
+    background-color: @theme-primary-dark-medium;
+  }
 }
 
 #movens-iframe {

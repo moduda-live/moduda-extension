@@ -1,16 +1,15 @@
+import { getViewportWidth } from "@/util/dom";
+
 export default abstract class ScreenFormatter {
   sidebar: HTMLDivElement;
   mutationObserver!: MutationObserver;
 
   constructor() {
-    this.sidebar = document.querySelector("#movens-sidebar") as HTMLDivElement;
+    this.sidebar = document.querySelector(".movens-sidebar") as HTMLDivElement;
   }
 
   get vw() {
-    return Math.max(
-      document.documentElement.clientWidth || 0,
-      window.innerWidth || 0
-    );
+    return getViewportWidth();
   }
 
   get afterSidebarWidth() {
