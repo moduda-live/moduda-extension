@@ -38,18 +38,23 @@ export default class ParentCommunicator implements Communicator {
     }
   }
 
-  forwardPlay() {
+  async hideSidebar() {
+    console.log("Hiding sidebar");
+    await this.parentConnection.hideSidebar();
+  }
+
+  async forwardPlay() {
     console.log("Forwarding play event");
-    this.parentConnection.forwardPlay();
+    await this.parentConnection.forwardPlay();
   }
 
-  forwardPause() {
+  async forwardPause() {
     console.log("Forwarding pause event");
-    this.parentConnection.forwardPause();
+    await this.parentConnection.forwardPause();
   }
 
-  forwardSeek() {
+  async forwardSeek() {
     console.log("Forwarding seek event");
-    this.parentConnection.forwardSeek();
+    await this.parentConnection.forwardSeek();
   }
 }

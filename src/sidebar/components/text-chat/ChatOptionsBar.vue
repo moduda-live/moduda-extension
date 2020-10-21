@@ -1,7 +1,7 @@
 <template>
   <div class="chat-options__container">
     <Icon
-      size="13"
+      :size="13"
       class="chat-options__icons"
       :class="{ active: chatAnchored }"
       type="md-funnel"
@@ -10,7 +10,7 @@
       @click="toggleChatAnchor"
     />
     <Icon
-      size="13"
+      :size="13"
       class="chat-options__icons"
       type="md-eye"
       :data-tippy-content="hideChatContent"
@@ -19,7 +19,7 @@
       v-show="!chatHidden"
     />
     <Icon
-      size="13"
+      :size="13"
       class="chat-options__icons"
       type="md-eye-off"
       :data-tippy-content="showChatContent"
@@ -28,7 +28,7 @@
       v-show="chatHidden"
     />
     <Icon
-      size="13"
+      :size="13"
       class="chat-options__icons"
       type="md-trash"
       :data-tippy-content="clearChatContent"

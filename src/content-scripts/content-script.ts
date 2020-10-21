@@ -9,6 +9,7 @@ import ScreenFormatter from "@/models/ScreenFormatter";
 const ARTIFICIAL_DELAY = 1000;
 
 class Sidebar {
+  sidebarContainer!: HTMLDivElement;
   iframe: HTMLIFrameElement;
   iframeConnection!: AsyncMethodReturns<CallSender, string>;
   videoSelected!: HTMLVideoElement;
@@ -46,14 +47,18 @@ class Sidebar {
     this.screenFormatter = ScreenFormatterFactory.createScreenFormatter(
       window.location.href
     );
-    this.screenFormatter.adjustScreenFormat();
+    this.screenFormatter.setupListenersForChange(); // call once
+    this.screenFormatter.triggerReflow();
   }
 
   attachToDom() {
     const container = document.createElement("div");
     container.id = "movens-sidebar";
+    container.style.right = "0";
     container.appendChild(this.iframe);
     document.body.appendChild(container);
+
+    this.sidebarContainer = container;
   }
 
   getLargestVideo(videos: Array<HTMLVideoElement>): HTMLVideoElement {
@@ -163,6 +168,10 @@ class Sidebar {
             // no video available
             return new Error("Could not find video");
           }
+        },
+        hideSidebar: () => {
+          this.sidebarContainer.style.right = `${-1 * (270 + 16 * 2)}px`;
+          this.screenFormatter.triggerReflow();
         },
         playVideo: async () => {
           console.log("Play video");
