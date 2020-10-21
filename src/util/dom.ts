@@ -32,3 +32,10 @@ export function getLargestVideo(
 
   return largestVideo;
 }
+
+export function getViewportWidth() {
+  return Math.max(
+    document.documentElement.clientWidth || 0,
+    window.innerWidth || 0
+  );
+}

@@ -4,10 +4,16 @@ import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 import DeferredPromise from "@/util/DeferredPromise";
 import ScreenFormatterFactory from "../models/ScreenFormatterFactory";
 import ScreenFormatter from "@/models/ScreenFormatter";
-import { getLargestVideo, recursiveQueryVideos } from "@/util/dom";
+import {
+  getLargestVideo,
+  recursiveQueryVideos,
+  getViewportWidth
+} from "@/util/dom";
 
 // ms to delay resolving/rejecting of DeferredPromise<HTMLVideoElement>
 const ARTIFICIAL_DELAY = 1000;
+const SIDEBAR_WIDTH = 270;
+const SIDEBAR_PADDING_X = 21;
 
 class Sidebar {
   sidebarContainer!: HTMLDivElement;
@@ -45,6 +51,11 @@ class Sidebar {
     this.setUpIframeConnection(username);
     this.attachToDom();
 
+    // For adjusting screen layout based on sidebar visiblity
+    this.setupScreenFormatter();
+  }
+
+  setupScreenFormatter() {
     this.screenFormatter = ScreenFormatterFactory.createScreenFormatter(
       window.location.href
     );
@@ -54,7 +65,7 @@ class Sidebar {
 
   attachToDom() {
     const container = document.createElement("div");
-    container.id = "movens-sidebar";
+    container.classList.add("movens-sidebar");
     container.style.right = "0";
     container.appendChild(this.iframe);
     document.body.appendChild(container);
@@ -134,12 +145,49 @@ class Sidebar {
     return this.videoClickPromise;
   }
 
+  hide() {
+    this.sidebarContainer.classList.remove("movens-sidebar--teasing");
+    this.sidebarContainer.style.right = `${-1 *
+      (SIDEBAR_WIDTH + SIDEBAR_PADDING_X * 2)}px`;
+  }
+
+  teaseSidebarContainer() {
+    this.sidebarContainer.classList.add("movens-sidebar--teasing");
+    // when padding-left increases (due to class addded above), it sticks out from right by SIDEBAR_PADDING_LEFT_INCREASE
+    // since we want total tease area width to be SIDEBAR_TEASE_WIDTH, we shift sidebar by the difference between these 2
+    this.sidebarContainer.style.right = `${-1 *
+      (SIDEBAR_WIDTH + SIDEBAR_PADDING_X * 2) +
+      SIDEBAR_PADDING_X}px`;
+  }
+
+  show = () => {
+    console.log("CLICKED: ");
+    this.sidebarContainer.removeEventListener("click", this.show);
+    document.removeEventListener("mousemove", this.toggleBasedOnMouse);
+    this.sidebarContainer.classList.remove("movens-sidebar--teasing");
+    this.sidebarContainer.style.right = "0px";
+    this.screenFormatter.triggerReflow();
+  };
+
+  toggleBasedOnMouse = (e: MouseEvent) => {
+    const showMenu = getViewportWidth() - e.pageX < 90;
+    if (showMenu) {
+      this.teaseSidebarContainer();
+    } else {
+      this.hide();
+    }
+  };
+
+  enableReopenTease() {
+    document.addEventListener("mousemove", this.toggleBasedOnMouse);
+    this.sidebarContainer.addEventListener("click", this.show);
+  }
+
   setUpIframeConnection(username: string) {
     const connection = connectToChild({
       iframe: this.iframe,
       childOrigin: browser.runtime.getURL("").slice(0, -1), // hacky workaround to make penpal work
       methods: {
-        // TODO: Implement parent methods
         getUsername: () => {
           return username;
         },
@@ -151,14 +199,14 @@ class Sidebar {
             this.cleanupVideos();
             return null;
           } catch (err) {
-            console.log("error:", err);
-            // no video available
+            console.log("Error trying to get video reference: ", err);
             return new Error("Could not find video");
           }
         },
         hideSidebar: () => {
-          this.sidebarContainer.style.right = `${-1 * (270 + 16 * 2)}px`;
+          this.hide();
           this.screenFormatter.triggerReflow();
+          this.enableReopenTease();
         },
         playVideo: async () => {
           console.log("Play video");
@@ -187,7 +235,7 @@ class Sidebar {
   }
 }
 
-const initParty = (username: string) => {
+function initParty(username: string) {
   const searchParams = new URLSearchParams(window.location.search);
 
   const partyId = searchParams.get("movensPartyId") ?? undefined;
@@ -205,7 +253,7 @@ const initParty = (username: string) => {
   const videolink = videolinkNoParams + searchParams.toString();
   new Sidebar(username, videolink, debug, partyId);
   (window as any).partyLoaded = true;
-};
+}
 
 browser.runtime.onMessage.addListener(message => {
   if (message.username && !(window as any).partyLoaded) {
