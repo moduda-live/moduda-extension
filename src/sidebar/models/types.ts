@@ -35,7 +35,8 @@ export interface Communicator {
   init(): Promise<void>;
   getUsername(): Promise<string>;
   setParty(party: Party): void;
-  selectVideo(autoResolveToLargestVideo: boolean): Promise<any>;
+  selectVideo(autoResolveToLargestVideo: boolean): void;
+  hideSidebar(): void;
   forwardPlay(): void;
   forwardPause(): void;
   forwardSeek(): void;
