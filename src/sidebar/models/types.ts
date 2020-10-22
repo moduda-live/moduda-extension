@@ -56,6 +56,7 @@ export interface Communicator {
   setParty(party: Party): void;
   getUsername(): Promise<string>;
   hideSidebar(): void;
+  makeToast(toastMsg: string): void;
   selectVideo(autoResolveToLargestVideo: boolean): Promise<void>;
   playVideo(): Promise<void>;
   pauseVideo(): Promise<void>;

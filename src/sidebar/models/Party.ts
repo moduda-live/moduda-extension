@@ -6,11 +6,11 @@ import {
   Communicator,
   PartyEvent,
   UserInfo,
-  RTCMsgType,
-  VideoState
+  RTCMsgType
 } from "./types";
 import { log } from "@/util/log";
 import { User, OwnUser, OtherUser } from "./User";
+import { formatTime } from "@/util/formatTime";
 
 export class Party extends EventEmitter<PartyEvent> {
   wsUrl: string;
@@ -51,6 +51,19 @@ export class Party extends EventEmitter<PartyEvent> {
       .on(PartyEvent.USER_PLAYED, () => {
         //TODO: Show notification via parentCommunicator
         log("User played [inside Party]");
+      })
+      .on(PartyEvent.VIDEO_PLAY, username => {
+        this.parentCommunicator.makeToast(`${username} played the video`);
+      })
+      .on(PartyEvent.VIDEO_PAUSE, username => {
+        this.parentCommunicator.makeToast(`${username} paused the video`);
+      })
+      .on(PartyEvent.VIDEO_SEEK, (username, currentTimeSeconds) => {
+        const currentTime = Math.floor(currentTimeSeconds);
+        const currentTimeFormatted = formatTime(currentTime);
+        this.parentCommunicator.makeToast(
+          `${username} moved the video to ${currentTimeFormatted}`
+        );
       });
   }
 

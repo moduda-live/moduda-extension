@@ -33,6 +33,10 @@ export default class ParentCommunicator implements Communicator {
     this.parentConnection.hideSidebar();
   }
 
+  makeToast(toastMsg: string) {
+    this.parentConnection.makeToast(toastMsg);
+  }
+
   /**
    * Video
    */
