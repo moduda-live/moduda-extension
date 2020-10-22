@@ -5,10 +5,14 @@ import Sidebar from "@/models/sidebar/Sidebar";
 import VideoManager from "@/models/video/VideoManager";
 import { VideoEvent } from "@/models/video/types";
 
+import ToastMaker from "@/models/toast/ToastMaker";
+
 class Movens {
   sidebar: Sidebar;
   iframeConnection!: AsyncMethodReturns<CallSender, string>;
   VideoManager: VideoManager;
+
+  ToastMaker: ToastMaker;
 
   constructor(
     username: string,
@@ -20,6 +24,8 @@ class Movens {
     this.setUpIframeConnection(username);
     this.VideoManager = new VideoManager();
     this.setupVideoManagerListeners();
+
+    this.ToastMaker = new ToastMaker();
   }
 
   setupVideoManagerListeners() {
@@ -40,6 +46,9 @@ class Movens {
       iframe: this.sidebar.iframe,
       childOrigin: browser.runtime.getURL("").slice(0, -1), // hacky workaround to make penpal work
       methods: {
+        makeToast: (toastMsg: string) => {
+          this.ToastMaker.makeToast(toastMsg);
+        },
         getUsername: () => {
           return username;
         },

@@ -97,7 +97,6 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
     this.videoSelected.addEventListener("seeking", () => {
       //console.log("Video seeking at: ", new Date().getTime());
       clearTimeout(this.checkIfPausedFromSeekTimeout);
-      this.checkIfPausedFromSeekTimeout = -1;
     });
 
     this.videoSelected.addEventListener("seeked", () => {
