@@ -2,13 +2,13 @@ import "@/assets/styles/sidebar.less";
 import { connectToChild } from "penpal";
 import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 import Sidebar from "@/models/sidebar/Sidebar";
-import VideoManager from "@/models/video-manager/VideoManager";
+import VideoManager from "@/models/video/VideoManager";
+import { VideoEvent } from "@/models/video/types";
 
 class Movens {
   sidebar: Sidebar;
-  videoSelected!: HTMLVideoElement;
   iframeConnection!: AsyncMethodReturns<CallSender, string>;
-  videoManager: VideoManager;
+  VideoManager: VideoManager;
 
   constructor(
     username: string,
@@ -18,14 +18,24 @@ class Movens {
   ) {
     this.sidebar = new Sidebar(videolink, debug, partyId);
     this.setUpIframeConnection(username);
-    this.videoManager = new VideoManager();
+    this.VideoManager = new VideoManager();
+    this.setupVideoManagerListeners();
   }
 
-  setupVideoListeners() {
-    console.log("Setting up video listeners");
+  setupVideoManagerListeners() {
+    this.VideoManager.on(VideoEvent.PLAY, () => {
+      this.iframeConnection.relayPlay();
+    })
+      .on(VideoEvent.PAUSE, () => {
+        this.iframeConnection.relayPause();
+      })
+      .on(VideoEvent.SEEKED, (toTime: number) => {
+        this.iframeConnection.relaySeeked(toTime);
+      });
   }
 
   setUpIframeConnection(username: string) {
+    // console.log("childOrigin: ", browser.runtime.getURL("").slice(0, -1));
     const connection = connectToChild({
       iframe: this.sidebar.iframe,
       childOrigin: browser.runtime.getURL("").slice(0, -1), // hacky workaround to make penpal work
@@ -36,16 +46,12 @@ class Movens {
         selectVideo: async (autoResolveWithLargestVid: boolean) => {
           try {
             // pause until user selects video
-            const videoSelected = await this.videoManager.selectVideo(
-              autoResolveWithLargestVid
-            );
-            this.videoSelected = videoSelected;
-            this.videoManager.cleanupVideos();
-            this.setupVideoListeners();
-            return null;
+            await this.VideoManager.selectVideo(autoResolveWithLargestVid);
+            this.VideoManager.cleanupVideos();
+            this.VideoManager.setupListeners();
           } catch (err) {
-            console.log("Error trying to get video reference: ", err);
-            return new Error("Could not find video");
+            console.error("Error trying to get video reference: ", err);
+            throw new Error("Could not find video");
           }
         },
         hideSidebar: () => {
@@ -54,23 +60,25 @@ class Movens {
           this.sidebar.enableReopenTease();
         },
         playVideo: async () => {
-          console.log("Play video");
           try {
-            await this.videoSelected.play();
+            await this.VideoManager.play();
           } catch (err) {
             console.error("Error trying to play this video", err.message);
           }
         },
         pauseVideo: async () => {
-          console.log("Pause video");
           try {
-            await this.videoSelected.pause();
+            await this.VideoManager.pause();
           } catch (err) {
-            console.error("Error trying to play this video: ", err.message);
+            console.error("Error trying to pause this video: ", err.message);
           }
         },
-        seekVideo: () => {
-          console.log("Seek video");
+        seekVideo: async (currentTimeSeconds: number) => {
+          try {
+            await this.VideoManager.seek(currentTimeSeconds);
+          } catch (err) {
+            console.error("Error trying to seek this video: ", err.message);
+          }
         }
       }
     });

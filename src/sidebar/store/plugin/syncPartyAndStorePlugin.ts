@@ -57,7 +57,10 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
         mutation.payload.senderId === state.userId
       ) {
         // messsage from current user, emit to others in party
-        party.sendMessage(mutation.payload.senderId, mutation.payload.content);
+        party.sendChatMessage(
+          mutation.payload.senderId,
+          mutation.payload.content
+        );
       }
     });
   };

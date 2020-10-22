@@ -10,9 +10,9 @@ export default class DefaultScreenFormatter extends ScreenFormatter {
   }
 
   adjustScreenFormatOnFullScreenChange(): void {
-    throw new Error("Method not implemented.");
+    console.log("default screen adjuster");
   }
   adjustScreenFormatOnResize(): void {
-    throw new Error("Method not implemented.");
+    console.log("default screen adjuster");
   }
 }

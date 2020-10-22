@@ -41,8 +41,8 @@ export default Vue.extend({
     AppHeader
   },
   methods: {
-    async hideSidebar() {
-      await this.$party.parentCommunicator.hideSidebar();
+    hideSidebar() {
+      this.$party.parentCommunicator.hideSidebar();
     }
   },
   mounted() {
