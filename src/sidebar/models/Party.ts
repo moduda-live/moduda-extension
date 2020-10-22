@@ -1,7 +1,14 @@
 import Peer, { SignalData } from "simple-peer";
 import short from "short-uuid";
 import EventEmitter from "@/util/EventEmitter";
-import { SendMsgType, Communicator, PartyEvent, UserInfo } from "./types";
+import {
+  SocketSendMsgType,
+  Communicator,
+  PartyEvent,
+  UserInfo,
+  RTCMsgType,
+  VideoState
+} from "./types";
 import { log } from "@/util/log";
 import { User, OwnUser, OtherUser } from "./User";
 
@@ -28,24 +35,23 @@ export class Party extends EventEmitter<PartyEvent> {
 
   setUpEventHandlers() {
     // Note: More event handlers registered in store / plugin / syncPartyAndStorePlugin.ts
-
     this.on(PartyEvent.USER_JOINED, () => {
       //TODO: Show notification via parentCommunicator
       log("User joined [inside Party]");
-    });
-    this.on(PartyEvent.USER_LEFT, userId => {
-      //TODO: Show notification via parentCommunicator
-      log("User left [inside Party]");
-      this.users.delete(userId);
-    });
-    this.on(PartyEvent.USER_PAUSED, () => {
-      //TODO: Show notification via parentCommunicator
-      log("User paused [inside Party]");
-    });
-    this.on(PartyEvent.USER_PLAYED, () => {
-      //TODO: Show notification via parentCommunicator
-      log("User played [inside Party]");
-    });
+    })
+      .on(PartyEvent.USER_LEFT, userId => {
+        //TODO: Show notification via parentCommunicator
+        log("User left [inside Party]");
+        this.users.delete(userId);
+      })
+      .on(PartyEvent.USER_PAUSED, () => {
+        //TODO: Show notification via parentCommunicator
+        log("User paused [inside Party]");
+      })
+      .on(PartyEvent.USER_PLAYED, () => {
+        //TODO: Show notification via parentCommunicator
+        log("User played [inside Party]");
+      });
   }
 
   async connect() {
@@ -58,6 +64,8 @@ export class Party extends EventEmitter<PartyEvent> {
       this.emit(PartyEvent.VIDEO_NOT_FOUND);
       return;
     }
+
+    await this.parentCommunicator.pauseVideo(); // initallly pause video
     const username = await this.parentCommunicator.getUsername();
     this.emit(PartyEvent.CONNECTING);
 
@@ -102,6 +110,7 @@ export class Party extends EventEmitter<PartyEvent> {
     switch (msg.type) {
       case "error": {
         log("Received error from server: " + msg.payload.message);
+        this.emit(PartyEvent.ERROR);
         break;
       }
       case "addChatMsg": {
@@ -118,7 +127,7 @@ export class Party extends EventEmitter<PartyEvent> {
         // server will send "currentPartyUsers" message back
         this.socket.send(
           JSON.stringify({
-            type: SendMsgType.GET_CURRENT_PARTY_USERS,
+            type: SocketSendMsgType.GET_CURRENT_PARTY_USERS,
             payload: {
               partyId: this.id,
               username: this.ownUser.username
@@ -189,6 +198,10 @@ export class Party extends EventEmitter<PartyEvent> {
     }
   }
 
+  /**
+   * Voice Chat
+   */
+
   addNewPeer(
     senderId: string,
     username: string,
@@ -208,7 +221,7 @@ export class Party extends EventEmitter<PartyEvent> {
       console.log("my non-initiator signal: ", signal);
       this.socket.send(
         JSON.stringify({
-          type: SendMsgType.RETURN_SIGNAL,
+          type: SocketSendMsgType.RETURN_SIGNAL,
           payload: {
             senderId: this.ownUser.id,
             recipientId: senderId,
@@ -239,7 +252,7 @@ export class Party extends EventEmitter<PartyEvent> {
       console.log("my initiator signal: ", signal);
       this.socket.send(
         JSON.stringify({
-          type: SendMsgType.NEW_SIGNAL,
+          type: SocketSendMsgType.NEW_SIGNAL,
           payload: {
             senderId: this.ownUser.id,
             username: this.ownUser.username,
@@ -255,17 +268,72 @@ export class Party extends EventEmitter<PartyEvent> {
     return otherUser;
   }
 
-  sendMessage(senderId: string, content: string) {
+  /**
+   * Text Chat
+   */
+
+  sendChatMessage(senderId: string, content: string) {
     console.log(`sender: ${senderId}`);
     this.socket.send(
       JSON.stringify({
-        type: SendMsgType.BROADCAST_MESSAGE,
+        type: SocketSendMsgType.BROADCAST_MESSAGE,
         payload: {
           senderId,
           content
         }
       })
     );
+  }
+
+  /**
+   * Video control
+   */
+
+  private relayRTCMessageToOthers(
+    type: RTCMsgType,
+    currentTimeSeconds?: number
+  ) {
+    this.users.forEach((user: User) => {
+      if (!user.isOwn) {
+        user.peer &&
+          user.peer.send(
+            JSON.stringify({
+              type,
+              payload: {
+                username: this.ownUser.username,
+                ...(currentTimeSeconds && { currentTimeSeconds })
+              }
+            })
+          );
+      }
+    });
+  }
+
+  relayPlay() {
+    this.relayRTCMessageToOthers(RTCMsgType.PLAY);
+  }
+
+  relayPause() {
+    this.relayRTCMessageToOthers(RTCMsgType.PAUSE);
+  }
+
+  relaySeeked(currentTimeSeconds: number) {
+    this.relayRTCMessageToOthers(RTCMsgType.SEEKED, currentTimeSeconds);
+  }
+
+  playVideo(fromUsername: string) {
+    this.emit(PartyEvent.VIDEO_PLAY, fromUsername);
+    this.parentCommunicator.playVideo();
+  }
+
+  pauseVideo(fromUsername: string) {
+    this.emit(PartyEvent.VIDEO_PAUSE, fromUsername);
+    this.parentCommunicator.pauseVideo();
+  }
+
+  seekVideo(fromUsername: string, currentTimeSeconds: number) {
+    this.emit(PartyEvent.VIDEO_SEEK, fromUsername, currentTimeSeconds);
+    this.parentCommunicator.seekVideo(currentTimeSeconds);
   }
 }
 

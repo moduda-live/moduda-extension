@@ -225,12 +225,12 @@ describe("Party.ts", () => {
       expect(onUserJoined).not.toHaveBeenCalled();
     });
 
-    it("should send 'broadcastMessage' message to websocket server after sendMesasge() ", async () => {
+    it("should send 'broadcastMessage' message to websocket server after sendChatMessage() ", async () => {
       const party = setUpParty();
       await party.connect();
       await mockServer.connected;
 
-      party.sendMessage("testUserId", "TestContent");
+      party.sendChatMessage("testUserId", "TestContent");
       await expect(mockServer).toReceiveMessage({
         type: "broadcastMessage",
         payload: {

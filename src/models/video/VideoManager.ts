@@ -1,12 +1,26 @@
 import { recursiveQueryVideos, getLargestVideo } from "@/util/dom";
 import DeferredPromise from "@/util/DeferredPromise";
+import EventEmitter from "@/util/EventEmitter";
+import { VideoEvent } from "./types";
 
 // ms to delay resolving/rejecting of DeferredPromise<HTMLVideoElement>
 const ARTIFICIAL_DELAY = 1000;
 
-export default class VideoManager {
+// seeking event is prety much guaranteed to be triggered within 100ms of pause when user seeks
+const MS_UNTIL_POTENTIAL_SEEKING = 100;
+
+export default class VideoManager extends EventEmitter<VideoEvent> {
   videoClickPromise!: DeferredPromise<HTMLVideoElement>;
   autoResolve!: boolean;
+  videoPlayedByOwn: boolean;
+  checkIfPausedFromSeekTimeout: number;
+  videoSelected!: HTMLVideoElement;
+
+  constructor() {
+    super();
+    this.videoPlayedByOwn = true;
+    this.checkIfPausedFromSeekTimeout = -1;
+  }
 
   selectVideo(autoResolve: boolean): Promise<HTMLVideoElement> {
     this.autoResolve = autoResolve;
@@ -40,8 +54,9 @@ export default class VideoManager {
     if (this.autoResolve) {
       const largestVideo = getLargestVideo(videos);
       largestVideo.classList.add("video--selected");
-
       console.log("Largest video on page:", largestVideo);
+
+      this.videoSelected = largestVideo;
 
       setTimeout(() => {
         this.videoClickPromise.resolve(largestVideo);
@@ -53,6 +68,65 @@ export default class VideoManager {
     // this.handleHoverOnVideos(videos);
     // this.handleClickOnVideos(videos);
   }
+
+  setupListeners() {
+    this.videoSelected.addEventListener("play", () => {
+      if (this.videoSelected.readyState === 1) {
+        // play was triggered from seeking, so lets ignore
+        return;
+      }
+
+      if (this.videoPlayedByOwn) {
+        this.emit(VideoEvent.PLAY);
+      } else {
+        this.videoPlayedByOwn = true;
+      }
+    });
+
+    this.videoSelected.addEventListener("pause", () => {
+      console.log("Paused at ", new Date().getTime());
+      this.checkIfPausedFromSeekTimeout = window.setTimeout(() => {
+        if (this.videoPlayedByOwn) {
+          this.emit(VideoEvent.PAUSE);
+        } else {
+          this.videoPlayedByOwn = true;
+        }
+      }, MS_UNTIL_POTENTIAL_SEEKING);
+    });
+
+    this.videoSelected.addEventListener("seeking", () => {
+      //console.log("Video seeking at: ", new Date().getTime());
+      clearTimeout(this.checkIfPausedFromSeekTimeout);
+      this.checkIfPausedFromSeekTimeout = -1;
+    });
+
+    this.videoSelected.addEventListener("seeked", () => {
+      //console.log("Video seeked at: ", new Date().getTime());
+
+      if (this.videoPlayedByOwn) {
+        this.emit(VideoEvent.SEEKED, this.videoSelected.currentTime);
+      } else {
+        this.videoPlayedByOwn = true;
+      }
+    });
+  }
+
+  play = async () => {
+    // set to false temporarily so that we don't relay message from
+    // video play event that we received from another peer
+    this.videoPlayedByOwn = false;
+    await this.videoSelected.play();
+  };
+
+  pause = async () => {
+    this.videoPlayedByOwn = false;
+    await this.videoSelected.pause();
+  };
+
+  seek = async (time: number) => {
+    this.videoPlayedByOwn = false;
+    this.videoSelected.currentTime = time;
+  };
 
   /**
    * Unused functions:

@@ -7,37 +7,60 @@ export interface UserInfo {
   isAdmin: boolean;
 }
 
+export enum VideoState {
+  PAUSED,
+  PLAYING
+}
+
 export enum PartyEvent {
-  VIDEO_NOT_FOUND,
+  // Server
   CONNECTING,
   CONNECTED,
   DISCONNECTED,
+  // User
   USER_JOINED,
   USER_LEFT,
   USER_PAUSED,
   USER_PLAYED,
-  ADD_CHAT_MSG,
   SET_MY_USER_ID,
   SET_USERS,
-  UPDATE_USER_STREAM
+  UPDATE_USER_STREAM,
+  // Chat
+  ADD_CHAT_MSG,
+  // Video
+  VIDEO_NOT_FOUND,
+  VIDEO_PLAY,
+  VIDEO_PAUSE,
+  VIDEO_SEEK,
+  // Error
+  ERROR
 }
 
-export enum SendMsgType {
+export enum SocketSendMsgType {
   GET_CURRENT_PARTY_USERS = "getCurrentPartyUsers",
   RETURN_SIGNAL = "returnSignal",
   NEW_SIGNAL = "newSignal",
   BROADCAST_MESSAGE = "broadcastMessage"
 }
 
+export enum RTCMsgType {
+  PLAY = "playVideo",
+  PAUSE = "pauseVideo",
+  SEEKED = "seekedVideo"
+}
+
 export interface Communicator {
   party: Party;
   parentConnection: AsyncMethodReturns<CallSender, string>;
   init(): Promise<void>;
-  getUsername(): Promise<string>;
   setParty(party: Party): void;
-  selectVideo(autoResolveToLargestVideo: boolean): void;
+  getUsername(): Promise<string>;
   hideSidebar(): void;
-  forwardPlay(): void;
-  forwardPause(): void;
-  forwardSeek(): void;
+  selectVideo(autoResolveToLargestVideo: boolean): Promise<void>;
+  playVideo(): Promise<void>;
+  pauseVideo(): Promise<void>;
+  seekVideo(currentTimeSeconds: number): Promise<void>;
+  relayPlay(): void;
+  relayPause(): void;
+  relaySeeked(currentTimeSeconds: number): void;
 }

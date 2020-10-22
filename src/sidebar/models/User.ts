@@ -1,6 +1,6 @@
 import Peer from "simple-peer";
 import { Party } from "./Party";
-import { PartyEvent } from "./types";
+import { PartyEvent, RTCMsgType } from "./types";
 
 export class User {
   id: string | undefined;
@@ -93,11 +93,34 @@ export class OtherUser extends User {
 
     this.peer.on("connect", () => {
       console.log("Connected with " + this.id);
-      this.peer?.send("test");
     });
 
     this.peer.on("data", data => {
       console.log(`Data received: ${data}`);
+
+      const message = JSON.parse(data);
+
+      if (!message.type) {
+        console.error("Malformed data received via WebRTC");
+        return;
+      }
+
+      switch (message.type) {
+        case RTCMsgType.PLAY:
+          this.party.playVideo(message.payload.username);
+          break;
+        case RTCMsgType.PAUSE:
+          this.party.pauseVideo(message.payload.username);
+          break;
+        case RTCMsgType.SEEKED:
+          this.party.seekVideo(
+            message.payload.username,
+            message.payload.currentTimeSeconds
+          );
+          break;
+        default:
+          console.error("Could not identify message received via WebRTC");
+      }
     });
 
     this.peer.on("stream", stream => {
