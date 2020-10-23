@@ -18,7 +18,8 @@ const store: StoreOptions<RootState> = {
     partyId: "",
     userId: "",
     serverConnectionStatus: ConnectionStatus.BEFORE_CONNECT,
-    users: {}
+    users: {},
+    showToast: false
   },
   getters: {
     serverBeforeConnect: state =>
@@ -105,6 +106,9 @@ const store: StoreOptions<RootState> = {
         user.isMuted = !user.isMuted;
         user.isSpeaking = false;
       }
+    },
+    SET_TOAST_SHOW(state, showToast: boolean) {
+      state.showToast = showToast;
     }
   }
 };
