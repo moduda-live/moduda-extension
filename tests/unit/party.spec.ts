@@ -30,7 +30,8 @@ function setUpParty(partyId?: string, userIdToAdd?: string) {
       userIdToAdd,
       "mockedUsername",
       party,
-      new Peer()
+      new Peer(),
+      false
     );
     otherUser.setIsAdmin(false);
     party.users.set(userIdToAdd, otherUser);

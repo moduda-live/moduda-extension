@@ -61,6 +61,12 @@ export class Party extends EventEmitter<PartyEvent> {
       .on(PartyEvent.VIDEO_SEEK, (username, currentTimeSeconds) => {
         const currentTime = Math.floor(currentTimeSeconds);
         const currentTimeFormatted = formatTime(currentTime);
+        if (username === null) {
+          this.parentCommunicator.makeToast(
+            `Initially setting the video to ${currentTimeFormatted}`
+          );
+          return;
+        }
         this.parentCommunicator.makeToast(
           `${username} moved the video to ${currentTimeFormatted}`
         );
@@ -78,7 +84,6 @@ export class Party extends EventEmitter<PartyEvent> {
       return;
     }
 
-    await this.parentCommunicator.pauseVideo(); // initallly pause video
     const username = await this.parentCommunicator.getUsername();
     this.emit(PartyEvent.CONNECTING);
 
@@ -87,6 +92,8 @@ export class Party extends EventEmitter<PartyEvent> {
     this.ownUser = await new OwnUser(username, this).mediaStreamInitialized;
     this.socket = new WebSocket(this.wsUrl);
     this.registerWebsocketHandlers(); // onopen has to be in the same section to execute in same EventLoop
+
+    await this.parentCommunicator.pauseVideo(); // initallly pause video
   }
 
   registerWebsocketHandlers() {
@@ -162,10 +169,17 @@ export class Party extends EventEmitter<PartyEvent> {
           this.ownUser.setIsAdmin(false);
         }
 
+        let askedForVideoTime = false;
         users.forEach((userInfoString: string) => {
           const userInfo: UserInfo = JSON.parse(userInfoString);
           const { userId, username, isAdmin } = userInfo;
-          const user = this.connectToPeer(userId, username, isAdmin);
+          let user: User;
+          if (!askedForVideoTime && isAdmin) {
+            user = this.connectToPeer(userId, username, isAdmin, true);
+            askedForVideoTime = true;
+          } else {
+            user = this.connectToPeer(userId, username, isAdmin, false);
+          }
           this.users.set(userId, user);
         });
         this.emit(PartyEvent.SET_USERS, Object.fromEntries(this.users));
@@ -246,13 +260,18 @@ export class Party extends EventEmitter<PartyEvent> {
 
     peer.signal(receivedSignal);
 
-    const otherUser = new OtherUser(senderId, username, this, peer);
+    const otherUser = new OtherUser(senderId, username, this, peer, false);
     // first time new user joins, user is not given admin privileges
     otherUser.setIsAdmin(false);
     return otherUser;
   }
 
-  connectToPeer(userId: string, username: string, isAdmin: boolean): User {
+  connectToPeer(
+    userId: string,
+    username: string,
+    isAdmin: boolean,
+    askForTime: boolean
+  ): User {
     log(`Connecting to peer with id: ${userId}, isAdmin: ${isAdmin}`);
     const peer = new Peer({
       initiator: true,
@@ -276,7 +295,7 @@ export class Party extends EventEmitter<PartyEvent> {
       );
     });
 
-    const otherUser = new OtherUser(userId, username, this, peer);
+    const otherUser = new OtherUser(userId, username, this, peer, askForTime);
     otherUser.setIsAdmin(isAdmin);
     return otherUser;
   }
@@ -344,7 +363,7 @@ export class Party extends EventEmitter<PartyEvent> {
     this.parentCommunicator.pauseVideo();
   }
 
-  seekVideo(fromUsername: string, currentTimeSeconds: number) {
+  seekVideo(fromUsername: string | null, currentTimeSeconds: number) {
     this.emit(PartyEvent.VIDEO_SEEK, fromUsername, currentTimeSeconds);
     this.parentCommunicator.seekVideo(currentTimeSeconds);
   }
