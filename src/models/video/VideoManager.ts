@@ -7,19 +7,17 @@ import { VideoEvent } from "./types";
 const ARTIFICIAL_DELAY = 1000;
 
 // seeking event is prety much guaranteed to be triggered within 100ms of pause when user seeks
-const MS_UNTIL_POTENTIAL_SEEKING = 100;
+// const MS_UNTIL_POTENTIAL_SEEKING = 100;
 
 export default class VideoManager extends EventEmitter<VideoEvent> {
   videoClickPromise!: DeferredPromise<HTMLVideoElement>;
   autoResolve!: boolean;
   videoPlayedByOwn: boolean;
-  checkIfPausedFromSeekTimeout: number;
   videoSelected!: HTMLVideoElement;
 
   constructor() {
     super();
     this.videoPlayedByOwn = true;
-    this.checkIfPausedFromSeekTimeout = -1;
   }
 
   selectVideo(autoResolve: boolean): Promise<HTMLVideoElement> {
@@ -71,10 +69,10 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
 
   setupListeners() {
     this.videoSelected.addEventListener("play", () => {
-      if (this.videoSelected.readyState === 1) {
-        // play was triggered from seeking, so lets ignore
-        return;
-      }
+      // if (this.videoSelected.readyState === 1) {
+      //   // play was triggered from seeking, so lets ignore
+      //   return;
+      // }
 
       if (this.videoPlayedByOwn) {
         this.emit(VideoEvent.PLAY);
@@ -84,20 +82,17 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
     });
 
     this.videoSelected.addEventListener("pause", () => {
-      console.log("Paused at ", new Date().getTime());
-      this.checkIfPausedFromSeekTimeout = window.setTimeout(() => {
-        if (this.videoPlayedByOwn) {
-          this.emit(VideoEvent.PAUSE);
-        } else {
-          this.videoPlayedByOwn = true;
-        }
-      }, MS_UNTIL_POTENTIAL_SEEKING);
+      if (this.videoPlayedByOwn) {
+        this.emit(VideoEvent.PAUSE);
+      } else {
+        this.videoPlayedByOwn = true;
+      }
     });
 
-    this.videoSelected.addEventListener("seeking", () => {
-      //console.log("Video seeking at: ", new Date().getTime());
-      clearTimeout(this.checkIfPausedFromSeekTimeout);
-    });
+    // this.videoSelected.addEventListener("seeking", () => {
+    //   //console.log("Video seeking at: ", new Date().getTime());
+    //   clearTimeout(this.checkIfPausedFromSeekTimeout);
+    // });
 
     this.videoSelected.addEventListener("seeked", () => {
       //console.log("Video seeked at: ", new Date().getTime());
