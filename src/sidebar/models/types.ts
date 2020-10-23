@@ -56,6 +56,7 @@ export enum RTCMsgType {
 export interface VideoStatus {
   currentTimeSeconds: number;
   speed: number;
+  isPlaying: boolean;
 }
 
 export interface Communicator {

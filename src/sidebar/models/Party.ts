@@ -399,9 +399,14 @@ export class Party extends EventEmitter<PartyEvent> {
     this.parentCommunicator.changeVideoSpeed(speed);
   }
 
-  async setVideoStatus(seconds: number, speed: number) {
+  async setVideoStatus(seconds: number, speed: number, isPlaying: boolean) {
     await this.seekVideo(null, seconds);
     await this.changeVideoSpeed(null, speed);
+    if (isPlaying) {
+      this.playVideo(null);
+    } else {
+      this.pauseVideo(null);
+    }
   }
 }
 
