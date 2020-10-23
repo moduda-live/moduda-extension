@@ -1,4 +1,4 @@
-import { recursiveQueryVideos, getLargestVideo } from "@/util/dom";
+import { getLargestVideo, queryVideos } from "@/util/dom";
 import DeferredPromise from "@/util/DeferredPromise";
 import EventEmitter from "@/util/EventEmitter";
 import { VideoEvent } from "./types";
@@ -41,7 +41,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
   }
 
   selectVideoWithDelay() {
-    const videos = recursiveQueryVideos(document, []);
+    const videos = queryVideos(window, []);
     if (videos.length === 0) {
       setTimeout(() => {
         this.videoClickPromise.reject("There are no videos on the page");
