@@ -32,6 +32,7 @@ export enum PartyEvent {
   VIDEO_PLAY,
   VIDEO_PAUSE,
   VIDEO_SEEK,
+  VIDEO_CHANGE_SPEED,
   // Error
   ERROR
 }
@@ -44,11 +45,17 @@ export enum SocketSendMsgType {
 }
 
 export enum RTCMsgType {
-  PLAY = "playVideo",
-  PAUSE = "pauseVideo",
-  SEEKED = "seekedVideo",
-  REQUEST_INITIAL_VIDEO_TIME = "requestInitialVideoTime",
-  INITIAL_VIDEO_TIME = "initialVideoTime"
+  PLAY,
+  PAUSE,
+  SEEKED,
+  CHANGE_SPEED,
+  REQUEST_INITIAL_VIDEO_STATUS,
+  INITIAL_VIDEO_STATUS
+}
+
+export interface VideoStatus {
+  currentTimeSeconds: number;
+  speed: number;
 }
 
 export interface Communicator {
@@ -63,8 +70,10 @@ export interface Communicator {
   playVideo(): Promise<void>;
   pauseVideo(): Promise<void>;
   seekVideo(currentTimeSeconds: number): Promise<void>;
+  changeVideoSpeed(speed: number): Promise<void>;
   relayPlay(): void;
   relayPause(): void;
   relaySeeked(currentTimeSeconds: number): void;
-  getCurrentVideoTime(): Promise<number>;
+  relayChangeSpeed(speed: number): void;
+  getCurrentVideoStatus(): Promise<VideoStatus>;
 }

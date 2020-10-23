@@ -102,7 +102,7 @@ export class OtherUser extends User {
       if (askForTime) {
         this.peer!!.send(
           JSON.stringify({
-            type: RTCMsgType.REQUEST_INITIAL_VIDEO_TIME,
+            type: RTCMsgType.REQUEST_INITIAL_VIDEO_STATUS,
             payload: {}
           })
         );
@@ -114,12 +114,12 @@ export class OtherUser extends User {
 
       const message = JSON.parse(data);
 
-      if (!message.type) {
+      if (message.type === undefined || message.type === null) {
         console.error("Malformed data received via WebRTC");
         return;
       }
 
-      switch (message.type) {
+      switch (message.type as RTCMsgType) {
         case RTCMsgType.PLAY:
           this.party.playVideo(message.payload.username);
           break;
@@ -132,19 +132,29 @@ export class OtherUser extends User {
             message.payload.currentTimeSeconds
           );
           break;
-        case RTCMsgType.REQUEST_INITIAL_VIDEO_TIME:
+        case RTCMsgType.CHANGE_SPEED:
+          this.party.changeVideoSpeed(
+            message.payload.username,
+            message.payload.speed
+          );
+          break;
+        case RTCMsgType.REQUEST_INITIAL_VIDEO_STATUS: {
+          const initialVideoStatus = await this.party.parentCommunicator.getCurrentVideoStatus();
           this.peer!!.send(
             JSON.stringify({
-              type: RTCMsgType.INITIAL_VIDEO_TIME,
+              type: RTCMsgType.INITIAL_VIDEO_STATUS,
               payload: {
-                currentTimeSeconds: await this.party.parentCommunicator.getCurrentVideoTime()
+                ...initialVideoStatus
               }
             })
           );
           break;
-        case RTCMsgType.INITIAL_VIDEO_TIME:
-          this.party.seekVideo(null, message.payload.currentTimeSeconds);
+        }
+        case RTCMsgType.INITIAL_VIDEO_STATUS: {
+          const { currentTimeSeconds, speed } = message.payload;
+          this.party.setVideoStatus(currentTimeSeconds, speed);
           break;
+        }
         default:
           console.error("Could not identify message received via WebRTC");
       }
