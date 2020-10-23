@@ -4,6 +4,7 @@ import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 import Sidebar from "@/models/sidebar/Sidebar";
 import VideoManager from "@/models/video/VideoManager";
 import { VideoEvent } from "@/models/video/types";
+import { VideoStatus } from "@/sidebar/models/types";
 
 import ToastMaker from "@/models/toast/ToastMaker";
 
@@ -37,6 +38,9 @@ class Movens {
       })
       .on(VideoEvent.SEEKED, (toTime: number) => {
         this.iframeConnection.relaySeeked(toTime);
+      })
+      .on(VideoEvent.CHANGE_SPEED, (speed: number) => {
+        this.iframeConnection.relayChangeSpeed(speed);
       });
   }
 
@@ -89,8 +93,22 @@ class Movens {
             console.error("Error trying to seek this video: ", err.message);
           }
         },
-        getCurrentVideoTime: () => {
-          return this.VideoManager.videoSelected.currentTime;
+        changeVideoSpeed: async (speed: number) => {
+          try {
+            await this.VideoManager.changeSpeed(speed);
+          } catch (err) {
+            console.error(
+              "Error trying to change this video speed: ",
+              err.message
+            );
+          }
+        },
+        getCurrentVideoStatus: (): VideoStatus => {
+          const vid = this.VideoManager.videoSelected;
+          return {
+            currentTimeSeconds: vid.currentTime,
+            speed: vid.playbackRate
+          };
         }
       }
     });

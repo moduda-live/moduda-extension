@@ -12,7 +12,8 @@ export default class ParentCommunicator implements Communicator {
       methods: {
         relayPlay: this.relayPlay.bind(this),
         relayPause: this.relayPause.bind(this),
-        relaySeeked: this.relaySeeked.bind(this)
+        relaySeeked: this.relaySeeked.bind(this),
+        relayChangeSpeed: this.relayChangeSpeed.bind(this)
       }
     });
 
@@ -56,6 +57,10 @@ export default class ParentCommunicator implements Communicator {
     return this.parentConnection.seekVideo(currentTimeSeconds);
   }
 
+  changeVideoSpeed(speed: number) {
+    return this.parentConnection.changeVideoSpeed(speed);
+  }
+
   relayPlay() {
     //console.log("Relay play");
     this.party.relayPlay();
@@ -71,7 +76,11 @@ export default class ParentCommunicator implements Communicator {
     this.party.relaySeeked(currentTimeSeconds);
   }
 
-  getCurrentVideoTime() {
-    return this.parentConnection.getCurrentVideoTime();
+  relayChangeSpeed(speed: number) {
+    this.party.relayChangeSpeed(speed);
+  }
+
+  getCurrentVideoStatus() {
+    return this.parentConnection.getCurrentVideoStatus();
   }
 }

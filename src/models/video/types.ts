@@ -1,5 +1,6 @@
 export enum VideoEvent {
   PLAY,
   PAUSE,
-  SEEKED
+  SEEKED,
+  CHANGE_SPEED
 }

@@ -103,6 +103,15 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
         this.videoPlayedByOwn = true;
       }
     });
+
+    this.videoSelected.addEventListener("ratechange", () => {
+      console.log("Speed changed to: ", this.videoSelected.playbackRate);
+      if (this.videoPlayedByOwn) {
+        this.emit(VideoEvent.CHANGE_SPEED, this.videoSelected.playbackRate);
+      } else {
+        this.videoPlayedByOwn = true;
+      }
+    });
   }
 
   play = async () => {
@@ -120,6 +129,11 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
   seek = async (time: number) => {
     this.videoPlayedByOwn = false;
     this.videoSelected.currentTime = time;
+  };
+
+  changeSpeed = async (speed: number) => {
+    this.videoPlayedByOwn = false;
+    this.videoSelected.playbackRate = speed;
   };
 
   /**

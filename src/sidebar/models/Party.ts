@@ -53,9 +53,17 @@ export class Party extends EventEmitter<PartyEvent> {
         log("User played [inside Party]");
       })
       .on(PartyEvent.VIDEO_PLAY, username => {
+        if (username === null) {
+          this.parentCommunicator.makeToast(`Initially played the video`);
+          return;
+        }
         this.parentCommunicator.makeToast(`${username} played the video`);
       })
       .on(PartyEvent.VIDEO_PAUSE, username => {
+        if (username === null) {
+          this.parentCommunicator.makeToast(`Initially paused the video`);
+          return;
+        }
         this.parentCommunicator.makeToast(`${username} paused the video`);
       })
       .on(PartyEvent.VIDEO_SEEK, (username, currentTimeSeconds) => {
@@ -69,6 +77,17 @@ export class Party extends EventEmitter<PartyEvent> {
         }
         this.parentCommunicator.makeToast(
           `${username} moved the video to ${currentTimeFormatted}`
+        );
+      })
+      .on(PartyEvent.VIDEO_CHANGE_SPEED, (username, speed) => {
+        if (username === null) {
+          this.parentCommunicator.makeToast(
+            `Initially setting video speed to ${speed}`
+          );
+          return;
+        }
+        this.parentCommunicator.makeToast(
+          `${username} set the video speed to ${speed}`
         );
       });
   }
@@ -323,7 +342,10 @@ export class Party extends EventEmitter<PartyEvent> {
 
   private relayRTCMessageToOthers(
     type: RTCMsgType,
-    currentTimeSeconds?: number
+    optionalPayloadFields?: {
+      currentTimeSeconds?: number;
+      speed?: number;
+    }
   ) {
     this.users.forEach((user: User) => {
       if (!user.isOwn) {
@@ -333,7 +355,7 @@ export class Party extends EventEmitter<PartyEvent> {
               type,
               payload: {
                 username: this.ownUser.username,
-                ...(currentTimeSeconds && { currentTimeSeconds })
+                ...optionalPayloadFields
               }
             })
           );
@@ -350,15 +372,19 @@ export class Party extends EventEmitter<PartyEvent> {
   }
 
   relaySeeked(currentTimeSeconds: number) {
-    this.relayRTCMessageToOthers(RTCMsgType.SEEKED, currentTimeSeconds);
+    this.relayRTCMessageToOthers(RTCMsgType.SEEKED, { currentTimeSeconds });
   }
 
-  playVideo(fromUsername: string) {
+  relayChangeSpeed(speed: number) {
+    this.relayRTCMessageToOthers(RTCMsgType.CHANGE_SPEED, { speed });
+  }
+
+  playVideo(fromUsername: string | null) {
     this.emit(PartyEvent.VIDEO_PLAY, fromUsername);
     this.parentCommunicator.playVideo();
   }
 
-  pauseVideo(fromUsername: string) {
+  pauseVideo(fromUsername: string | null) {
     this.emit(PartyEvent.VIDEO_PAUSE, fromUsername);
     this.parentCommunicator.pauseVideo();
   }
@@ -366,6 +392,16 @@ export class Party extends EventEmitter<PartyEvent> {
   seekVideo(fromUsername: string | null, currentTimeSeconds: number) {
     this.emit(PartyEvent.VIDEO_SEEK, fromUsername, currentTimeSeconds);
     this.parentCommunicator.seekVideo(currentTimeSeconds);
+  }
+
+  changeVideoSpeed(fromUsername: string | null, speed: number) {
+    this.emit(PartyEvent.VIDEO_CHANGE_SPEED, fromUsername, speed);
+    this.parentCommunicator.changeVideoSpeed(speed);
+  }
+
+  async setVideoStatus(seconds: number, speed: number) {
+    await this.seekVideo(null, seconds);
+    await this.changeVideoSpeed(null, speed);
   }
 }
 
