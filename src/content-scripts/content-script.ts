@@ -105,9 +105,15 @@ class Movens {
         },
         getCurrentVideoStatus: (): VideoStatus => {
           const vid = this.VideoManager.videoSelected;
+          const isPlaying =
+            vid.currentTime > 0 &&
+            !vid.paused &&
+            !vid.ended &&
+            vid.readyState > 2;
           return {
             currentTimeSeconds: vid.currentTime,
-            speed: vid.playbackRate
+            speed: vid.playbackRate,
+            isPlaying
           };
         }
       }

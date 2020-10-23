@@ -151,8 +151,8 @@ export class OtherUser extends User {
           break;
         }
         case RTCMsgType.INITIAL_VIDEO_STATUS: {
-          const { currentTimeSeconds, speed } = message.payload;
-          this.party.setVideoStatus(currentTimeSeconds, speed);
+          const { currentTimeSeconds, speed, isPlaying } = message.payload;
+          this.party.setVideoStatus(currentTimeSeconds, speed, isPlaying);
           break;
         }
         default:
