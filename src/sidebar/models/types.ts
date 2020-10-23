@@ -46,7 +46,9 @@ export enum SocketSendMsgType {
 export enum RTCMsgType {
   PLAY = "playVideo",
   PAUSE = "pauseVideo",
-  SEEKED = "seekedVideo"
+  SEEKED = "seekedVideo",
+  REQUEST_INITIAL_VIDEO_TIME = "requestInitialVideoTime",
+  INITIAL_VIDEO_TIME = "initialVideoTime"
 }
 
 export interface Communicator {
@@ -64,4 +66,5 @@ export interface Communicator {
   relayPlay(): void;
   relayPause(): void;
   relaySeeked(currentTimeSeconds: number): void;
+  getCurrentVideoTime(): Promise<number>;
 }

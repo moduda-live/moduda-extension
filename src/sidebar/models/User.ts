@@ -80,22 +80,36 @@ export class OwnUser extends User {
 }
 
 export class OtherUser extends User {
-  constructor(id: string, username: string, party: Party, peer: Peer.Instance) {
+  constructor(
+    id: string,
+    username: string,
+    party: Party,
+    peer: Peer.Instance,
+    askForTime: boolean
+  ) {
     super(id, username, party, peer);
     this.isOwn = false;
-    this.addPeerEventListeners();
+    this.addPeerEventListeners(askForTime);
   }
 
-  addPeerEventListeners() {
+  addPeerEventListeners(askForTime: boolean) {
     if (!this.peer) {
       return;
     }
 
     this.peer.on("connect", () => {
       console.log("Connected with " + this.id);
+      if (askForTime) {
+        this.peer!!.send(
+          JSON.stringify({
+            type: RTCMsgType.REQUEST_INITIAL_VIDEO_TIME,
+            payload: {}
+          })
+        );
+      }
     });
 
-    this.peer.on("data", data => {
+    this.peer.on("data", async data => {
       console.log(`Data received: ${data}`);
 
       const message = JSON.parse(data);
@@ -117,6 +131,19 @@ export class OtherUser extends User {
             message.payload.username,
             message.payload.currentTimeSeconds
           );
+          break;
+        case RTCMsgType.REQUEST_INITIAL_VIDEO_TIME:
+          this.peer!!.send(
+            JSON.stringify({
+              type: RTCMsgType.INITIAL_VIDEO_TIME,
+              payload: {
+                currentTimeSeconds: await this.party.parentCommunicator.getCurrentVideoTime()
+              }
+            })
+          );
+          break;
+        case RTCMsgType.INITIAL_VIDEO_TIME:
+          this.party.seekVideo(null, message.payload.currentTimeSeconds);
           break;
         default:
           console.error("Could not identify message received via WebRTC");

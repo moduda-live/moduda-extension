@@ -70,4 +70,8 @@ export default class ParentCommunicator implements Communicator {
     //console.log("Relay seeked to ", currentTimeSeconds);
     this.party.relaySeeked(currentTimeSeconds);
   }
+
+  getCurrentVideoTime() {
+    return this.parentConnection.getCurrentVideoTime();
+  }
 }

@@ -88,6 +88,9 @@ class Movens {
           } catch (err) {
             console.error("Error trying to seek this video: ", err.message);
           }
+        },
+        getCurrentVideoTime: () => {
+          return this.VideoManager.videoSelected.currentTime;
         }
       }
     });
