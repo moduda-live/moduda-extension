@@ -20,8 +20,6 @@ export enum PartyEvent {
   // User
   USER_JOINED,
   USER_LEFT,
-  USER_PAUSED,
-  USER_PLAYED,
   SET_MY_USER_ID,
   SET_USERS,
   UPDATE_USER_STREAM,

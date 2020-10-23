@@ -44,14 +44,6 @@ export class Party extends EventEmitter<PartyEvent> {
         log("User left [inside Party]");
         this.users.delete(userId);
       })
-      .on(PartyEvent.USER_PAUSED, () => {
-        //TODO: Show notification via parentCommunicator
-        log("User paused [inside Party]");
-      })
-      .on(PartyEvent.USER_PLAYED, () => {
-        //TODO: Show notification via parentCommunicator
-        log("User played [inside Party]");
-      })
       .on(PartyEvent.VIDEO_PLAY, username => {
         if (username === null) {
           this.parentCommunicator.makeToast(`Initially played the video`);
