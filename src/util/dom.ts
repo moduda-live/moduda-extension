@@ -1,18 +1,10 @@
-export function recursiveQueryVideos(
-  doc: Document,
+export function queryVideos(
+  window: Window,
   results: Array<HTMLVideoElement>
 ): Array<HTMLVideoElement> {
+  const doc = window.document;
   const videos = doc.querySelectorAll("video");
   videos.forEach(video => results.push(video));
-
-  // ignore movens-iframe since its CORS disabled
-  doc.querySelectorAll("iframe:not(#movens-iframe)").forEach(iframe => {
-    const framedoc = (iframe as HTMLIFrameElement).contentWindow?.document;
-    if (!framedoc) {
-      return;
-    }
-    results.concat(recursiveQueryVideos(framedoc, results));
-  });
 
   return results;
 }
