@@ -62,6 +62,10 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
           mutation.payload.content
         );
       }
+
+      if (mutation.type === "SET_TOAST_SHOW") {
+        party.setToastShow(mutation.payload);
+      }
     });
   };
 }

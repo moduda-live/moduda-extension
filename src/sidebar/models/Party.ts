@@ -19,6 +19,7 @@ export class Party extends EventEmitter<PartyEvent> {
   parentCommunicator: Communicator;
   users: Map<string, User>;
   ownUser!: OwnUser;
+  showToast: boolean;
 
   constructor(
     wsUrl: string,
@@ -29,22 +30,30 @@ export class Party extends EventEmitter<PartyEvent> {
     this.wsUrl = wsUrl;
     this.id = partyId ?? short.generate();
     this.users = new Map<string, User>();
+    this.showToast = false;
     parentCommunicator.setParty(this);
     this.parentCommunicator = parentCommunicator;
+  }
+
+  setToastShow(show: boolean) {
+    this.showToast = show;
   }
 
   setUpEventHandlers() {
     // Note: More event handlers registered in store / plugin / syncPartyAndStorePlugin.ts
     this.on(PartyEvent.USER_JOINED, () => {
+      if (!this.showToast) return;
       //TODO: Show notification via parentCommunicator
       log("User joined [inside Party]");
     })
       .on(PartyEvent.USER_LEFT, userId => {
+        if (!this.showToast) return;
         //TODO: Show notification via parentCommunicator
         log("User left [inside Party]");
         this.users.delete(userId);
       })
       .on(PartyEvent.VIDEO_PLAY, username => {
+        if (!this.showToast) return;
         if (username === null) {
           this.parentCommunicator.makeToast(`Initially played the video`);
           return;
@@ -52,6 +61,7 @@ export class Party extends EventEmitter<PartyEvent> {
         this.parentCommunicator.makeToast(`${username} played the video`);
       })
       .on(PartyEvent.VIDEO_PAUSE, username => {
+        if (!this.showToast) return;
         if (username === null) {
           this.parentCommunicator.makeToast(`Initially paused the video`);
           return;
@@ -59,6 +69,7 @@ export class Party extends EventEmitter<PartyEvent> {
         this.parentCommunicator.makeToast(`${username} paused the video`);
       })
       .on(PartyEvent.VIDEO_SEEK, (username, currentTimeSeconds) => {
+        if (!this.showToast) return;
         const currentTime = Math.floor(currentTimeSeconds);
         const currentTimeFormatted = formatTime(currentTime);
         if (username === null) {
@@ -72,6 +83,7 @@ export class Party extends EventEmitter<PartyEvent> {
         );
       })
       .on(PartyEvent.VIDEO_CHANGE_SPEED, (username, speed) => {
+        if (!this.showToast) return;
         if (username === null) {
           this.parentCommunicator.makeToast(
             `Initially setting video speed to ${speed}`

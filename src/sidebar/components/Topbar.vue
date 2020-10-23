@@ -10,7 +10,12 @@
     <AppHeader :color="primaryWhiteColor" />
     <CellGroup ref="menu">
       <Cell title="Notifications">
-        <SwitchBtn size="small" v-model="showNotifications" slot="extra" />
+        <SwitchBtn
+          size="small"
+          :value="showToast"
+          slot="extra"
+          @on-change="toggleToast"
+        />
       </Cell>
       <Cell
         title="Github"
@@ -34,6 +39,7 @@ import Vue from "vue";
 import AppHeader from "@/shared/AppHeader.vue";
 import tippy from "tippy.js";
 import "tippy.js/animations/shift-away-subtle.css";
+import { mapMutations, mapState } from "vuex";
 
 export default Vue.extend({
   name: "Topbar",
@@ -41,8 +47,12 @@ export default Vue.extend({
     AppHeader
   },
   methods: {
+    ...mapMutations({ setToastShow: "SET_TOAST_SHOW" }),
     hideSidebar() {
       this.$party.parentCommunicator.hideSidebar();
+    },
+    toggleToast(isSwitchOn: boolean) {
+      this.setToastShow(isSwitchOn);
     }
   },
   mounted() {
@@ -67,9 +77,11 @@ export default Vue.extend({
   },
   data() {
     return {
-      primaryWhiteColor: "#c9c9c9",
-      showNotifications: false
+      primaryWhiteColor: "#c9c9c9"
     };
+  },
+  computed: {
+    ...mapState(["showToast"])
   }
 });
 </script>
