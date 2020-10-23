@@ -4,7 +4,7 @@ import EventEmitter from "@/util/EventEmitter";
 import { VideoEvent } from "./types";
 
 // ms to delay resolving/rejecting of DeferredPromise<HTMLVideoElement>
-const ARTIFICIAL_DELAY = 1000;
+const ARTIFICIAL_DELAY = 200;
 
 // seeking event is prety much guaranteed to be triggered within 100ms of pause when user seeks
 // const MS_UNTIL_POTENTIAL_SEEKING = 100;
@@ -69,6 +69,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
 
   setupListeners() {
     this.videoSelected.addEventListener("play", () => {
+      console.log("Play");
       // if (this.videoSelected.readyState === 1) {
       //   // play was triggered from seeking, so lets ignore
       //   return;
@@ -82,6 +83,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
     });
 
     this.videoSelected.addEventListener("pause", () => {
+      console.log("Pause");
       if (this.videoPlayedByOwn) {
         this.emit(VideoEvent.PAUSE);
       } else {
