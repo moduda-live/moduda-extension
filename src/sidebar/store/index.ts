@@ -19,7 +19,7 @@ const store: StoreOptions<RootState> = {
     userId: "",
     serverConnectionStatus: ConnectionStatus.BEFORE_CONNECT,
     users: {},
-    showToast: false
+    showToast: true
   },
   getters: {
     serverBeforeConnect: state =>

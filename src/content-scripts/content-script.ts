@@ -31,20 +31,34 @@ class Movens {
 
   setupVideoManagerListeners() {
     this.VideoManager.on(VideoEvent.PLAY, () => {
-      console.log("PLAY");
       this.iframeConnection.relayPlay();
     })
       .on(VideoEvent.PAUSE, () => {
-        console.log("PAUSE");
         this.iframeConnection.relayPause();
       })
       .on(VideoEvent.SEEKED, (toTime: number) => {
-        console.log("SEEKED to ", toTime);
         this.iframeConnection.relaySeeked(toTime);
       })
       .on(VideoEvent.CHANGE_SPEED, (speed: number) => {
-        console.log("CHANGE SPEED to ", speed);
         this.iframeConnection.relayChangeSpeed(speed);
+      })
+      .on(VideoEvent.PLAY_BLOCKED, () => {
+        this.ToastMaker.makeToast(`Only admins can play the video`, true);
+      })
+      .on(VideoEvent.PAUSE_BLOCKED, () => {
+        this.ToastMaker.makeToast(`Only admins can pause the video`, true);
+      })
+      .on(VideoEvent.SEEKED_BLOCKED, () => {
+        this.ToastMaker.makeToast(
+          `Only admins can change the video time`,
+          true
+        );
+      })
+      .on(VideoEvent.CHANGE_SPEED_BLOCKED, () => {
+        this.ToastMaker.makeToast(
+          `Only admins can change the video speed`,
+          true
+        );
       });
   }
 
