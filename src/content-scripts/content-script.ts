@@ -118,6 +118,9 @@ class Movens {
         },
         setIsUserAdmin: (isUserAdmin: boolean) => {
           this.VideoManager.setIsUserAdmin(isUserAdmin);
+        },
+        setHostTime: (currentTimeSeconds: number) => {
+          this.VideoManager.hostVideoStatus.currentTimeSeconds = currentTimeSeconds;
         }
       }
     });

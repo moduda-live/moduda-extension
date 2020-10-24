@@ -155,6 +155,12 @@ export class OtherUser extends User {
           this.party.setVideoStatus(currentTimeSeconds, speed, isPlaying);
           break;
         }
+        case RTCMsgType.TIME_UPDATE: {
+          this.party.parentCommunicator.setHostTime(
+            message.payload.currentTimeSeconds
+          );
+          break;
+        }
         default:
           console.error("Could not identify message received via WebRTC");
       }

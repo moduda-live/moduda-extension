@@ -87,4 +87,8 @@ export default class ParentCommunicator implements Communicator {
   getCurrentVideoStatus() {
     return this.parentConnection.getCurrentVideoStatus();
   }
+
+  setHostTime(currentTimeSeconds: number) {
+    return this.parentConnection.setHostTime(currentTimeSeconds);
+  }
 }
