@@ -5,8 +5,8 @@ import Sidebar from "@/models/sidebar/Sidebar";
 import VideoManager from "@/models/video/VideoManager";
 import { VideoEvent } from "@/models/video/types";
 import { VideoStatus } from "@/sidebar/models/types";
-
 import ToastMaker from "@/models/toast/ToastMaker";
+import { isPlaying } from "@/util/dom";
 
 class Movens {
   sidebar: Sidebar;
@@ -31,15 +31,19 @@ class Movens {
 
   setupVideoManagerListeners() {
     this.VideoManager.on(VideoEvent.PLAY, () => {
+      console.log("PLAY");
       this.iframeConnection.relayPlay();
     })
       .on(VideoEvent.PAUSE, () => {
+        console.log("PAUSE");
         this.iframeConnection.relayPause();
       })
       .on(VideoEvent.SEEKED, (toTime: number) => {
+        console.log("SEEKED to ", toTime);
         this.iframeConnection.relaySeeked(toTime);
       })
       .on(VideoEvent.CHANGE_SPEED, (speed: number) => {
+        console.log("CHANGE SPEED to ", speed);
         this.iframeConnection.relayChangeSpeed(speed);
       });
   }
@@ -61,6 +65,7 @@ class Movens {
             // pause until user selects video
             await this.VideoManager.selectVideo(autoResolveWithLargestVid);
             this.VideoManager.cleanupVideos();
+            this.VideoManager.pause();
             this.VideoManager.setupListeners();
           } catch (err) {
             console.error("Error trying to get video reference: ", err);
@@ -105,16 +110,14 @@ class Movens {
         },
         getCurrentVideoStatus: (): VideoStatus => {
           const vid = this.VideoManager.videoSelected;
-          const isPlaying =
-            vid.currentTime > 0 &&
-            !vid.paused &&
-            !vid.ended &&
-            vid.readyState > 2;
           return {
             currentTimeSeconds: vid.currentTime,
             speed: vid.playbackRate,
-            isPlaying
+            isPlaying: isPlaying(vid)
           };
+        },
+        setIsUserAdmin: (isUserAdmin: boolean) => {
+          this.VideoManager.setIsUserAdmin(isUserAdmin);
         }
       }
     });

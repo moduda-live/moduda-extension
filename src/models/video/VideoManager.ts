@@ -2,6 +2,8 @@ import { getLargestVideo, queryVideos } from "@/util/dom";
 import DeferredPromise from "@/util/DeferredPromise";
 import EventEmitter from "@/util/EventEmitter";
 import { VideoEvent } from "./types";
+import { isPlaying } from "@/util/dom";
+import { VideoStatus } from "@/sidebar/models/types";
 
 // ms to delay resolving/rejecting of DeferredPromise<HTMLVideoElement>
 const ARTIFICIAL_DELAY = 200;
@@ -14,10 +16,15 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
   autoResolve!: boolean;
   videoPlayedByOwn: boolean;
   videoSelected!: HTMLVideoElement;
+  hostVideoStatus!: VideoStatus;
+  isUserAdmin: boolean;
+  preventInfiniteLoop: boolean;
 
   constructor() {
     super();
     this.videoPlayedByOwn = true;
+    this.isUserAdmin = false;
+    this.preventInfiniteLoop = false;
   }
 
   selectVideo(autoResolve: boolean): Promise<HTMLVideoElement> {
@@ -56,6 +63,12 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
 
       this.videoSelected = largestVideo;
 
+      this.hostVideoStatus = {
+        currentTimeSeconds: this.videoSelected.currentTime,
+        speed: this.videoSelected.playbackRate,
+        isPlaying: isPlaying(this.videoSelected)
+      };
+
       setTimeout(() => {
         this.videoClickPromise.resolve(largestVideo);
       }, ARTIFICIAL_DELAY);
@@ -68,25 +81,40 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
   }
 
   setupListeners() {
-    this.videoSelected.addEventListener("play", () => {
-      console.log("Play");
-      // if (this.videoSelected.readyState === 1) {
-      //   // play was triggered from seeking, so lets ignore
-      //   return;
-      // }
-
+    this.videoSelected.addEventListener("play", e => {
       if (this.videoPlayedByOwn) {
-        this.emit(VideoEvent.PLAY);
+        if (this.isUserAdmin) {
+          console.log("user played on own, isAdmin");
+          this.emit(VideoEvent.PLAY);
+        } else {
+          if (!this.hostVideoStatus.isPlaying) {
+            console.log("user playing on own, cancel");
+            this.videoSelected.pause();
+          }
+        }
       } else {
+        if (this.videoSelected.readyState === 1) {
+          // play was triggered from seeking, so lets ignore
+          return;
+        }
+        console.log("played by someone else");
         this.videoPlayedByOwn = true;
       }
     });
 
     this.videoSelected.addEventListener("pause", () => {
-      console.log("Pause");
       if (this.videoPlayedByOwn) {
-        this.emit(VideoEvent.PAUSE);
+        if (this.isUserAdmin) {
+          console.log("user paused on own, isAdmin");
+          this.emit(VideoEvent.PAUSE);
+        } else {
+          if (this.hostVideoStatus.isPlaying) {
+            console.log("user pausing on own, cancel");
+            this.videoSelected.play();
+          }
+        }
       } else {
+        console.log("paused by someone else");
         this.videoPlayedByOwn = true;
       }
     });
@@ -97,20 +125,41 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
     // });
 
     this.videoSelected.addEventListener("seeked", () => {
-      //console.log("Video seeked at: ", new Date().getTime());
-
       if (this.videoPlayedByOwn) {
-        this.emit(VideoEvent.SEEKED, this.videoSelected.currentTime);
+        if (this.isUserAdmin) {
+          console.log("user seeked on own, isAdmin");
+          this.emit(VideoEvent.SEEKED, this.videoSelected.currentTime);
+        } else {
+          if (this.preventInfiniteLoop) {
+            this.preventInfiniteLoop = false;
+            return;
+          }
+          console.log("user seeked on own, cancel");
+          this.preventInfiniteLoop = true;
+          this.videoSelected.currentTime = this.hostVideoStatus.currentTimeSeconds;
+        }
       } else {
+        console.log("seeked by someone else");
         this.videoPlayedByOwn = true;
       }
     });
 
     this.videoSelected.addEventListener("ratechange", () => {
-      console.log("Speed changed to: ", this.videoSelected.playbackRate);
       if (this.videoPlayedByOwn) {
-        this.emit(VideoEvent.CHANGE_SPEED, this.videoSelected.playbackRate);
+        if (this.isUserAdmin) {
+          console.log("user changed speed on own, isAdmin");
+          this.emit(VideoEvent.CHANGE_SPEED, this.videoSelected.playbackRate);
+        } else {
+          if (this.preventInfiniteLoop) {
+            this.preventInfiniteLoop = false;
+            return;
+          }
+          console.log("user changed speed on own, cancel");
+          this.preventInfiniteLoop = true;
+          this.videoSelected.playbackRate = this.hostVideoStatus.speed;
+        }
       } else {
+        console.log("changed speed by someone else");
         this.videoPlayedByOwn = true;
       }
     });
@@ -120,23 +169,33 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
     // set to false temporarily so that we don't relay message from
     // video play event that we received from another peer
     this.videoPlayedByOwn = false;
+    this.hostVideoStatus.isPlaying = true;
+    this.hostVideoStatus.currentTimeSeconds = this.videoSelected.currentTime;
     await this.videoSelected.play();
   };
 
   pause = async () => {
     this.videoPlayedByOwn = false;
+    this.hostVideoStatus.isPlaying = false;
+    this.hostVideoStatus.currentTimeSeconds = this.videoSelected.currentTime;
     await this.videoSelected.pause();
   };
 
   seek = async (time: number) => {
     this.videoPlayedByOwn = false;
+    this.hostVideoStatus.currentTimeSeconds = time;
     this.videoSelected.currentTime = time;
   };
 
   changeSpeed = async (speed: number) => {
     this.videoPlayedByOwn = false;
+    this.hostVideoStatus.speed = speed;
     this.videoSelected.playbackRate = speed;
   };
+
+  setIsUserAdmin(isUserAdmin: boolean) {
+    this.isUserAdmin = isUserAdmin;
+  }
 
   /**
    * Unused functions:
