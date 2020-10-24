@@ -14,4 +14,5 @@ export interface RootState {
   serverConnectionStatus: ConnectionStatus;
   users: Record<string, User>;
   showToast: boolean;
+  adminControlsOnly: boolean;
 }

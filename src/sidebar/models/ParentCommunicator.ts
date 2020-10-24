@@ -42,6 +42,10 @@ export default class ParentCommunicator implements Communicator {
     this.parentConnection.makeToast(toastMsg);
   }
 
+  setAdminControls(adminControlsOnly: boolean) {
+    this.parentConnection.setAdminControls(adminControlsOnly);
+  }
+
   /**
    * Video
    */

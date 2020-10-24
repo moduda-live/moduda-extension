@@ -37,6 +37,12 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
           store.commit("UNMUTE_USER", user.id);
         }
       })
+      .on(PartyEvent.SET_ADMIN_ONLY_CONTROLS, (adminControlsOnly: boolean) => {
+        store.commit("SET_ADMIN_ONLY_CONTROLS", {
+          fromSelf: false,
+          adminControlsOnly
+        });
+      })
       .on(PartyEvent.USER_JOINED, (user: User) => {
         store.dispatch("addUser", user);
       })
@@ -78,6 +84,13 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
 
       if (mutation.type === "SET_TOAST_SHOW") {
         party.setToastShow(mutation.payload);
+      }
+
+      if (
+        mutation.type === "SET_ADMIN_ONLY_CONTROLS" &&
+        mutation.payload.fromSelf
+      ) {
+        party.relayAdminControlsState(mutation.payload.adminControlsOnly);
       }
 
       if (mutation.type === "MUTE_USER" && mutation.payload === state.userId) {

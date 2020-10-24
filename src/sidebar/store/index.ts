@@ -19,7 +19,8 @@ const store: StoreOptions<RootState> = {
     userId: "",
     serverConnectionStatus: ConnectionStatus.BEFORE_CONNECT,
     users: {},
-    showToast: true
+    showToast: true,
+    adminControlsOnly: true
   },
   getters: {
     serverBeforeConnect: state =>
@@ -121,6 +122,9 @@ const store: StoreOptions<RootState> = {
     },
     SET_TOAST_SHOW(state, showToast: boolean) {
       state.showToast = showToast;
+    },
+    SET_ADMIN_ONLY_CONTROLS(state, { fromSelf, adminControlsOnly }) {
+      state.adminControlsOnly = adminControlsOnly;
     }
   }
 };
