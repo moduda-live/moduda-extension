@@ -160,7 +160,8 @@ describe("Party.ts", () => {
             return JSON.stringify({
               userId: `userId${number}`,
               username: `username${number}`,
-              isAdmin: number === 1
+              isAdmin: (number === 1).toString(),
+              isRoomOwner: (number === 1).toString()
             });
           })
         }
@@ -171,7 +172,8 @@ describe("Party.ts", () => {
           id: fakeOwnUserId,
           username: undefined, // parentCommunicator mock doesnt mock getUsername()
           isAdmin: false,
-          isOwn: true
+          isOwn: true,
+          isRoomOwner: false
         })
       };
       [1, 2, 3].forEach((number: number) => {
@@ -179,7 +181,8 @@ describe("Party.ts", () => {
           id: `userId${number}`,
           username: `username${number}`,
           isAdmin: number === 1,
-          isOwn: false
+          isOwn: false,
+          isRoomOwner: number === 1
         });
       });
       expect(onSetUsers.mock.calls[0][0]).toMatchObject(expectedUsers);

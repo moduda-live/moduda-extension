@@ -8,6 +8,7 @@ export class User {
   peer?: Peer.Instance;
   isOwn!: boolean;
   isAdmin!: boolean;
+  isRoomOwner!: boolean;
   stream!: MediaStream;
   party: Party;
   isMuted: boolean;
@@ -29,6 +30,10 @@ export class User {
 
   setIsAdmin(isAdmin: boolean) {
     this.isAdmin = isAdmin;
+  }
+
+  setIsRoomOwner(isRoomOwner: boolean) {
+    this.isRoomOwner = isRoomOwner;
   }
 
   // mute() {
@@ -153,12 +158,6 @@ export class OtherUser extends User {
         case RTCMsgType.INITIAL_VIDEO_STATUS: {
           const { currentTimeSeconds, speed, isPlaying } = message.payload;
           this.party.setVideoStatus(currentTimeSeconds, speed, isPlaying);
-          break;
-        }
-        case RTCMsgType.TIME_UPDATE: {
-          this.party.parentCommunicator.setHostTime(
-            message.payload.currentTimeSeconds
-          );
           break;
         }
         default:

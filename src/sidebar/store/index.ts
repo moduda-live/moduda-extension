@@ -75,6 +75,12 @@ const store: StoreOptions<RootState> = {
     SET_PARTY_ID(state, partyId: string) {
       state.partyId = partyId;
     },
+    SET_USER_ADMIN(state, { userId, isAdmin }) {
+      const user = state.users[userId];
+      if (user) {
+        user.setIsAdmin(isAdmin);
+      }
+    },
     SET_USER_ID(state, userId: string) {
       state.userId = userId;
     },

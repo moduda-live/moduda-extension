@@ -4,7 +4,8 @@ import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 export interface UserInfo {
   userId: string;
   username: string;
-  isAdmin: boolean;
+  isAdmin: string;
+  isRoomOwner: string;
 }
 
 export enum VideoState {
@@ -24,6 +25,7 @@ export enum PartyEvent {
   SET_USERS,
   UPDATE_USER_STREAM,
   SET_USER_MUTE,
+  SET_USER_ADMIN_STATUS,
   // Chat
   ADD_CHAT_MSG,
   // Video
@@ -41,7 +43,8 @@ export enum SocketSendMsgType {
   RETURN_SIGNAL = "returnSignal",
   NEW_SIGNAL = "newSignal",
   BROADCAST_MESSAGE = "broadcastMessage",
-  SET_USER_MUTE = "setUserMute"
+  SET_USER_MUTE = "setUserMute",
+  TIME_UPDATE = "timeUpdate"
 }
 
 export enum RTCMsgType {
@@ -50,8 +53,7 @@ export enum RTCMsgType {
   SEEKED,
   CHANGE_SPEED,
   REQUEST_INITIAL_VIDEO_STATUS,
-  INITIAL_VIDEO_STATUS,
-  TIME_UPDATE
+  INITIAL_VIDEO_STATUS
 }
 
 export interface VideoStatus {
