@@ -1,5 +1,5 @@
-import { Party } from "@/sidebar/services/Party";
-import { PartyEvent } from "@/sidebar/services/types";
+import { Party } from "@/sidebar/models/Party";
+import { PartyEvent } from "@/sidebar/models/types";
 import { Store, MutationPayload } from "vuex";
 import { ConnectionStatus, RootState } from "../types";
 import { User } from "@/sidebar/models/User";
@@ -9,6 +9,9 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
   return (store: Store<RootState>) => {
     // Sync party -> store
     party
+      .on(PartyEvent.VIDEO_NOT_FOUND, () => {
+        store.dispatch("setVideoNotFound", true);
+      })
       .on(PartyEvent.CONNECTING, () => {
         store.dispatch("connectingToServer");
       })
@@ -54,7 +57,14 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
         mutation.payload.senderId === state.userId
       ) {
         // messsage from current user, emit to others in party
-        party.sendMessage(mutation.payload.senderId, mutation.payload.content);
+        party.sendChatMessage(
+          mutation.payload.senderId,
+          mutation.payload.content
+        );
+      }
+
+      if (mutation.type === "SET_TOAST_SHOW") {
+        party.setToastShow(mutation.payload);
       }
     });
   };

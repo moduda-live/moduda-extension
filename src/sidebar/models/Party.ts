@@ -1,9 +1,18 @@
 import Peer, { SignalData } from "simple-peer";
 import short from "short-uuid";
 import EventEmitter from "@/util/EventEmitter";
-import { SendMsgType, Communicator, PartyEvent, UserInfo } from "./types";
+import {
+  SocketSendMsgType,
+  Communicator,
+  PartyEvent,
+  UserInfo,
+  RTCMsgType
+} from "./types";
 import { log } from "@/util/log";
-import { User, OwnUser, OtherUser } from "../models/User";
+import { User, OwnUser, OtherUser } from "./User";
+import { formatTime } from "@/util/formatTime";
+
+const SEND_TIME_UPDATE_INTERVAL = 500;
 
 export class Party extends EventEmitter<PartyEvent> {
   wsUrl: string;
@@ -12,6 +21,7 @@ export class Party extends EventEmitter<PartyEvent> {
   parentCommunicator: Communicator;
   users: Map<string, User>;
   ownUser!: OwnUser;
+  showToast: boolean;
 
   constructor(
     wsUrl: string,
@@ -22,40 +32,89 @@ export class Party extends EventEmitter<PartyEvent> {
     this.wsUrl = wsUrl;
     this.id = partyId ?? short.generate();
     this.users = new Map<string, User>();
+    this.showToast = true; // needs to be same as the value in vuex
     parentCommunicator.setParty(this);
     this.parentCommunicator = parentCommunicator;
   }
 
+  setToastShow(show: boolean) {
+    this.showToast = show;
+  }
+
   setUpEventHandlers() {
-    // ADD_CHAT_MSG, CONNECTING, CONNECTED, DISCONNECTED, SET_USER_ID event callbacks are registered in syncStoreAndParty.ts
+    // Note: More event handlers registered in store / plugin / syncPartyAndStorePlugin.ts
     this.on(PartyEvent.USER_JOINED, () => {
-      //TODO: Show notification via parentCommunicator
-      log("User joined");
-    });
-    this.on(PartyEvent.USER_LEFT, userId => {
-      //TODO: Show notification via parentCommunicator
-      log("User left");
-      this.users.delete(userId);
-    });
-    this.on(PartyEvent.USER_PAUSED, () => {
-      //TODO: Show notification via parentCommunicator
-      log("User paused");
-    });
-    this.on(PartyEvent.USER_PLAYED, () => {
-      //TODO: Show notification via parentCommunicator
-      log("User played");
-    });
+      log("User joined [inside Party]");
+      if (!this.showToast) return;
+    })
+      .on(PartyEvent.USER_LEFT, userId => {
+        log("User left [inside Party]");
+        this.users.delete(userId);
+        if (!this.showToast) return;
+      })
+      .on(PartyEvent.VIDEO_PLAY, username => {
+        if (!this.showToast) return;
+        if (username === null) {
+          this.parentCommunicator.makeToast(`Initially played the video`);
+          return;
+        }
+        this.parentCommunicator.makeToast(`${username} played the video`);
+      })
+      .on(PartyEvent.VIDEO_PAUSE, username => {
+        if (!this.showToast) return;
+        if (username === null) {
+          this.parentCommunicator.makeToast(`Initially paused the video`);
+          return;
+        }
+        this.parentCommunicator.makeToast(`${username} paused the video`);
+      })
+      .on(PartyEvent.VIDEO_SEEK, (username, currentTimeSeconds) => {
+        if (!this.showToast) return;
+        const currentTime = Math.floor(currentTimeSeconds);
+        const currentTimeFormatted = formatTime(currentTime);
+        if (username === null) {
+          this.parentCommunicator.makeToast(
+            `Initially setting the video to ${currentTimeFormatted}`
+          );
+          return;
+        }
+        this.parentCommunicator.makeToast(
+          `${username} moved the video to ${currentTimeFormatted}`
+        );
+      })
+      .on(PartyEvent.VIDEO_CHANGE_SPEED, (username, speed) => {
+        if (!this.showToast) return;
+        if (username === null) {
+          this.parentCommunicator.makeToast(
+            `Initially setting video speed to ${speed}`
+          );
+          return;
+        }
+        this.parentCommunicator.makeToast(
+          `${username} set the video speed to ${speed}`
+        );
+      });
   }
 
   async connect() {
-    this.emit(PartyEvent.CONNECTING);
     log("Starting party...");
+
     await this.parentCommunicator.init();
-    this.setUpEventHandlers();
+    try {
+      await this.parentCommunicator.selectVideo(true);
+    } catch (err) {
+      this.emit(PartyEvent.VIDEO_NOT_FOUND);
+      return;
+    }
+
     const username = await this.parentCommunicator.getUsername();
+    this.emit(PartyEvent.CONNECTING);
+
+    // user selected video to track, now let's connect
+    this.setUpEventHandlers();
     this.ownUser = await new OwnUser(username, this).mediaStreamInitialized;
     this.socket = new WebSocket(this.wsUrl);
-    this.registerWebsocketHandlers(); // onopen has to be in the same section due to EventLoop
+    this.registerWebsocketHandlers(); // onopen has to be in the same section to execute in same EventLoop
   }
 
   registerWebsocketHandlers() {
@@ -92,6 +151,7 @@ export class Party extends EventEmitter<PartyEvent> {
     switch (msg.type) {
       case "error": {
         log("Received error from server: " + msg.payload.message);
+        this.emit(PartyEvent.ERROR);
         break;
       }
       case "addChatMsg": {
@@ -108,7 +168,7 @@ export class Party extends EventEmitter<PartyEvent> {
         // server will send "currentPartyUsers" message back
         this.socket.send(
           JSON.stringify({
-            type: SendMsgType.GET_CURRENT_PARTY_USERS,
+            type: SocketSendMsgType.GET_CURRENT_PARTY_USERS,
             payload: {
               partyId: this.id,
               username: this.ownUser.username
@@ -126,14 +186,24 @@ export class Party extends EventEmitter<PartyEvent> {
           // own user is the creator of the party, and is thus automatically an admin
           // reflects same code in server side
           this.ownUser.setIsAdmin(true);
+          this.parentCommunicator.setIsUserAdmin(true);
+          this.periodicallySendVideoTime();
         } else {
           this.ownUser.setIsAdmin(false);
+          this.parentCommunicator.setIsUserAdmin(false);
         }
 
+        let askedForVideoTime = false;
         users.forEach((userInfoString: string) => {
           const userInfo: UserInfo = JSON.parse(userInfoString);
           const { userId, username, isAdmin } = userInfo;
-          const user = this.connectToPeer(userId, username, isAdmin);
+          let user: User;
+          if (!askedForVideoTime && isAdmin) {
+            user = this.connectToPeer(userId, username, isAdmin, true);
+            askedForVideoTime = true;
+          } else {
+            user = this.connectToPeer(userId, username, isAdmin, false);
+          }
           this.users.set(userId, user);
         });
         this.emit(PartyEvent.SET_USERS, Object.fromEntries(this.users));
@@ -179,6 +249,10 @@ export class Party extends EventEmitter<PartyEvent> {
     }
   }
 
+  /**
+   * Voice Chat
+   */
+
   addNewPeer(
     senderId: string,
     username: string,
@@ -198,7 +272,7 @@ export class Party extends EventEmitter<PartyEvent> {
       console.log("my non-initiator signal: ", signal);
       this.socket.send(
         JSON.stringify({
-          type: SendMsgType.RETURN_SIGNAL,
+          type: SocketSendMsgType.RETURN_SIGNAL,
           payload: {
             senderId: this.ownUser.id,
             recipientId: senderId,
@@ -210,13 +284,18 @@ export class Party extends EventEmitter<PartyEvent> {
 
     peer.signal(receivedSignal);
 
-    const otherUser = new OtherUser(senderId, username, this, peer);
+    const otherUser = new OtherUser(senderId, username, this, peer, false);
     // first time new user joins, user is not given admin privileges
     otherUser.setIsAdmin(false);
     return otherUser;
   }
 
-  connectToPeer(userId: string, username: string, isAdmin: boolean): User {
+  connectToPeer(
+    userId: string,
+    username: string,
+    isAdmin: boolean,
+    askForTime: boolean
+  ): User {
     log(`Connecting to peer with id: ${userId}, isAdmin: ${isAdmin}`);
     const peer = new Peer({
       initiator: true,
@@ -229,7 +308,7 @@ export class Party extends EventEmitter<PartyEvent> {
       console.log("my initiator signal: ", signal);
       this.socket.send(
         JSON.stringify({
-          type: SendMsgType.NEW_SIGNAL,
+          type: SocketSendMsgType.NEW_SIGNAL,
           payload: {
             senderId: this.ownUser.id,
             username: this.ownUser.username,
@@ -240,22 +319,108 @@ export class Party extends EventEmitter<PartyEvent> {
       );
     });
 
-    const otherUser = new OtherUser(userId, username, this, peer);
+    const otherUser = new OtherUser(userId, username, this, peer, askForTime);
     otherUser.setIsAdmin(isAdmin);
     return otherUser;
   }
 
-  sendMessage(senderId: string, content: string) {
+  /**
+   * Text Chat
+   */
+
+  sendChatMessage(senderId: string, content: string) {
     console.log(`sender: ${senderId}`);
     this.socket.send(
       JSON.stringify({
-        type: SendMsgType.BROADCAST_MESSAGE,
+        type: SocketSendMsgType.BROADCAST_MESSAGE,
         payload: {
           senderId,
           content
         }
       })
     );
+  }
+
+  /**
+   * Video control
+   */
+
+  private relayRTCMessageToOthers(
+    type: RTCMsgType,
+    optionalPayloadFields?: {
+      currentTimeSeconds?: number;
+      speed?: number;
+    }
+  ) {
+    this.users.forEach((user: User) => {
+      if (!user.isOwn) {
+        user.peer &&
+          user.peer.send(
+            JSON.stringify({
+              type,
+              payload: {
+                username: this.ownUser.username,
+                ...optionalPayloadFields
+              }
+            })
+          );
+      }
+    });
+  }
+
+  relayPlay() {
+    this.relayRTCMessageToOthers(RTCMsgType.PLAY);
+  }
+
+  relayPause() {
+    this.relayRTCMessageToOthers(RTCMsgType.PAUSE);
+  }
+
+  relaySeeked(currentTimeSeconds: number) {
+    this.relayRTCMessageToOthers(RTCMsgType.SEEKED, { currentTimeSeconds });
+  }
+
+  relayChangeSpeed(speed: number) {
+    this.relayRTCMessageToOthers(RTCMsgType.CHANGE_SPEED, { speed });
+  }
+
+  playVideo(fromUsername: string | null) {
+    this.emit(PartyEvent.VIDEO_PLAY, fromUsername);
+    this.parentCommunicator.playVideo();
+  }
+
+  pauseVideo(fromUsername: string | null) {
+    this.emit(PartyEvent.VIDEO_PAUSE, fromUsername);
+    this.parentCommunicator.pauseVideo();
+  }
+
+  seekVideo(fromUsername: string | null, currentTimeSeconds: number) {
+    this.emit(PartyEvent.VIDEO_SEEK, fromUsername, currentTimeSeconds);
+    this.parentCommunicator.seekVideo(currentTimeSeconds);
+  }
+
+  changeVideoSpeed(fromUsername: string | null, speed: number) {
+    this.emit(PartyEvent.VIDEO_CHANGE_SPEED, fromUsername, speed);
+    this.parentCommunicator.changeVideoSpeed(speed);
+  }
+
+  async setVideoStatus(seconds: number, speed: number, isPlaying: boolean) {
+    await this.seekVideo(null, seconds);
+    await this.changeVideoSpeed(null, speed);
+    if (isPlaying) {
+      this.playVideo(null);
+    } else {
+      this.pauseVideo(null);
+    }
+  }
+
+  periodicallySendVideoTime() {
+    window.setInterval(async () => {
+      const status = await this.parentCommunicator.getCurrentVideoStatus();
+      this.relayRTCMessageToOthers(RTCMsgType.TIME_UPDATE, {
+        currentTimeSeconds: status.currentTimeSeconds
+      });
+    }, SEND_TIME_UPDATE_INTERVAL);
   }
 }
 

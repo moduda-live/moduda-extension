@@ -1,5 +1,5 @@
 import _Vue from "vue";
-import { Party } from "../services/Party";
+import { Party } from "../models/Party";
 
 declare module "vue/types/vue" {
   interface Vue {

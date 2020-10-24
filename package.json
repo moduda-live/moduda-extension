@@ -17,6 +17,7 @@
     "short-uuid": "^4.1.0",
     "simple-peer": "^9.7.2",
     "tippy.js": "^6.2.6",
+    "toastify-js": "^1.9.3",
     "vue": "^2.6.11",
     "vuex": "^3.4.0"
   },
