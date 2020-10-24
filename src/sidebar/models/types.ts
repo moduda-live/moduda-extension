@@ -23,6 +23,7 @@ export enum PartyEvent {
   SET_MY_USER_ID,
   SET_USERS,
   UPDATE_USER_STREAM,
+  SET_USER_MUTE,
   // Chat
   ADD_CHAT_MSG,
   // Video
@@ -39,7 +40,8 @@ export enum SocketSendMsgType {
   GET_CURRENT_PARTY_USERS = "getCurrentPartyUsers",
   RETURN_SIGNAL = "returnSignal",
   NEW_SIGNAL = "newSignal",
-  BROADCAST_MESSAGE = "broadcastMessage"
+  BROADCAST_MESSAGE = "broadcastMessage",
+  SET_USER_MUTE = "setUserMute"
 }
 
 export enum RTCMsgType {

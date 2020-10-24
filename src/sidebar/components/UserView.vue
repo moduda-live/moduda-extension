@@ -20,14 +20,14 @@
         class="icon"
         type="md-mic"
         v-show="!user.isMuted"
-        @click="toggleMute"
+        @click="mute"
       />
       <Icon
         size="17"
         class="icon"
         type="md-mic-off"
         v-show="user.isMuted"
-        @click="toggleMute"
+        @click="unmute"
       />
     </div>
   </div>
@@ -85,8 +85,11 @@ export default Vue.extend({
     this.detectUserSpeaking = throttle(this.detectUserSpeaking, THROTTLE_RATE);
   },
   methods: {
-    toggleMute() {
-      this.$store.commit("TOGGLE_MUTE_USER", this.user.id);
+    mute() {
+      this.$store.commit("MUTE_USER", this.user.id);
+    },
+    unmute() {
+      this.$store.commit("UNMUTE_USER", this.user.id);
     },
     detectUserSpeaking(event: MessageEvent) {
       const volume = event.data.volume;
