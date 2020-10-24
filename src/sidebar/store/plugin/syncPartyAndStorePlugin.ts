@@ -48,6 +48,12 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
         (userId: string, stream: MediaStream) => {
           store.dispatch("updateUserStream", { userId, stream });
         }
+      )
+      .on(
+        PartyEvent.SET_USER_ADMIN_STATUS,
+        (userId: string, username: string, isAdmin: boolean) => {
+          store.commit("SET_USER_ADMIN", { userId, isAdmin });
+        }
       );
 
     // Now sync the other way: store -> party

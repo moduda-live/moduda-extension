@@ -1,12 +1,15 @@
 <template>
-  <div class="user" :class="{ 'user--speaking': user.isSpeaking }">
+  <div class="user">
     <Avatar
       style="color: #f56a00;background-color: #fde3cf"
       size="small"
       class="user__avatar"
       >{{ usernameFirstChar }}</Avatar
     >
-    <h4 class="user__name">{{ user.username }}</h4>
+    <h4 class="user__name" :class="{ 'user--speaking': user.isSpeaking }">
+      {{ user.username }}
+    </h4>
+    <AdminIcon v-if="user.isAdmin" class="userview-admin-icon" />
     <audio autoplay ref="userAudio" />
     <div class="mic">
       <Icon
@@ -36,6 +39,7 @@
 <script lang="ts">
 import Vue from "vue";
 import throttle from "lodash.throttle";
+import AdminIcon from "./AdminIcon.vue";
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import volumeProcessorWorklet from "worklet-loader!../../worklet/volumeProcessorWorklet";
@@ -47,6 +51,9 @@ const USER_SPEAKING_VOLUME_THRESHOLD = 0.05;
 export default Vue.extend({
   name: "VoiceChatPanel",
   props: ["user"],
+  components: {
+    AdminIcon
+  },
   mounted() {
     // is this user is our own, call analyseAudio ourself since the watcher wont be triggered
     if (this.user.isOwn) {
@@ -69,9 +76,6 @@ export default Vue.extend({
   watch: {
     "user.stream": {
       handler(newVal: MediaStream, oldVal: MediaStream) {
-        console.log("Change from: ", oldVal);
-        console.log("Change to: ", newVal);
-
         if (newVal) {
           this.analyseAudio(newVal);
         }
@@ -137,7 +141,7 @@ export default Vue.extend({
   color: @theme-grey;
   display: flex;
   flex-direction: row;
-  align-items: stretch;
+  align-items: center;
   padding: 6px 13px;
   border-radius: 4px;
   height: 36px;
@@ -155,9 +159,7 @@ export default Vue.extend({
 }
 
 .user--speaking {
-  .user__name {
-    color: @theme-white;
-  }
+  color: @theme-white;
 }
 
 .user__name {
@@ -188,5 +190,11 @@ export default Vue.extend({
     cursor: default;
     margin-right: 5px;
   }
+}
+
+.userview-admin-icon {
+  margin-top: 2px;
+  margin-left: 6px;
+  color: @theme-grey !important;
 }
 </style>

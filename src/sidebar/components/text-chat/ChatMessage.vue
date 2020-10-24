@@ -1,12 +1,6 @@
 <template>
   <div class="message-container">
-    <Icon
-      type="logo-angular"
-      color="#B42000"
-      class="admin-icon"
-      v-if="message.isSenderAdmin"
-      id="admin-icon"
-    />
+    <AdminIcon v-if="message.isSenderAdmin" class="admin-icon" />
     <div class="username">{{ message.senderUsername }}</div>
     <span style="white-space: pre-wrap;">:&nbsp;&nbsp;</span>
     <span class="content">
@@ -22,10 +16,10 @@
 
 <script lang="ts">
 import Vue from "vue";
-import tippy from "tippy.js";
 import { emoteInfoMap } from "@/util/constants";
 import RenderedEmote from "./RenderedEmote.vue";
 import RenderedText from "./RenderedText.vue";
+import AdminIcon from "../AdminIcon.vue";
 
 type MessagePartitionComponent = "RenderedEmote" | "RenderedText";
 interface ParsedPartitionInfo {
@@ -38,17 +32,8 @@ export default Vue.extend({
   props: ["message", "isAdmin"],
   components: {
     RenderedEmote,
-    RenderedText
-  },
-  mounted() {
-    tippy("#admin-icon", {
-      content: "Admin",
-      placement: "top",
-      animation: "scale",
-      offset: [0, 3],
-      maxWidth: 50,
-      theme: "dark"
-    });
+    RenderedText,
+    AdminIcon
   },
   computed: {
     parsedMessagePartition(): Array<ParsedPartitionInfo> {
