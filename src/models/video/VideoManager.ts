@@ -90,6 +90,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
           if (!this.hostVideoStatus.isPlaying) {
             console.log("user playing on own, cancel");
             this.videoSelected.pause();
+            this.emit(VideoEvent.PLAY_BLOCKED);
           }
         }
       } else {
@@ -111,6 +112,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
           if (this.hostVideoStatus.isPlaying) {
             console.log("user pausing on own, cancel");
             this.videoSelected.play();
+            this.emit(VideoEvent.PAUSE_BLOCKED);
           }
         }
       } else {
@@ -137,6 +139,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
           console.log("user seeked on own, cancel");
           this.preventInfiniteLoop = true;
           this.videoSelected.currentTime = this.hostVideoStatus.currentTimeSeconds;
+          this.emit(VideoEvent.SEEKED_BLOCKED);
         }
       } else {
         console.log("seeked by someone else");
@@ -157,6 +160,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
           console.log("user changed speed on own, cancel");
           this.preventInfiniteLoop = true;
           this.videoSelected.playbackRate = this.hostVideoStatus.speed;
+          this.emit(VideoEvent.CHANGE_SPEED_BLOCKED);
         }
       } else {
         console.log("changed speed by someone else");

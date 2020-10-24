@@ -32,7 +32,7 @@ export class Party extends EventEmitter<PartyEvent> {
     this.wsUrl = wsUrl;
     this.id = partyId ?? short.generate();
     this.users = new Map<string, User>();
-    this.showToast = false;
+    this.showToast = true; // needs to be same as the value in vuex
     parentCommunicator.setParty(this);
     this.parentCommunicator = parentCommunicator;
   }
@@ -45,10 +45,12 @@ export class Party extends EventEmitter<PartyEvent> {
     // Note: More event handlers registered in store / plugin / syncPartyAndStorePlugin.ts
     this.on(PartyEvent.USER_JOINED, () => {
       log("User joined [inside Party]");
+      if (!this.showToast) return;
     })
       .on(PartyEvent.USER_LEFT, userId => {
         log("User left [inside Party]");
         this.users.delete(userId);
+        if (!this.showToast) return;
       })
       .on(PartyEvent.VIDEO_PLAY, username => {
         if (!this.showToast) return;
