@@ -19,12 +19,14 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
   hostVideoStatus!: VideoStatus;
   isUserAdmin: boolean;
   preventInfiniteLoop: boolean;
+  adminControlsOnly: boolean;
 
   constructor() {
     super();
     this.videoPlayedByOwn = true;
     this.isUserAdmin = false;
     this.preventInfiniteLoop = false;
+    this.adminControlsOnly = true;
   }
 
   selectVideo(autoResolve: boolean): Promise<HTMLVideoElement> {
@@ -83,15 +85,14 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
   setupListeners() {
     this.videoSelected.addEventListener("play", e => {
       if (this.videoPlayedByOwn) {
-        if (this.isUserAdmin) {
+        if (this.isUserAdmin || !this.adminControlsOnly) {
           console.log("user played on own, isAdmin");
+          this.hostVideoStatus.isPlaying = true;
           this.emit(VideoEvent.PLAY);
-        } else {
-          if (!this.hostVideoStatus.isPlaying) {
-            console.log("user playing on own, cancel");
-            this.videoSelected.pause();
-            this.emit(VideoEvent.PLAY_BLOCKED);
-          }
+        } else if (!this.hostVideoStatus.isPlaying) {
+          console.log("user playing on own, cancel");
+          this.videoSelected.pause();
+          this.emit(VideoEvent.PLAY_BLOCKED);
         }
       } else {
         if (this.videoSelected.readyState === 1) {
@@ -105,15 +106,14 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
 
     this.videoSelected.addEventListener("pause", () => {
       if (this.videoPlayedByOwn) {
-        if (this.isUserAdmin) {
+        if (this.isUserAdmin || !this.adminControlsOnly) {
           console.log("user paused on own, isAdmin");
+          this.hostVideoStatus.isPlaying = false;
           this.emit(VideoEvent.PAUSE);
-        } else {
-          if (this.hostVideoStatus.isPlaying) {
-            console.log("user pausing on own, cancel");
-            this.videoSelected.play();
-            this.emit(VideoEvent.PAUSE_BLOCKED);
-          }
+        } else if (this.hostVideoStatus.isPlaying) {
+          console.log("user pausing on own, cancel");
+          this.videoSelected.play();
+          this.emit(VideoEvent.PAUSE_BLOCKED);
         }
       } else {
         console.log("paused by someone else");
@@ -128,7 +128,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
 
     this.videoSelected.addEventListener("seeked", () => {
       if (this.videoPlayedByOwn) {
-        if (this.isUserAdmin) {
+        if (this.isUserAdmin || !this.adminControlsOnly) {
           console.log("user seeked on own, isAdmin");
           this.emit(VideoEvent.SEEKED, this.videoSelected.currentTime);
         } else {
@@ -149,7 +149,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
 
     this.videoSelected.addEventListener("ratechange", () => {
       if (this.videoPlayedByOwn) {
-        if (this.isUserAdmin) {
+        if (this.isUserAdmin || !this.adminControlsOnly) {
           console.log("user changed speed on own, isAdmin");
           this.emit(VideoEvent.CHANGE_SPEED, this.videoSelected.playbackRate);
         } else {

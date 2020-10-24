@@ -56,6 +56,14 @@ export class Party extends EventEmitter<PartyEvent> {
         log("Setting user mute state to: " + mute);
         user.isMuted = mute;
       })
+      .on(PartyEvent.SET_ADMIN_ONLY_CONTROLS, (adminControlsOnly: boolean) => {
+        if (!this.showToast) return;
+        this.parentCommunicator.makeToast(
+          adminControlsOnly
+            ? "Now only admins can control the video"
+            : "Now anyone can control the video"
+        );
+      })
       .on(
         PartyEvent.SET_USER_ADMIN_STATUS,
         (userId: string, username: string, isAdmin: boolean) => {
@@ -259,10 +267,10 @@ export class Party extends EventEmitter<PartyEvent> {
         break;
       }
       case "newForeignMessage": {
-        const { senderId, content } = msg.payload;
-        log(`Received new messsage from foreign user ${senderId}`);
+        const { userId, content } = msg.payload;
+        log(`Received new messsage from foreign user ${userId}`);
         log(`content: ${content}`);
-        const sender = this.users.get(senderId);
+        const sender = this.users.get(userId);
         if (sender) {
           this.emit(PartyEvent.ADD_CHAT_MSG, {
             isSenderAdmin: sender.isAdmin,
@@ -280,6 +288,13 @@ export class Party extends EventEmitter<PartyEvent> {
         if (user) {
           this.emit(PartyEvent.SET_USER_MUTE, user, mute);
         }
+        break;
+      }
+      case "setAdminControls": {
+        const { userId, adminControlsOnly } = msg.payload;
+        console.log("adminControlsReceived: ", adminControlsOnly);
+        this.parentCommunicator.setAdminControls(adminControlsOnly);
+        this.emit(PartyEvent.SET_ADMIN_ONLY_CONTROLS, adminControlsOnly);
         break;
       }
       case "promoteToRoomOwner": {
@@ -308,7 +323,6 @@ export class Party extends EventEmitter<PartyEvent> {
       }
       case "timeUpdate": {
         const { time } = msg.payload;
-        console.log("Receiving update: ", time);
         this.parentCommunicator.setHostTime(time);
         break;
       }
@@ -340,7 +354,6 @@ export class Party extends EventEmitter<PartyEvent> {
         JSON.stringify({
           type: SocketSendMsgType.RETURN_SIGNAL,
           payload: {
-            senderId: this.ownUser.id,
             recipientId: senderId,
             signal
           }
@@ -377,7 +390,6 @@ export class Party extends EventEmitter<PartyEvent> {
         JSON.stringify({
           type: SocketSendMsgType.NEW_SIGNAL,
           payload: {
-            senderId: this.ownUser.id,
             username: this.ownUser.username,
             recipientId: userId,
             signal
@@ -388,7 +400,6 @@ export class Party extends EventEmitter<PartyEvent> {
 
     const otherUser = new OtherUser(userId, username, this, peer, isRoomOwner);
     otherUser.setIsAdmin(isAdmin);
-    console.log("isRoomOwner:", isRoomOwner);
     otherUser.setIsRoomOwner(isRoomOwner);
     return otherUser;
   }
@@ -466,6 +477,18 @@ export class Party extends EventEmitter<PartyEvent> {
 
   relayChangeSpeed(speed: number) {
     this.relayRTCMessageToOthers(RTCMsgType.CHANGE_SPEED, { speed });
+  }
+
+  relayAdminControlsState(adminControlsOnly: boolean) {
+    this.parentCommunicator.setAdminControls(adminControlsOnly);
+    this.socket.send(
+      JSON.stringify({
+        type: SocketSendMsgType.SET_ADMIN_CONTROLS,
+        payload: {
+          adminControlsOnly
+        }
+      })
+    );
   }
 
   playVideo(fromUsername: string | null) {

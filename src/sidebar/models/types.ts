@@ -26,6 +26,7 @@ export enum PartyEvent {
   UPDATE_USER_STREAM,
   SET_USER_MUTE,
   SET_USER_ADMIN_STATUS,
+  SET_ADMIN_ONLY_CONTROLS,
   // Chat
   ADD_CHAT_MSG,
   // Video
@@ -44,7 +45,8 @@ export enum SocketSendMsgType {
   NEW_SIGNAL = "newSignal",
   BROADCAST_MESSAGE = "broadcastMessage",
   SET_USER_MUTE = "setUserMute",
-  TIME_UPDATE = "timeUpdate"
+  TIME_UPDATE = "timeUpdate",
+  SET_ADMIN_CONTROLS = "setAdminControls"
 }
 
 export enum RTCMsgType {
@@ -82,4 +84,5 @@ export interface Communicator {
   relayChangeSpeed(speed: number): void;
   getCurrentVideoStatus(): Promise<VideoStatus>;
   setHostTime(currentTimeSeconds: number): void;
+  setAdminControls(adminControlsOnly: boolean): void;
 }
