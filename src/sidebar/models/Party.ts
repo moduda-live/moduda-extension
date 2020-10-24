@@ -115,8 +115,6 @@ export class Party extends EventEmitter<PartyEvent> {
     this.ownUser = await new OwnUser(username, this).mediaStreamInitialized;
     this.socket = new WebSocket(this.wsUrl);
     this.registerWebsocketHandlers(); // onopen has to be in the same section to execute in same EventLoop
-
-    await this.parentCommunicator.pauseVideo(); // initallly pause video
   }
 
   registerWebsocketHandlers() {
@@ -188,8 +186,10 @@ export class Party extends EventEmitter<PartyEvent> {
           // own user is the creator of the party, and is thus automatically an admin
           // reflects same code in server side
           this.ownUser.setIsAdmin(true);
+          this.parentCommunicator.setIsUserAdmin(true);
         } else {
           this.ownUser.setIsAdmin(false);
+          this.parentCommunicator.setIsUserAdmin(false);
         }
 
         let askedForVideoTime = false;

@@ -63,6 +63,7 @@ export interface Communicator {
   init(): Promise<void>;
   setParty(party: Party): void;
   getUsername(): Promise<string>;
+  setIsUserAdmin(isUserAdmin: boolean): void;
   hideSidebar(): void;
   makeToast(toastMsg: string): void;
   selectVideo(autoResolveToLargestVideo: boolean): Promise<void>;

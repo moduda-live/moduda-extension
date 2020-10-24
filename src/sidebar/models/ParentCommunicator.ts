@@ -30,6 +30,10 @@ export default class ParentCommunicator implements Communicator {
     return this.parentConnection.getUsername();
   }
 
+  setIsUserAdmin(isUserAdmin: boolean) {
+    this.parentConnection.setIsUserAdmin(isUserAdmin);
+  }
+
   hideSidebar() {
     this.parentConnection.hideSidebar();
   }

@@ -31,3 +31,7 @@ export function getViewportWidth() {
     window.innerWidth || 0
   );
 }
+
+export function isPlaying(vid: HTMLVideoElement) {
+  return vid.currentTime > 0 && !vid.paused && !vid.ended && vid.readyState > 2;
+}
