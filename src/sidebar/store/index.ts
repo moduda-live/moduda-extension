@@ -97,13 +97,19 @@ const store: StoreOptions<RootState> = {
         Vue.set(state.users, userId, userWithStream);
       }
     },
-    TOGGLE_MUTE_USER(state, userId) {
+    MUTE_USER(state, userId) {
       const user = state.users[userId];
       if (user) {
-        user.stream
-          .getAudioTracks()
-          .forEach(track => (track.enabled = !track.enabled));
-        user.isMuted = !user.isMuted;
+        user.stream.getAudioTracks().forEach(track => (track.enabled = false));
+        user.isMuted = true;
+        user.isSpeaking = false; // speaking should always be set to false at start
+      }
+    },
+    UNMUTE_USER(state, userId) {
+      const user = state.users[userId];
+      if (user) {
+        user.stream.getAudioTracks().forEach(track => (track.enabled = true));
+        user.isMuted = false;
         user.isSpeaking = false;
       }
     },

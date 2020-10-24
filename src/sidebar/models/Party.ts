@@ -52,6 +52,10 @@ export class Party extends EventEmitter<PartyEvent> {
         this.users.delete(userId);
         if (!this.showToast) return;
       })
+      .on(PartyEvent.SET_USER_MUTE, (user: User, mute: boolean) => {
+        log("Setting user mute state to: " + mute);
+        user.isMuted = mute;
+      })
       .on(PartyEvent.VIDEO_PLAY, username => {
         if (!this.showToast) return;
         if (username === null) {
@@ -246,6 +250,15 @@ export class Party extends EventEmitter<PartyEvent> {
         }
         break;
       }
+      case "setUserMute": {
+        const { userId, mute } = msg.payload;
+        log(`Mute ${userId}: ${mute}`);
+        const user = this.users.get(userId);
+        if (user) {
+          this.emit(PartyEvent.SET_USER_MUTE, user, mute);
+        }
+        break;
+      }
     }
   }
 
@@ -342,6 +355,21 @@ export class Party extends EventEmitter<PartyEvent> {
   }
 
   /**
+   * User control
+   */
+
+  relayMuteState(mute: boolean) {
+    this.socket.send(
+      JSON.stringify({
+        type: SocketSendMsgType.SET_USER_MUTE,
+        payload: {
+          mute
+        }
+      })
+    );
+  }
+
+  /**
    * Video control
    */
 
@@ -353,17 +381,17 @@ export class Party extends EventEmitter<PartyEvent> {
     }
   ) {
     this.users.forEach((user: User) => {
-      if (!user.isOwn) {
-        user.peer &&
-          user.peer.send(
-            JSON.stringify({
-              type,
-              payload: {
-                username: this.ownUser.username,
-                ...optionalPayloadFields
-              }
-            })
-          );
+      if (!user.isOwn && user.peer !== null && user.peer !== undefined) {
+        console.log(`user: ${user.username}, and peer is ${user.peer}`);
+        user.peer.send(
+          JSON.stringify({
+            type,
+            payload: {
+              username: this.ownUser.username,
+              ...optionalPayloadFields
+            }
+          })
+        );
       }
     });
   }
