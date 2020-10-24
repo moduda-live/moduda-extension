@@ -1,6 +1,6 @@
 import Peer from "simple-peer";
-import { Party } from "../services/Party";
-import { PartyEvent } from "../services/types";
+import { Party } from "./Party";
+import { PartyEvent, RTCMsgType } from "./types";
 
 export class User {
   id: string | undefined;
@@ -80,24 +80,90 @@ export class OwnUser extends User {
 }
 
 export class OtherUser extends User {
-  constructor(id: string, username: string, party: Party, peer: Peer.Instance) {
+  constructor(
+    id: string,
+    username: string,
+    party: Party,
+    peer: Peer.Instance,
+    askForTime: boolean
+  ) {
     super(id, username, party, peer);
     this.isOwn = false;
-    this.addPeerEventListeners();
+    this.addPeerEventListeners(askForTime);
   }
 
-  addPeerEventListeners() {
+  addPeerEventListeners(askForTime: boolean) {
     if (!this.peer) {
       return;
     }
 
     this.peer.on("connect", () => {
       console.log("Connected with " + this.id);
-      this.peer?.send("test");
+      if (askForTime) {
+        this.peer!!.send(
+          JSON.stringify({
+            type: RTCMsgType.REQUEST_INITIAL_VIDEO_STATUS,
+            payload: {}
+          })
+        );
+      }
     });
 
-    this.peer.on("data", data => {
+    this.peer.on("data", async data => {
       console.log(`Data received: ${data}`);
+
+      const message = JSON.parse(data);
+
+      if (message.type === undefined || message.type === null) {
+        console.error("Malformed data received via WebRTC");
+        return;
+      }
+
+      switch (message.type as RTCMsgType) {
+        case RTCMsgType.PLAY:
+          this.party.playVideo(message.payload.username);
+          break;
+        case RTCMsgType.PAUSE:
+          this.party.pauseVideo(message.payload.username);
+          break;
+        case RTCMsgType.SEEKED:
+          this.party.seekVideo(
+            message.payload.username,
+            message.payload.currentTimeSeconds
+          );
+          break;
+        case RTCMsgType.CHANGE_SPEED:
+          this.party.changeVideoSpeed(
+            message.payload.username,
+            message.payload.speed
+          );
+          break;
+        case RTCMsgType.REQUEST_INITIAL_VIDEO_STATUS: {
+          const initialVideoStatus = await this.party.parentCommunicator.getCurrentVideoStatus();
+          this.peer!!.send(
+            JSON.stringify({
+              type: RTCMsgType.INITIAL_VIDEO_STATUS,
+              payload: {
+                ...initialVideoStatus
+              }
+            })
+          );
+          break;
+        }
+        case RTCMsgType.INITIAL_VIDEO_STATUS: {
+          const { currentTimeSeconds, speed, isPlaying } = message.payload;
+          this.party.setVideoStatus(currentTimeSeconds, speed, isPlaying);
+          break;
+        }
+        case RTCMsgType.TIME_UPDATE: {
+          this.party.parentCommunicator.setHostTime(
+            message.payload.currentTimeSeconds
+          );
+          break;
+        }
+        default:
+          console.error("Could not identify message received via WebRTC");
+      }
     });
 
     this.peer.on("stream", stream => {

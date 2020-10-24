@@ -1,6 +1,6 @@
 @import "./variables.less";
 
-#movens-sidebar {
+.movens-sidebar {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -9,10 +9,43 @@
   height: calc(100vh - 32px);
   z-index: 999999;
   background-color: @theme-primary-color;
-  padding: 16px;
+  padding: 16px 21px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.movens-sidebar--teasing__pseudo {
+  display: block;
+  font-size: 11px;
+  color: @theme-white;
+  position: absolute;
+  writing-mode: tb-rl;
+  left: 3px;
+}
+
+.movens-sidebar--teasing {
+  cursor: pointer;
+
+  &:before {
+    &:extend(.movens-sidebar--teasing__pseudo);
+    content: "Click to open";
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  &:after {
+    &:extend(.movens-sidebar--teasing__pseudo);
+    content: "movens";
+    font-weight: 700;
+    top: 50%;
+    transform: translateY(100%) translateY(-2px);
+  }
+
+  &:hover {
+    background-color: @theme-primary-dark-medium;
+  }
 }
 
 #movens-iframe {
@@ -20,4 +53,20 @@
   flex: 1;
   box-sizing: border-box;
   overflow: hidden;
+}
+
+.movens-toast {
+  border-radius: 2px;
+  background: @theme-primary-color !important;
+  color: @theme-white !important;
+}
+
+.movens-toast-warning {
+  &:extend(.movens-toast);
+  background: #c12503 !important;
+}
+
+.video--selected {
+  outline: 9999px solid rgba(227, 80, 54, 0.5);
+  outline-offset: -9999px;
 }

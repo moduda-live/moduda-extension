@@ -1,5 +1,5 @@
 import Vue from "vue";
-import { Party } from "../services/Party";
+import { Party } from "../models/Party";
 import Vuex, { StoreOptions } from "vuex";
 import { RootState, ConnectionStatus } from "./types";
 import { User } from "../models/User";
@@ -14,12 +14,16 @@ const store: StoreOptions<RootState> = {
     chat
   },
   state: {
+    videoNotFound: false,
     partyId: "",
     userId: "",
-    serverConnectionStatus: ConnectionStatus.CONNECTING,
-    users: {}
+    serverConnectionStatus: ConnectionStatus.BEFORE_CONNECT,
+    users: {},
+    showToast: true
   },
   getters: {
+    serverBeforeConnect: state =>
+      state.serverConnectionStatus === ConnectionStatus.BEFORE_CONNECT,
     serverConnecting: state =>
       state.serverConnectionStatus === ConnectionStatus.CONNECTING,
     serverConnected: state =>
@@ -30,6 +34,9 @@ const store: StoreOptions<RootState> = {
     myUser: state => Object.values(state.users).filter(user => user.isOwn)[0]
   },
   actions: {
+    setVideoNotFound({ commit }, isVideoNotFound: boolean) {
+      commit("SET_VIDEO_NOT_FOUND", isVideoNotFound);
+    },
     setPartyId({ commit }, partyId: string) {
       commit("SET_PARTY_ID", partyId);
     },
@@ -62,6 +69,9 @@ const store: StoreOptions<RootState> = {
     }
   },
   mutations: {
+    SET_VIDEO_NOT_FOUND(state, isVideoNotFound: boolean) {
+      state.videoNotFound = isVideoNotFound;
+    },
     SET_PARTY_ID(state, partyId: string) {
       state.partyId = partyId;
     },
@@ -96,6 +106,9 @@ const store: StoreOptions<RootState> = {
         user.isMuted = !user.isMuted;
         user.isSpeaking = false;
       }
+    },
+    SET_TOAST_SHOW(state, showToast: boolean) {
+      state.showToast = showToast;
     }
   }
 };

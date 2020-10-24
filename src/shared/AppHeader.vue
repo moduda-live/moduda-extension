@@ -24,5 +24,6 @@ export default Vue.extend({
   display: flex;
   align-items: center;
   margin-bottom: 2px;
+  margin-left: -10px;
 }
 </style>
