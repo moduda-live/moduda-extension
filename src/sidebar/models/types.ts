@@ -48,7 +48,8 @@ export enum RTCMsgType {
   SEEKED,
   CHANGE_SPEED,
   REQUEST_INITIAL_VIDEO_STATUS,
-  INITIAL_VIDEO_STATUS
+  INITIAL_VIDEO_STATUS,
+  TIME_UPDATE
 }
 
 export interface VideoStatus {
@@ -76,4 +77,5 @@ export interface Communicator {
   relaySeeked(currentTimeSeconds: number): void;
   relayChangeSpeed(speed: number): void;
   getCurrentVideoStatus(): Promise<VideoStatus>;
+  setHostTime(currentTimeSeconds: number): void;
 }

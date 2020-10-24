@@ -12,6 +12,8 @@ import { log } from "@/util/log";
 import { User, OwnUser, OtherUser } from "./User";
 import { formatTime } from "@/util/formatTime";
 
+const SEND_TIME_UPDATE_INTERVAL = 500;
+
 export class Party extends EventEmitter<PartyEvent> {
   wsUrl: string;
   id: string;
@@ -42,13 +44,9 @@ export class Party extends EventEmitter<PartyEvent> {
   setUpEventHandlers() {
     // Note: More event handlers registered in store / plugin / syncPartyAndStorePlugin.ts
     this.on(PartyEvent.USER_JOINED, () => {
-      if (!this.showToast) return;
-      //TODO: Show notification via parentCommunicator
       log("User joined [inside Party]");
     })
       .on(PartyEvent.USER_LEFT, userId => {
-        if (!this.showToast) return;
-        //TODO: Show notification via parentCommunicator
         log("User left [inside Party]");
         this.users.delete(userId);
       })
@@ -187,6 +185,7 @@ export class Party extends EventEmitter<PartyEvent> {
           // reflects same code in server side
           this.ownUser.setIsAdmin(true);
           this.parentCommunicator.setIsUserAdmin(true);
+          this.periodicallySendVideoTime();
         } else {
           this.ownUser.setIsAdmin(false);
           this.parentCommunicator.setIsUserAdmin(false);
@@ -411,6 +410,15 @@ export class Party extends EventEmitter<PartyEvent> {
     } else {
       this.pauseVideo(null);
     }
+  }
+
+  periodicallySendVideoTime() {
+    window.setInterval(async () => {
+      const status = await this.parentCommunicator.getCurrentVideoStatus();
+      this.relayRTCMessageToOthers(RTCMsgType.TIME_UPDATE, {
+        currentTimeSeconds: status.currentTimeSeconds
+      });
+    }, SEND_TIME_UPDATE_INTERVAL);
   }
 }
 
