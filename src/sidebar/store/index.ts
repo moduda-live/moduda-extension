@@ -19,7 +19,8 @@ const store: StoreOptions<RootState> = {
     userId: "",
     serverConnectionStatus: ConnectionStatus.BEFORE_CONNECT,
     users: {},
-    showToast: true
+    showToast: true,
+    adminControlsOnly: true
   },
   getters: {
     serverBeforeConnect: state =>
@@ -75,6 +76,12 @@ const store: StoreOptions<RootState> = {
     SET_PARTY_ID(state, partyId: string) {
       state.partyId = partyId;
     },
+    SET_USER_ADMIN(state, { userId, isAdmin }) {
+      const user = state.users[userId];
+      if (user) {
+        user.setIsAdmin(isAdmin);
+      }
+    },
     SET_USER_ID(state, userId: string) {
       state.userId = userId;
     },
@@ -97,18 +104,27 @@ const store: StoreOptions<RootState> = {
         Vue.set(state.users, userId, userWithStream);
       }
     },
-    TOGGLE_MUTE_USER(state, userId) {
+    MUTE_USER(state, userId) {
       const user = state.users[userId];
       if (user) {
-        user.stream
-          .getAudioTracks()
-          .forEach(track => (track.enabled = !track.enabled));
-        user.isMuted = !user.isMuted;
+        user.stream.getAudioTracks().forEach(track => (track.enabled = false));
+        user.isMuted = true;
+        user.isSpeaking = false; // speaking should always be set to false at start
+      }
+    },
+    UNMUTE_USER(state, userId) {
+      const user = state.users[userId];
+      if (user) {
+        user.stream.getAudioTracks().forEach(track => (track.enabled = true));
+        user.isMuted = false;
         user.isSpeaking = false;
       }
     },
     SET_TOAST_SHOW(state, showToast: boolean) {
       state.showToast = showToast;
+    },
+    SET_ADMIN_ONLY_CONTROLS(state, { fromSelf, adminControlsOnly }) {
+      state.adminControlsOnly = adminControlsOnly;
     }
   }
 };

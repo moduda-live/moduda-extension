@@ -24,11 +24,24 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
       .on(PartyEvent.ADD_CHAT_MSG, (msg: Message) => {
         store.dispatch("chat/addMessage", msg);
       })
-      .on(PartyEvent.SET_MY_USER_ID, userId => {
+      .on(PartyEvent.SET_MY_USER_ID, (userId: string) => {
         store.dispatch("setUserId", userId);
       })
       .on(PartyEvent.SET_USERS, (users: Record<string, User>) => {
         store.dispatch("setUsers", users);
+      })
+      .on(PartyEvent.SET_USER_MUTE, (user: User, mute: boolean) => {
+        if (mute) {
+          store.commit("MUTE_USER", user.id);
+        } else {
+          store.commit("UNMUTE_USER", user.id);
+        }
+      })
+      .on(PartyEvent.SET_ADMIN_ONLY_CONTROLS, (adminControlsOnly: boolean) => {
+        store.commit("SET_ADMIN_ONLY_CONTROLS", {
+          fromSelf: false,
+          adminControlsOnly
+        });
       })
       .on(PartyEvent.USER_JOINED, (user: User) => {
         store.dispatch("addUser", user);
@@ -40,6 +53,12 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
         PartyEvent.UPDATE_USER_STREAM,
         (userId: string, stream: MediaStream) => {
           store.dispatch("updateUserStream", { userId, stream });
+        }
+      )
+      .on(
+        PartyEvent.SET_USER_ADMIN_STATUS,
+        (userId: string, username: string, isAdmin: boolean) => {
+          store.commit("SET_USER_ADMIN", { userId, isAdmin });
         }
       );
 
@@ -65,6 +84,24 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
 
       if (mutation.type === "SET_TOAST_SHOW") {
         party.setToastShow(mutation.payload);
+      }
+
+      if (
+        mutation.type === "SET_ADMIN_ONLY_CONTROLS" &&
+        mutation.payload.fromSelf
+      ) {
+        party.relayAdminControlsState(mutation.payload.adminControlsOnly);
+      }
+
+      if (mutation.type === "MUTE_USER" && mutation.payload === state.userId) {
+        party.relayMuteState(true);
+      }
+
+      if (
+        mutation.type === "UNMUTE_USER" &&
+        mutation.payload === state.userId
+      ) {
+        party.relayMuteState(false);
       }
     });
   };

@@ -17,6 +17,15 @@
           @on-change="toggleToast"
         />
       </Cell>
+      <Cell title="Admin-only Controls" :disabled="!enableAdminToggle">
+        <SwitchBtn
+          size="small"
+          :value="adminControlsOnly"
+          slot="extra"
+          :disabled="!enableAdminToggle"
+          @on-change="toggleAdminOnlyControls"
+        />
+      </Cell>
       <Cell
         title="Github"
         to="https://github.com/movens-app/movens-extension"
@@ -39,7 +48,7 @@ import Vue from "vue";
 import AppHeader from "@/shared/AppHeader.vue";
 import tippy from "tippy.js";
 import "tippy.js/animations/shift-away-subtle.css";
-import { mapMutations, mapState } from "vuex";
+import { mapGetters, mapMutations, mapState } from "vuex";
 
 export default Vue.extend({
   name: "Topbar",
@@ -47,12 +56,21 @@ export default Vue.extend({
     AppHeader
   },
   methods: {
-    ...mapMutations({ setToastShow: "SET_TOAST_SHOW" }),
+    ...mapMutations({
+      setToastShow: "SET_TOAST_SHOW",
+      setAdminOnlyControls: "SET_ADMIN_ONLY_CONTROLS"
+    }),
     hideSidebar() {
       this.$party.parentCommunicator.hideSidebar();
     },
     toggleToast(isSwitchOn: boolean) {
       this.setToastShow(isSwitchOn);
+    },
+    toggleAdminOnlyControls(isSwitchOn: boolean) {
+      this.setAdminOnlyControls({
+        fromSelf: true,
+        adminControlsOnly: isSwitchOn
+      });
     }
   },
   mounted() {
@@ -77,11 +95,23 @@ export default Vue.extend({
   },
   data() {
     return {
+      enableAdminToggle: false,
       primaryWhiteColor: "#c9c9c9"
     };
   },
+  watch: {
+    myUser(updatedUser) {
+      if (updatedUser) {
+        this.enableAdminToggle = updatedUser.isRoomOwner;
+      }
+    },
+    adminControlsOnly(val) {
+      console.log("New value from vuex:", val);
+    }
+  },
   computed: {
-    ...mapState(["showToast"])
+    ...mapState(["showToast", "adminControlsOnly"]),
+    ...mapGetters(["myUser"])
   }
 });
 </script>
@@ -94,13 +124,14 @@ export default Vue.extend({
 }
 
 .tippy-box[data-theme~="settings"] {
-  background-color: @theme-primary-dark;
+  background-color: darken(@theme-primary-dark-medium, 1%);
+  box-shadow: 0px 4px 10px -5px rgba(0, 0, 0, 1);
   border-radius: 5px;
   padding: 7px;
 
   .tippy-content {
     .ivu-cell-group {
-      width: 150px;
+      width: 190px;
     }
 
     .ivu-cell {
@@ -115,6 +146,14 @@ export default Vue.extend({
 
       .ivu-cell-title {
         font-size: 13px;
+      }
+    }
+
+    .ivu-cell-disabled {
+      color: @theme-grey;
+      &:hover,
+      &:active {
+        background-color: initial;
       }
     }
 

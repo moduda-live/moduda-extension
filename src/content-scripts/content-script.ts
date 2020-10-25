@@ -135,6 +135,10 @@ class Movens {
         },
         setHostTime: (currentTimeSeconds: number) => {
           this.VideoManager.hostVideoStatus.currentTimeSeconds = currentTimeSeconds;
+        },
+        setAdminControls: (adminControlsOnly: boolean) => {
+          console.log("Setting controls to: ", adminControlsOnly);
+          this.VideoManager.adminControlsOnly = adminControlsOnly;
         }
       }
     });

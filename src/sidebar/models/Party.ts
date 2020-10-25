@@ -52,6 +52,41 @@ export class Party extends EventEmitter<PartyEvent> {
         this.users.delete(userId);
         if (!this.showToast) return;
       })
+      .on(PartyEvent.SET_USER_MUTE, (user: User, mute: boolean) => {
+        log("Setting user mute state to: " + mute);
+        user.isMuted = mute;
+      })
+      .on(PartyEvent.SET_ADMIN_ONLY_CONTROLS, (adminControlsOnly: boolean) => {
+        if (!this.showToast) return;
+        this.parentCommunicator.makeToast(
+          adminControlsOnly
+            ? "Now only admins can control the video"
+            : "Now anyone can control the video"
+        );
+      })
+      .on(
+        PartyEvent.SET_USER_ADMIN_STATUS,
+        (userId: string, username: string, isAdmin: boolean) => {
+          if (!this.showToast) return;
+          if (!isAdmin) {
+            if (userId === this.ownUser.id) {
+              this.parentCommunicator.makeToast(
+                `${username} is no longer an admin`
+              );
+            } else {
+              this.parentCommunicator.makeToast(`You are no longer an admin`);
+            }
+            return;
+          }
+          if (userId === this.ownUser.id) {
+            this.parentCommunicator.makeToast(`You got promoted to admin!`);
+            return;
+          }
+          this.parentCommunicator.makeToast(
+            `${username} got promoted to admin!`
+          );
+        }
+      )
       .on(PartyEvent.VIDEO_PLAY, username => {
         if (!this.showToast) return;
         if (username === null) {
@@ -183,27 +218,27 @@ export class Party extends EventEmitter<PartyEvent> {
         const { users } = msg.payload;
         log("Current number of party users: " + users.length);
         if (users.length === 0) {
-          // own user is the creator of the party, and is thus automatically an admin
+          // own user is the owner of the party, and is thus automatically an admin
           // reflects same code in server side
           this.ownUser.setIsAdmin(true);
+          this.ownUser.setIsRoomOwner(true);
           this.parentCommunicator.setIsUserAdmin(true);
           this.periodicallySendVideoTime();
         } else {
           this.ownUser.setIsAdmin(false);
+          this.ownUser.setIsRoomOwner(false);
           this.parentCommunicator.setIsUserAdmin(false);
         }
 
-        let askedForVideoTime = false;
         users.forEach((userInfoString: string) => {
           const userInfo: UserInfo = JSON.parse(userInfoString);
-          const { userId, username, isAdmin } = userInfo;
-          let user: User;
-          if (!askedForVideoTime && isAdmin) {
-            user = this.connectToPeer(userId, username, isAdmin, true);
-            askedForVideoTime = true;
-          } else {
-            user = this.connectToPeer(userId, username, isAdmin, false);
-          }
+          const { userId, username, isAdmin, isRoomOwner } = userInfo;
+          const user = this.connectToPeer(
+            userId,
+            username,
+            isAdmin === "true", // is either "true" or "false" string, so convert to boolean
+            isRoomOwner === "true" // same
+          );
           this.users.set(userId, user);
         });
         this.emit(PartyEvent.SET_USERS, Object.fromEntries(this.users));
@@ -232,10 +267,10 @@ export class Party extends EventEmitter<PartyEvent> {
         break;
       }
       case "newForeignMessage": {
-        const { senderId, content } = msg.payload;
-        log(`Received new messsage from foreign user ${senderId}`);
+        const { userId, content } = msg.payload;
+        log(`Received new messsage from foreign user ${userId}`);
         log(`content: ${content}`);
-        const sender = this.users.get(senderId);
+        const sender = this.users.get(userId);
         if (sender) {
           this.emit(PartyEvent.ADD_CHAT_MSG, {
             isSenderAdmin: sender.isAdmin,
@@ -244,6 +279,51 @@ export class Party extends EventEmitter<PartyEvent> {
             content
           });
         }
+        break;
+      }
+      case "setUserMute": {
+        const { userId, mute } = msg.payload;
+        log(`Mute ${userId}: ${mute}`);
+        const user = this.users.get(userId);
+        if (user) {
+          this.emit(PartyEvent.SET_USER_MUTE, user, mute);
+        }
+        break;
+      }
+      case "setAdminControls": {
+        const { userId, adminControlsOnly } = msg.payload;
+        console.log("adminControlsReceived: ", adminControlsOnly);
+        this.parentCommunicator.setAdminControls(adminControlsOnly);
+        this.emit(PartyEvent.SET_ADMIN_ONLY_CONTROLS, adminControlsOnly);
+        break;
+      }
+      case "promoteToRoomOwner": {
+        const { userId, username } = msg.payload;
+        console.log(`Promoting ${username} to room owner`);
+        this.users.forEach(user => {
+          if (user.id === userId) {
+            // Promote this user
+            user.setIsRoomOwner(true);
+            if (!user.isAdmin) {
+              user.setIsAdmin(true);
+              this.emit(
+                PartyEvent.SET_USER_ADMIN_STATUS,
+                userId,
+                username,
+                true
+              );
+            }
+            if (user.isOwn) {
+              this.periodicallySendVideoTime();
+              this.parentCommunicator.setIsUserAdmin(true);
+            }
+          }
+        });
+        break;
+      }
+      case "timeUpdate": {
+        const { time } = msg.payload;
+        this.parentCommunicator.setHostTime(time);
         break;
       }
     }
@@ -274,7 +354,6 @@ export class Party extends EventEmitter<PartyEvent> {
         JSON.stringify({
           type: SocketSendMsgType.RETURN_SIGNAL,
           payload: {
-            senderId: this.ownUser.id,
             recipientId: senderId,
             signal
           }
@@ -287,6 +366,7 @@ export class Party extends EventEmitter<PartyEvent> {
     const otherUser = new OtherUser(senderId, username, this, peer, false);
     // first time new user joins, user is not given admin privileges
     otherUser.setIsAdmin(false);
+    otherUser.setIsRoomOwner(false);
     return otherUser;
   }
 
@@ -294,7 +374,7 @@ export class Party extends EventEmitter<PartyEvent> {
     userId: string,
     username: string,
     isAdmin: boolean,
-    askForTime: boolean
+    isRoomOwner: boolean
   ): User {
     log(`Connecting to peer with id: ${userId}, isAdmin: ${isAdmin}`);
     const peer = new Peer({
@@ -310,7 +390,6 @@ export class Party extends EventEmitter<PartyEvent> {
         JSON.stringify({
           type: SocketSendMsgType.NEW_SIGNAL,
           payload: {
-            senderId: this.ownUser.id,
             username: this.ownUser.username,
             recipientId: userId,
             signal
@@ -319,8 +398,9 @@ export class Party extends EventEmitter<PartyEvent> {
       );
     });
 
-    const otherUser = new OtherUser(userId, username, this, peer, askForTime);
+    const otherUser = new OtherUser(userId, username, this, peer, isRoomOwner);
     otherUser.setIsAdmin(isAdmin);
+    otherUser.setIsRoomOwner(isRoomOwner);
     return otherUser;
   }
 
@@ -342,6 +422,21 @@ export class Party extends EventEmitter<PartyEvent> {
   }
 
   /**
+   * User control
+   */
+
+  relayMuteState(mute: boolean) {
+    this.socket.send(
+      JSON.stringify({
+        type: SocketSendMsgType.SET_USER_MUTE,
+        payload: {
+          mute
+        }
+      })
+    );
+  }
+
+  /**
    * Video control
    */
 
@@ -353,17 +448,17 @@ export class Party extends EventEmitter<PartyEvent> {
     }
   ) {
     this.users.forEach((user: User) => {
-      if (!user.isOwn) {
-        user.peer &&
-          user.peer.send(
-            JSON.stringify({
-              type,
-              payload: {
-                username: this.ownUser.username,
-                ...optionalPayloadFields
-              }
-            })
-          );
+      if (!user.isOwn && user.peer !== null && user.peer !== undefined) {
+        console.log(`user: ${user.username}, and peer is ${user.peer}`);
+        user.peer.send(
+          JSON.stringify({
+            type,
+            payload: {
+              username: this.ownUser.username,
+              ...optionalPayloadFields
+            }
+          })
+        );
       }
     });
   }
@@ -382,6 +477,18 @@ export class Party extends EventEmitter<PartyEvent> {
 
   relayChangeSpeed(speed: number) {
     this.relayRTCMessageToOthers(RTCMsgType.CHANGE_SPEED, { speed });
+  }
+
+  relayAdminControlsState(adminControlsOnly: boolean) {
+    this.parentCommunicator.setAdminControls(adminControlsOnly);
+    this.socket.send(
+      JSON.stringify({
+        type: SocketSendMsgType.SET_ADMIN_CONTROLS,
+        payload: {
+          adminControlsOnly
+        }
+      })
+    );
   }
 
   playVideo(fromUsername: string | null) {
@@ -416,10 +523,16 @@ export class Party extends EventEmitter<PartyEvent> {
 
   periodicallySendVideoTime() {
     window.setInterval(async () => {
+      console.log("Sending update");
       const status = await this.parentCommunicator.getCurrentVideoStatus();
-      this.relayRTCMessageToOthers(RTCMsgType.TIME_UPDATE, {
-        currentTimeSeconds: status.currentTimeSeconds
-      });
+      this.socket.send(
+        JSON.stringify({
+          type: SocketSendMsgType.TIME_UPDATE,
+          payload: {
+            time: status.currentTimeSeconds
+          }
+        })
+      );
     }, SEND_TIME_UPDATE_INTERVAL);
   }
 }

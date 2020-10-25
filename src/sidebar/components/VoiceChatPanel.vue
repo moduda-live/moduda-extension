@@ -23,7 +23,9 @@ export default Vue.extend({
     UserView
   },
   updated() {
-    console.log("updated");
+    console.log(
+      "====================LIST OF USERS UPDATED====================="
+    );
   },
   computed: {
     ...mapState(["users"]),
