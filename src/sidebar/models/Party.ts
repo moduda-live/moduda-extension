@@ -128,6 +128,9 @@ export class Party extends EventEmitter<PartyEvent> {
         this.parentCommunicator.makeToast(
           `${username} set the video speed to ${speed}`
         );
+      })
+      .on(PartyEvent.CONNECTED, () => {
+        this.parentCommunicator.signalConnected();
       });
   }
 

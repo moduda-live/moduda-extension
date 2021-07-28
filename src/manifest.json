@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "__MSG_extName__",
+  "name": "Movens",
   "description": "Watch videos together with friends, in real time",
   "default_locale": "en",
   "permissions": ["activeTab", "storage"],

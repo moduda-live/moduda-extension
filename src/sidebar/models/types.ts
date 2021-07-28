@@ -85,4 +85,5 @@ export interface Communicator {
   getCurrentVideoStatus(): Promise<VideoStatus>;
   setHostTime(currentTimeSeconds: number): void;
   setAdminControls(adminControlsOnly: boolean): void;
+  signalConnected(): void;
 }

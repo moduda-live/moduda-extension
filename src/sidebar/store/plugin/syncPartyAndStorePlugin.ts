@@ -62,9 +62,9 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
         }
       );
 
-    // Now sync the other way: store -> party
     store.dispatch("setPartyId", party.id);
 
+    // Now sync the other way: store -> party
     store.subscribe((mutation: MutationPayload, state: RootState) => {
       if (state.serverConnectionStatus !== ConnectionStatus.CONNECTED) {
         return;

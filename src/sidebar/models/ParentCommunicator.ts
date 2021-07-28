@@ -95,4 +95,8 @@ export default class ParentCommunicator implements Communicator {
   setHostTime(currentTimeSeconds: number) {
     return this.parentConnection.setHostTime(currentTimeSeconds);
   }
+
+  signalConnected() {
+    this.parentConnection.signalConnected();
+  }
 }

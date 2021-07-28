@@ -139,6 +139,11 @@ class Movens {
         setAdminControls: (adminControlsOnly: boolean) => {
           console.log("Setting controls to: ", adminControlsOnly);
           this.VideoManager.adminControlsOnly = adminControlsOnly;
+        },
+        signalConnected: () => {
+          browser.runtime.sendMessage({
+            type: "CONNECTED"
+          });
         }
       }
     });
@@ -153,6 +158,7 @@ function initMovens(username: string) {
   const searchParams = new URLSearchParams(window.location.search);
 
   const partyId = searchParams.get("movensPartyId") ?? undefined;
+  console.log("partyId :>> ", partyId);
   searchParams.delete("movensPartyId");
 
   let debug = false;

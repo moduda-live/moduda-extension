@@ -48,6 +48,13 @@ export default Vue.extend({
       maxWidth: 200,
       theme: "info"
     });
+
+    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === "CONNECTED") {
+        this.connecting = false;
+        window.close();
+      }
+    });
   },
   data() {
     return {
