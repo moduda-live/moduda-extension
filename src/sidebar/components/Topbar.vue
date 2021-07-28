@@ -8,7 +8,7 @@
       @click="hideSidebar"
     />
     <AppHeader :color="primaryWhiteColor" />
-    <CellGroup ref="menu">
+    <CellGroup ref="menu" @on-click="handleClick">
       <Cell title="Notifications">
         <SwitchBtn
           size="small"
@@ -32,6 +32,11 @@
         target="_blank"
       >
         <Icon slot="arrow" type="logo-github" :size="18" />
+      </Cell>
+      <Cell name="leave-cell">
+        <div slot="default" class="leave-party">
+          Leave Party
+        </div>
       </Cell>
     </CellGroup>
     <Icon
@@ -71,6 +76,11 @@ export default Vue.extend({
         fromSelf: true,
         adminControlsOnly: isSwitchOn
       });
+    },
+    handleClick(name: string | number) {
+      if (name === "leave-cell") {
+        this.$party.leaveParty();
+      }
     }
   },
   mounted() {
@@ -121,6 +131,10 @@ export default Vue.extend({
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.leave-party {
+  color: @theme-orange;
 }
 
 .tippy-box[data-theme~="settings"] {

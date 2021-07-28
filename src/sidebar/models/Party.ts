@@ -22,6 +22,7 @@ export class Party extends EventEmitter<PartyEvent> {
   users: Map<string, User>;
   ownUser!: OwnUser;
   showToast: boolean;
+  periodicUpdateIntervalID: number;
 
   constructor(
     wsUrl: string,
@@ -35,6 +36,7 @@ export class Party extends EventEmitter<PartyEvent> {
     this.showToast = true; // needs to be same as the value in vuex
     parentCommunicator.setParty(this);
     this.parentCommunicator = parentCommunicator;
+    this.periodicUpdateIntervalID = -1;
   }
 
   setToastShow(show: boolean) {
@@ -525,7 +527,7 @@ export class Party extends EventEmitter<PartyEvent> {
   }
 
   periodicallySendVideoTime() {
-    window.setInterval(async () => {
+    this.periodicUpdateIntervalID = window.setInterval(async () => {
       console.log("Sending update");
       const status = await this.parentCommunicator.getCurrentVideoStatus();
       this.socket.send(
@@ -537,6 +539,11 @@ export class Party extends EventEmitter<PartyEvent> {
         })
       );
     }, SEND_TIME_UPDATE_INTERVAL);
+  }
+
+  leaveParty() {
+    window.clearInterval(this.periodicUpdateIntervalID);
+    this.socket.close();
   }
 }
 
