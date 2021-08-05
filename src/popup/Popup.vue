@@ -32,6 +32,7 @@ import AppHeader from "@/shared/AppHeader.vue";
 import AppLogoButton from "@/shared/AppLogoButton.vue";
 import tippy from "tippy.js";
 import "tippy.js/animations/scale.css";
+import { ConnectedMessage, CreatePartyMessage } from "@/shared/types";
 
 export default Vue.extend({
   name: "Popup",
@@ -79,9 +80,15 @@ export default Vue.extend({
           file: "js/content-script.js"
         });
 
-        browser.tabs.sendMessage(currentTabId, {
-          username: this.username
-        });
+        const createPartyMessage: CreatePartyMessage = {
+          type: "CREATE_PARTY",
+          payload: {
+            username: this.username,
+            partyId: "" // create new party
+          }
+        };
+
+        browser.tabs.sendMessage(currentTabId, createPartyMessage);
       } catch (err) {
         this.error = "Failed to create party. Try later!";
       }

@@ -18,6 +18,11 @@ module.exports = {
       entry: "./src/popup/popup.ts",
       title: "Popup"
     },
+    join: {
+      template: "public/index.html",
+      entry: "./src/join/join.ts",
+      title: "Join"
+    },
     sidebar: "./src/sidebar/sidebar.ts"
   },
   chainWebpack: config => {

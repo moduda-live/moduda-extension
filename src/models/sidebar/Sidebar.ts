@@ -10,7 +10,7 @@ export default class Sidebar {
   screenFormatter!: ScreenFormatter;
   iframe: HTMLIFrameElement;
 
-  constructor(videolink: string, debug: boolean, partyId?: string) {
+  constructor(videolink: string, debug: boolean, partyId: string | "") {
     const iframe = document.createElement("iframe");
     iframe.style.border = "none";
     iframe.id = "movens-iframe";

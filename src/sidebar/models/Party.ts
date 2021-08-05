@@ -558,6 +558,5 @@ export default function createParty(
 
   // create party
   const partyId = opts.partyId as string;
-  const party = new Party(connectionUrl, parentCommunicator, partyId);
-  return party;
+  return new Party(connectionUrl, parentCommunicator, partyId);
 }

@@ -7,6 +7,7 @@ import { VideoEvent } from "@/models/video/types";
 import { VideoStatus } from "@/sidebar/models/types";
 import ToastMaker from "@/models/toast/ToastMaker";
 import { isPlaying } from "@/util/dom";
+import { ConnectedMessage, CreatePartyMessage } from "@/shared/types";
 
 declare type Connection<TCallSender extends object = CallSender> = {
   promise: Promise<AsyncMethodReturns<TCallSender>>;
@@ -22,10 +23,10 @@ class Movens {
   ToastMaker: ToastMaker;
 
   constructor(
-    username: string,
+    username: string | "",
     videolink: string,
     debug: boolean,
-    partyId?: string
+    partyId: string | ""
   ) {
     this.sidebar = new Sidebar(videolink, debug, partyId);
     this.setUpIframeConnection(username);
@@ -155,9 +156,11 @@ class Movens {
           this.VideoManager.adminControlsOnly = adminControlsOnly;
         },
         signalConnected: () => {
-          browser.runtime.sendMessage({
-            type: "CONNECTED"
-          });
+          const message: ConnectedMessage = {
+            type: "CONNECTED",
+            payload: {}
+          };
+          browser.runtime.sendMessage(message);
         },
         endSession: () => {
           this.unmount();
@@ -173,33 +176,50 @@ class Movens {
   }
 }
 
-function initMovens(username: string) {
-  const searchParams = new URLSearchParams(window.location.search);
-
-  const partyId = searchParams.get("movensPartyId") ?? undefined;
-  console.log("partyId :>> ", partyId);
-  searchParams.delete("movensPartyId");
-
-  let debug = false;
-  if (process.env.NODE_ENV === "development") {
-    // FOR DEBUGGING ONLY
-    // SPECIFY debug param to bring up devtools
-    debug = !!searchParams.get("debug");
-    searchParams.delete("debug");
-  }
-
-  const videolinkNoParams = window.location.href.split(/[?#]/)[0];
-  const videolink = videolinkNoParams + searchParams.toString();
-  new Movens(username, videolink, debug, partyId);
+function initMovens(username: string, partyId: string, debug = false) {
+  // disable debugging for now
+  const MovensController = new Movens(
+    username,
+    window.location.href,
+    process.env.NODE_ENV === "development" && debug,
+    partyId
+  );
   (window as any).partyLoaded = true;
+  (window as any).MovensController = MovensController;
 }
 
 browser.runtime.onMessage.addListener(message => {
-  if (message.username && !(window as any).partyLoaded) {
-    initMovens(message.username);
+  if (!message.type) return;
+
+  if (message.type === "CREATE_PARTY" && !(window as any).partyLoaded) {
+    message = message as CreatePartyMessage;
+    const username = message.payload.username || "Anonymous User";
+    initMovens(username, message.payload.partyId);
   }
 });
 
+console.log("host is:", window.location.href);
+
+if (window.location.host === "www.nytimes.com") {
+  const currentWindowSearchParams = new URLSearchParams(window.location.search);
+  const redirectUrl = new URL(browser.runtime.getURL("join.html"));
+  if (
+    currentWindowSearchParams.has("partyId") &&
+    currentWindowSearchParams.has("redirectUrl")
+  ) {
+    redirectUrl.searchParams.append(
+      "partyId",
+      currentWindowSearchParams.get("partyId")!
+    );
+    redirectUrl.searchParams.append(
+      "redirectUrl",
+      currentWindowSearchParams.get("redirectUrl")!
+    );
+    window.location.href = redirectUrl.toString();
+  }
+}
+
 if (/movens.app\/join\//.test(window.location.href)) {
-  console.log("Redirect");
+  const redirectUrl = new URL(browser.runtime.getURL("join.html"));
+  window.location.href = redirectUrl.toString();
 }

@@ -41,9 +41,9 @@ export default Vue.extend({
       const baseUrl = new URL("https://movens.app/join");
       const searchParams = new URLSearchParams(window.location.search);
       const videolink = searchParams.get("videolink") ?? "";
-      baseUrl.searchParams.append("videolink", videolink);
+      baseUrl.searchParams.append("redirectUrl", videolink);
       const partyId = this.$store.state.partyId;
-      baseUrl.searchParams.append("movensPartyId", partyId);
+      baseUrl.searchParams.append("partyId", partyId);
       return baseUrl.toString();
     }
   },
