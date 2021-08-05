@@ -62,6 +62,13 @@ class Movens {
       });
   }
 
+  unmount() {
+    // end everything
+    this.iframeConnection.destroy();
+    this.VideoManager.offAll();
+    this.sidebar.unmount();
+  }
+
   setUpIframeConnection(username: string) {
     // console.log("childOrigin: ", browser.runtime.getURL("").slice(0, -1));
     const connection = connectToChild({
@@ -144,6 +151,9 @@ class Movens {
           browser.runtime.sendMessage({
             type: "CONNECTED"
           });
+        },
+        endSession: () => {
+          console.log("something");
         }
       }
     });

@@ -86,4 +86,5 @@ export interface Communicator {
   setHostTime(currentTimeSeconds: number): void;
   setAdminControls(adminControlsOnly: boolean): void;
   signalConnected(): void;
+  endSession(): void;
 }

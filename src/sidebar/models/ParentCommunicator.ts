@@ -99,4 +99,8 @@ export default class ParentCommunicator implements Communicator {
   signalConnected() {
     this.parentConnection.signalConnected();
   }
+
+  endSession() {
+    this.parentConnection.endSession();
+  }
 }

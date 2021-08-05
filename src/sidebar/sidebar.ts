@@ -54,8 +54,13 @@ Vue.component("Avatar", Avatar);
 // custom vue plugin to expose Party singleton as $party
 Vue.use(partyPlugin);
 
+let wsUrl = "ws://localhost";
+if (process.env.NODE_ENV === "production") {
+  wsUrl = "wss://ec2-18-134-142-199.eu-west-2.compute.amazonaws.com";
+}
+
 const parentCommunicator = new ParentCommunicator();
-const party = createParty("ws://localhost:8080", parentCommunicator, {
+const party = createParty(wsUrl, parentCommunicator, {
   partyId
 });
 

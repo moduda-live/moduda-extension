@@ -1,6 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Movens",
+  "version": "0.0.0.1",
   "description": "Watch videos together with friends, in real time",
   "default_locale": "en",
   "permissions": ["activeTab", "storage"],
@@ -29,5 +30,5 @@
   ],
   "optional_permissions": ["http://*/*", "https://*/*"],
   "web_accessible_resources": ["sidebar.html"],
-  "content_security_policy": "script-src 'self' 'unsafe-eval' http://localhost:8098; connect-src 'self' https://api.betterttv.net/3/emotes/shared/top http://localhost:8098 ws://localhost:8098 http://localhost:8080 ws://localhost:8080; object-src 'self'"
+  "content_security_policy": "script-src 'self' 'unsafe-eval' http://localhost:8098; connect-src 'self' https://api.betterttv.net/3/emotes/shared/top http://localhost:* ws://localhost:8098 http://localhost:* ws://localhost:* ws://ec2-18-134-142-199.eu-west-2.compute.amazonaws.com/; object-src 'self'"
 }

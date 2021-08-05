@@ -85,4 +85,8 @@ export default class Sidebar {
     document.addEventListener("mousemove", this.toggleBasedOnMouse);
     this.sidebarContainer.addEventListener("click", this.show);
   };
+
+  unmount = () => {
+    console.log("Unmounting...");
+  };
 }

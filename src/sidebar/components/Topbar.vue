@@ -80,6 +80,7 @@ export default Vue.extend({
     handleClick(name: string | number) {
       if (name === "leave-cell") {
         this.$party.leaveParty();
+        this.$party.parentCommunicator.endSession();
       }
     }
   },
