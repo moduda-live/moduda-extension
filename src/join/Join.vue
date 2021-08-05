@@ -1,36 +1,58 @@
 <template>
-  <div id="join">
-    <img
-      src="icons/128.png"
-      height="100"
-      width="100"
-      id="movens-img"
-      alt="movens-icon"
-      style="margin-top:-100px; margin-bottom: 20px;"
-    />
-    <h1>A few more things to do before we get started...</h1>
-    <p class="subheader">You are trying to join party <b>creative-ents</b></p>
-    <ol>
-      <li>
-        <p class="step-text">
-          Enter a username for your party mates to see <b>(optional)</b>
-        </p>
-        <Input
-          v-model="username"
-          style="width: 200px;"
-          placeholder="Enter username (optional)"
-        />
-      </li>
-      <li v-if="!askUsernameOnly">
-        <p class="step-text">
-          Click the button below to grant permission for Movens to run on
-          <b>www.youtube.com</b>
-        </p>
-        <Button @click="grantPermission" type="primary" long size="large" ghost>
-          Grand permissions
+  <div id="app">
+    <div class="wrapper">
+      <img
+        src="icons/128.png"
+        height="100"
+        width="100"
+        alt="movens-icon"
+        style="margin: -50px 100px 15px"
+      />
+      <h1>A few more things to do before we get started...</h1>
+      <p class="subheader">
+        You are trying to join party <b> {{ partyId }} </b>
+      </p>
+      <div class="permission-steps">
+        <ol>
+          <li>
+            <p class="step-text">
+              Enter a username for your party mates to see <b>(optional)</b>
+            </p>
+            <Input
+              :maxlength="17"
+              v-model="username"
+              style="width: 200px;"
+              placeholder="Enter username (optional)"
+            />
+          </li>
+          <li v-if="!askUsernameOnly">
+            <p class="step-text">
+              Click the button below to grant permission for Movens to run on
+              <b> {{ permissionUrl }} </b>
+            </p>
+            <Button
+              @click="grantPermission"
+              type="primary"
+              size="large"
+              long
+              ghost
+            >
+              Grand permissions
+            </Button>
+          </li>
+        </ol>
+        <Button
+          v-if="askUsernameOnly"
+          @click="grantPermission"
+          type="primary"
+          size="large"
+          style="margin-top:5px;"
+          ghost
+        >
+          Join your party
         </Button>
-      </li>
-    </ol>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -61,8 +83,7 @@ export default Vue.extend({
         origins: [this.permissionUrl]
       });
       if (permissionGranted) {
-        // todo uncomment below
-        // this.askUsernameOnly = true;
+        this.askUsernameOnly = true;
       }
     } catch (err) {
       log(err.message);
@@ -85,6 +106,8 @@ export default Vue.extend({
           origins: [this.permissionUrl]
         });
 
+        console.log("PERMISSION: ", permissionGranted);
+
         if (permissionGranted) {
           const redirectMessage: RedirectRequestMessage = {
             type: "REDIRECT",
@@ -106,11 +129,11 @@ export default Vue.extend({
 </script>
 
 <style lang="less" scoped>
-#join {
+#app {
   height: 100vh;
   text-align: center;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   background: rgb(129, 95, 224);
@@ -123,7 +146,7 @@ export default Vue.extend({
 }
 
 .subheader {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   margin-bottom: 1.3rem;
 }
 
@@ -136,13 +159,20 @@ li {
 }
 
 .step-text {
+  font-size: 0.9rem;
   margin-top: 0.3rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 
-// #movens-img {
-//   position: absolute;
-//   margin: 0 auto;
-//   top: 100px;
-// }
+.wrapper {
+  width: 550px;
+}
+
+.permission-steps {
+  padding: 0 20px;
+}
+
+.ivu-btn-long {
+  width: 82% !important;
+}
 </style>
