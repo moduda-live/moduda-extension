@@ -87,6 +87,10 @@ export default class Sidebar {
   };
 
   unmount = () => {
-    console.log("Unmounting...");
+    console.log("HERE");
+    this.hide();
+    this.screenFormatter.triggerReflow();
+    this.iframe.parentNode?.removeChild(this.iframe);
+    document.body.removeChild(this.sidebarContainer);
   };
 }

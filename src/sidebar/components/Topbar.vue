@@ -33,11 +33,7 @@
       >
         <Icon slot="arrow" type="logo-github" :size="18" />
       </Cell>
-      <Cell name="leave-cell">
-        <div slot="default" class="leave-party">
-          Leave Party
-        </div>
-      </Cell>
+      <Cell name="leave-cell" class="leave-party" title="Disconnect"> </Cell>
     </CellGroup>
     <Icon
       id="show-settings"

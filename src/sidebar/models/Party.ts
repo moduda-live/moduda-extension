@@ -169,7 +169,7 @@ export class Party extends EventEmitter<PartyEvent> {
     };
 
     this.socket.onerror = () => {
-      this.emit(PartyEvent.DISCONNECTED);
+      this.emit(PartyEvent.ERROR);
       log("Error establishing connection with server");
     };
   }

@@ -1,6 +1,6 @@
 <template>
   <div class="header" :style="{ color: color }">
-    <Icon type="ios-ionitron-outline" size="24" />
+    <image height="24px" width="24px" src="/icons/128.png" />
     <h1 style="margin-left: 5px; margin-bottom: 2px;">movens</h1>
   </div>
 </template>

@@ -8,9 +8,15 @@ import { VideoStatus } from "@/sidebar/models/types";
 import ToastMaker from "@/models/toast/ToastMaker";
 import { isPlaying } from "@/util/dom";
 
+declare type Connection<TCallSender extends object = CallSender> = {
+  promise: Promise<AsyncMethodReturns<TCallSender>>;
+  destroy: Function;
+};
+
 class Movens {
   sidebar: Sidebar;
-  iframeConnection!: AsyncMethodReturns<CallSender, string>;
+  iframeConnection!: Connection;
+  childIframe!: AsyncMethodReturns<CallSender, string>;
   VideoManager: VideoManager;
 
   ToastMaker: ToastMaker;
@@ -31,16 +37,16 @@ class Movens {
 
   setupVideoManagerListeners() {
     this.VideoManager.on(VideoEvent.PLAY, () => {
-      this.iframeConnection.relayPlay();
+      this.childIframe.relayPlay();
     })
       .on(VideoEvent.PAUSE, () => {
-        this.iframeConnection.relayPause();
+        this.childIframe.relayPause();
       })
       .on(VideoEvent.SEEKED, (toTime: number) => {
-        this.iframeConnection.relaySeeked(toTime);
+        this.childIframe.relaySeeked(toTime);
       })
       .on(VideoEvent.CHANGE_SPEED, (speed: number) => {
-        this.iframeConnection.relayChangeSpeed(speed);
+        this.childIframe.relayChangeSpeed(speed);
       })
       .on(VideoEvent.PLAY_BLOCKED, () => {
         this.ToastMaker.makeToast(`Only admins can play the video`, true);
@@ -67,6 +73,7 @@ class Movens {
     this.iframeConnection.destroy();
     this.VideoManager.offAll();
     this.sidebar.unmount();
+    (window as any).partyLoaded = false;
   }
 
   setUpIframeConnection(username: string) {
@@ -153,14 +160,16 @@ class Movens {
           });
         },
         endSession: () => {
-          console.log("something");
+          this.unmount();
         }
       }
     });
 
     connection.promise.then(child => {
-      this.iframeConnection = child;
+      this.childIframe = child;
     });
+
+    this.iframeConnection = connection;
   }
 }
 
