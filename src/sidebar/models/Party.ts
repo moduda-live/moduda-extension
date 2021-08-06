@@ -37,6 +37,11 @@ export class Party extends EventEmitter<PartyEvent> {
     parentCommunicator.setParty(this);
     this.parentCommunicator = parentCommunicator;
     this.periodicUpdateIntervalID = -1;
+
+    // cleanup if we lose connection with Websocket server by tab/window/browser closing
+    window.addEventListener("beforeunload", event => {
+      this.cleanup();
+    });
   }
 
   setToastShow(show: boolean) {
@@ -157,6 +162,15 @@ export class Party extends EventEmitter<PartyEvent> {
     this.registerWebsocketHandlers(); // onopen has to be in the same section to execute in same EventLoop
   }
 
+  cleanup() {
+    if (this.periodicUpdateIntervalID !== -1) {
+      window.clearInterval(this.periodicUpdateIntervalID);
+    }
+    if (this.parentCommunicator) {
+      this.parentCommunicator.endSession();
+    }
+  }
+
   registerWebsocketHandlers() {
     this.socket.onopen = () => {
       this.emit(PartyEvent.CONNECTED);
@@ -164,13 +178,13 @@ export class Party extends EventEmitter<PartyEvent> {
     };
 
     this.socket.onclose = () => {
-      window.clearInterval(this.periodicUpdateIntervalID);
-      this.parentCommunicator.endSession();
+      this.cleanup();
       this.emit(PartyEvent.DISCONNECTED);
       log("Server connection closed");
     };
 
     this.socket.onerror = () => {
+      this.cleanup();
       this.emit(PartyEvent.ERROR);
       log("Error establishing connection with server");
     };

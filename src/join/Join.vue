@@ -19,7 +19,7 @@
               Enter a username for your party mates to see <b>(optional)</b>
             </p>
             <Input
-              :maxlength="17"
+              :maxlength="15"
               v-model="username"
               style="width: 200px;"
               placeholder="Enter username (optional)"

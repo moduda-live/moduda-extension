@@ -12,7 +12,7 @@
         v-if="!connecting && !error"
         autofocus
         class="mt-1em"
-        :maxlength="17"
+        :maxlength="15"
         placeholder="Enter username (optional)"
       />
       <Button
