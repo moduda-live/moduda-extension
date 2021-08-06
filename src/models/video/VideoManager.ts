@@ -82,91 +82,110 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
     // this.handleClickOnVideos(videos);
   }
 
-  setupListeners() {
-    this.videoSelected.addEventListener("play", e => {
-      if (this.videoPlayedByOwn) {
-        if (this.isUserAdmin || !this.adminControlsOnly) {
-          console.log("user played on own, isAdmin");
-          this.hostVideoStatus.isPlaying = true;
-          this.emit(VideoEvent.PLAY);
-        } else if (!this.hostVideoStatus.isPlaying) {
-          console.log("user playing on own, cancel");
-          this.videoSelected.pause();
-          this.emit(VideoEvent.PLAY_BLOCKED);
-        }
+  private playEventListener = () => {
+    if (this.videoPlayedByOwn) {
+      if (this.isUserAdmin || !this.adminControlsOnly) {
+        console.log("user played on own, isAdmin");
+        this.hostVideoStatus.isPlaying = true;
+        this.emit(VideoEvent.PLAY);
+      } else if (!this.hostVideoStatus.isPlaying) {
+        console.log("user playing on own, cancel");
+        this.videoSelected.pause();
+        this.emit(VideoEvent.PLAY_BLOCKED);
+      }
+    } else {
+      if (this.videoSelected.readyState === 1) {
+        // play was triggered from seeking, so lets ignore
+        return;
+      }
+      console.log("played by someone else");
+      this.videoPlayedByOwn = true;
+    }
+  };
+
+  private pauseEventListener = () => {
+    if (this.videoPlayedByOwn) {
+      if (this.isUserAdmin || !this.adminControlsOnly) {
+        console.log("user paused on own, isAdmin");
+        this.hostVideoStatus.isPlaying = false;
+        this.emit(VideoEvent.PAUSE);
+      } else if (this.hostVideoStatus.isPlaying) {
+        console.log("user pausing on own, cancel");
+        this.videoSelected.play();
+        this.emit(VideoEvent.PAUSE_BLOCKED);
+      }
+    } else {
+      console.log("paused by someone else");
+      this.videoPlayedByOwn = true;
+    }
+  };
+
+  private seekedEventListener = () => {
+    if (this.videoPlayedByOwn) {
+      if (this.isUserAdmin || !this.adminControlsOnly) {
+        console.log("user seeked on own, isAdmin");
+        this.emit(VideoEvent.SEEKED, this.videoSelected.currentTime);
       } else {
-        if (this.videoSelected.readyState === 1) {
-          // play was triggered from seeking, so lets ignore
+        if (this.preventInfiniteLoop) {
+          this.preventInfiniteLoop = false;
           return;
         }
-        console.log("played by someone else");
-        this.videoPlayedByOwn = true;
+        console.log("user seeked on own, cancel");
+        this.preventInfiniteLoop = true;
+        this.videoSelected.currentTime = this.hostVideoStatus.currentTimeSeconds;
+        this.emit(VideoEvent.SEEKED_BLOCKED);
       }
-    });
+    } else {
+      console.log("seeked by someone else");
+      this.videoPlayedByOwn = true;
+    }
+  };
 
-    this.videoSelected.addEventListener("pause", () => {
-      if (this.videoPlayedByOwn) {
-        if (this.isUserAdmin || !this.adminControlsOnly) {
-          console.log("user paused on own, isAdmin");
-          this.hostVideoStatus.isPlaying = false;
-          this.emit(VideoEvent.PAUSE);
-        } else if (this.hostVideoStatus.isPlaying) {
-          console.log("user pausing on own, cancel");
-          this.videoSelected.play();
-          this.emit(VideoEvent.PAUSE_BLOCKED);
-        }
+  private rateChangeEventListener = () => {
+    if (this.videoPlayedByOwn) {
+      if (this.isUserAdmin || !this.adminControlsOnly) {
+        console.log("user changed speed on own, isAdmin");
+        this.emit(VideoEvent.CHANGE_SPEED, this.videoSelected.playbackRate);
       } else {
-        console.log("paused by someone else");
-        this.videoPlayedByOwn = true;
+        if (this.preventInfiniteLoop) {
+          this.preventInfiniteLoop = false;
+          return;
+        }
+        console.log("user changed speed on own, cancel");
+        this.preventInfiniteLoop = true;
+        this.videoSelected.playbackRate = this.hostVideoStatus.speed;
+        this.emit(VideoEvent.CHANGE_SPEED_BLOCKED);
       }
-    });
+    } else {
+      console.log("changed speed by someone else");
+      this.videoPlayedByOwn = true;
+    }
+  };
+
+  setupListeners() {
+    this.videoSelected.addEventListener("play", this.playEventListener);
+    this.videoSelected.addEventListener("pause", this.pauseEventListener);
+    this.videoSelected.addEventListener("seeked", this.seekedEventListener);
+    this.videoSelected.addEventListener(
+      "ratechange",
+      this.rateChangeEventListener
+    );
 
     // this.videoSelected.addEventListener("seeking", () => {
     //   //console.log("Video seeking at: ", new Date().getTime());
     //   clearTimeout(this.checkIfPausedFromSeekTimeout);
     // });
+  }
 
-    this.videoSelected.addEventListener("seeked", () => {
-      if (this.videoPlayedByOwn) {
-        if (this.isUserAdmin || !this.adminControlsOnly) {
-          console.log("user seeked on own, isAdmin");
-          this.emit(VideoEvent.SEEKED, this.videoSelected.currentTime);
-        } else {
-          if (this.preventInfiniteLoop) {
-            this.preventInfiniteLoop = false;
-            return;
-          }
-          console.log("user seeked on own, cancel");
-          this.preventInfiniteLoop = true;
-          this.videoSelected.currentTime = this.hostVideoStatus.currentTimeSeconds;
-          this.emit(VideoEvent.SEEKED_BLOCKED);
-        }
-      } else {
-        console.log("seeked by someone else");
-        this.videoPlayedByOwn = true;
-      }
-    });
-
-    this.videoSelected.addEventListener("ratechange", () => {
-      if (this.videoPlayedByOwn) {
-        if (this.isUserAdmin || !this.adminControlsOnly) {
-          console.log("user changed speed on own, isAdmin");
-          this.emit(VideoEvent.CHANGE_SPEED, this.videoSelected.playbackRate);
-        } else {
-          if (this.preventInfiniteLoop) {
-            this.preventInfiniteLoop = false;
-            return;
-          }
-          console.log("user changed speed on own, cancel");
-          this.preventInfiniteLoop = true;
-          this.videoSelected.playbackRate = this.hostVideoStatus.speed;
-          this.emit(VideoEvent.CHANGE_SPEED_BLOCKED);
-        }
-      } else {
-        console.log("changed speed by someone else");
-        this.videoPlayedByOwn = true;
-      }
-    });
+  removeAllVideoEventListeners() {
+    // removes all event listeners attached to the selected video
+    this.videoSelected.removeEventListener("play", this.playEventListener);
+    this.videoSelected.removeEventListener("pause", this.pauseEventListener);
+    this.videoSelected.removeEventListener("seeked", this.seekedEventListener);
+    this.videoSelected.removeEventListener(
+      "ratechange",
+      this.rateChangeEventListener
+    );
   }
 
   play = async () => {

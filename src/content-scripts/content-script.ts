@@ -79,7 +79,8 @@ class Movens {
   unmount() {
     // end everything
     this.iframeConnection.destroy();
-    this.VideoManager.offAll();
+    this.VideoManager.offAll(); // this removes all event listeners on the VideoManager object itself, not the videos on the page
+    this.VideoManager.removeAllVideoEventListeners();
     this.sidebar.unmount();
     (window as any).partyLoaded = false;
 
