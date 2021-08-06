@@ -1,55 +1,52 @@
 <template>
-  <div id="popup">
-    <AppHeader />
-    <div class="popup-guide">
-      Please ensure that you are on a page with the video you want to watch
+  <div id="app">
+    <AppHeader id="movens-logo" />
+    <div class="hide-if-loading" v-if="!connecting">
+      <Alert type="error" v-show="error">{{ error }}</Alert>
+      <h1>Let's get started. 🚀</h1>
+      <p>
+        Please ensure that you are on a page with the video you want to watch
+      </p>
+      <Input
+        v-model="username"
+        v-if="!connecting && !error"
+        autofocus
+        class="mt-1em"
+        :maxlength="17"
+        placeholder="Enter username (optional)"
+      />
+      <Button
+        v-if="!connecting && !error"
+        @click="createParty"
+        type="primary"
+        size="large"
+        long
+        class="create-party-btn"
+      >
+        Create a new party
+      </Button>
     </div>
-    <Alert type="error" v-show="error">{{ error }}</Alert>
-    <Input
-      v-model="username"
-      v-if="!connecting && !error"
-      style="width: 200px; margin-bottom: 12px;"
-      autofocus
-      class="username-input"
-      prefix="ios-contact"
-      maxlength="17"
-      placeholder="Enter username to join with"
-    />
-    <Button v-if="!connecting && !error" @click="createParty"
-      >Create a new party!</Button
-    >
-    <Spin v-if="connecting">
-      <Icon type="ios-loading" size="18" class="demo-spin-icon-load"></Icon>
-      <div>Connecting to server...</div>
-    </Spin>
-    <AppLogoButton id="info-btn" icon="ios-information-circle-outline" />
+    <div v-if="connecting" class="show-if-loading-wrapper">
+      <Spin>
+        <Icon type="ios-loading" size="40" class="demo-spin-icon-load"></Icon>
+        <div>Connecting to server...</div>
+      </Spin>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import AppHeader from "@/shared/AppHeader.vue";
-import AppLogoButton from "@/shared/AppLogoButton.vue";
-import tippy from "tippy.js";
 import "tippy.js/animations/scale.css";
-import { ConnectedMessage, CreatePartyMessage } from "@/shared/types";
+import { CreatePartyMessage } from "@/shared/types";
 
 export default Vue.extend({
   name: "Popup",
   components: {
-    AppHeader,
-    AppLogoButton
+    AppHeader
   },
   mounted() {
-    tippy("#info-btn", {
-      content:
-        "If you are the host, click the button to get started! Otherwise, join directly using an invite link.",
-      placement: "left-end",
-      animation: "scale",
-      maxWidth: 200,
-      theme: "info"
-    });
-
     browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === "CONNECTED") {
         this.connecting = false;
@@ -97,48 +94,53 @@ export default Vue.extend({
 });
 </script>
 
-<style lang="less">
-@light-border-color: #cccecf;
-
+<style lang="less" scoped>
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#popup {
-  border: 1px solid @light-border-color;
-  color: @theme-primary-color;
-  width: 360px;
-  margin: 5px;
-  padding: 1rem;
+#app {
+  color: @theme-primary-brighter;
+  width: 350px;
+  padding: 1.4rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  background: rgb(129, 95, 224);
+  background: linear-gradient(
+    174deg,
+    rgba(129, 95, 224, 0.10307072829131656) 0%,
+    rgba(227, 80, 54, 0.10587184873949583) 100%
+  );
 }
 
-.popup-guide {
-  width: 230px;
-  margin-bottom: 15px;
-  text-align: center;
+.mt-1em {
+  margin-top: 1em;
 }
 
 .ivu-alert {
   display: flex;
 }
 
-#info-btn {
+#movens-logo {
   position: absolute;
   top: 10px;
   right: 10px;
 }
 
-.tippy-box[data-theme~="info"] {
-  background-color: @theme-primary-color;
-  color: @theme-white;
-  padding: 6px;
-  border-radius: 2px;
-  font-size: 11px;
+.create-party-btn {
+  margin-top: 0.3em;
+  border: 0;
+}
+
+.show-if-loading-wrapper {
+  height: 140px;
+  width: 100%;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 </style>

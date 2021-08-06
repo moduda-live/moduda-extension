@@ -29,6 +29,6 @@
     }
   ],
   "optional_permissions": ["http://*/*", "https://*/*"],
-  "web_accessible_resources": ["sidebar.html", "join.html"],
+  "web_accessible_resources": ["icons/*", "sidebar.html", "join.html"],
   "content_security_policy": "script-src 'self' 'unsafe-eval' http://localhost:8098; connect-src 'self' https://api.betterttv.net/3/emotes/shared/top http://localhost:* ws://localhost:8098 http://localhost:* ws://localhost:* ws://ec2-18-134-142-199.eu-west-2.compute.amazonaws.com/; object-src 'self'"
 }

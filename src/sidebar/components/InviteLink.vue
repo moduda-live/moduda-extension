@@ -38,7 +38,9 @@ export default Vue.extend({
   },
   computed: {
     inviteLink() {
-      const baseUrl = new URL("https://movens.app/join");
+      // const baseUrl = new URL("https://movens.app/join");
+      // todo: replace with actual url
+      const baseUrl = new URL("https://www.nytimes.com/");
       const searchParams = new URLSearchParams(window.location.search);
       const videolink = searchParams.get("videolink") ?? "";
       baseUrl.searchParams.append("redirectUrl", videolink);

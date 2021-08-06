@@ -7,7 +7,6 @@
       type="ios-log-out"
       @click="hideSidebar"
     />
-    <AppHeader :color="primaryWhiteColor" />
     <CellGroup ref="menu" @on-click="handleClick">
       <Cell title="Notifications">
         <SwitchBtn
@@ -53,9 +52,6 @@ import { mapGetters, mapMutations, mapState } from "vuex";
 
 export default Vue.extend({
   name: "Topbar",
-  components: {
-    AppHeader
-  },
   methods: {
     ...mapMutations({
       setToastShow: "SET_TOAST_SHOW",
@@ -109,7 +105,9 @@ export default Vue.extend({
   watch: {
     myUser(updatedUser) {
       if (updatedUser) {
-        this.enableAdminToggle = updatedUser.isRoomOwner;
+        console.log("SETTING VALUE TO", updatedUser.isAdmin);
+        this.enableAdminToggle = updatedUser.isAdmin;
+        console.log("LTEST VALUE: ", this.enableAdminToggle);
       }
     },
     adminControlsOnly(val) {

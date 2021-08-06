@@ -4,6 +4,7 @@
     <SetupView v-if="!videoNotFound && serverBeforeConnect" />
     <ServerConnectionLoadIndicator v-if="serverConnecting" />
     <PartyUI v-if="serverConnected" />
+    <ErrorView :message="serverConnectErrorMsg" v-if="serverDisconnected" />
   </div>
 </template>
 

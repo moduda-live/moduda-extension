@@ -1,7 +1,6 @@
 <template>
   <div class="header" :style="{ color: color }">
-    <image height="24px" width="24px" src="/icons/128.png" />
-    <h1 style="margin-left: 5px; margin-bottom: 2px;">movens</h1>
+    <img height="20px" width="20px" :src="logo" />
   </div>
 </template>
 
@@ -15,6 +14,11 @@ export default Vue.extend({
       type: String,
       required: false
     }
+  },
+  data() {
+    return {
+      logo: browser.extension.getURL("icons/128.png")
+    };
   }
 });
 </script>

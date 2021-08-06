@@ -23,7 +23,8 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "src/ambient/global.d.ts"
+    "src/ambient/global.d.ts",
+    "src/ambient/import-png.d.ts"
   ],
   "exclude": ["node_modules"]
 }
