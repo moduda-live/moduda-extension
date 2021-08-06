@@ -41,6 +41,7 @@
         <span class="blue">
           <b> {{ partyId }}</b>
         </span>
+        {{ !isMovensActiveInThisTab ? " on another tab" : "" }}
       </p>
     </div>
   </div>
@@ -59,20 +60,30 @@ export default Vue.extend({
   },
   mounted() {
     // get initial state from browser's storage
-    browser.storage.local.get(["movensCurrentState"]).then(res => {
-      const currentMovensState = res.movensCurrentState; // current state of the extension
-      if (currentMovensState) {
-        this.partyId = currentMovensState.currentPartyId;
-        this.videolink = currentMovensState.videolink;
-        this.username = currentMovensState.username;
+    browser.storage.local
+      .get(["movensCurrentState"])
+      .then(res => {
+        const currentMovensState = res.movensCurrentState; // current state of the extension
+        if (currentMovensState) {
+          this.partyId = currentMovensState.currentPartyId;
+          this.videolink = currentMovensState.videolink;
+          this.username = currentMovensState.username;
 
-        if (this.partyId) {
-          // if partyId === "", extension is not currently running
-          this.connecting = false;
-          this.connected = true;
+          if (this.partyId) {
+            // if partyId === "", extension is not currently running
+            this.connecting = false;
+            this.connected = true;
+          }
+          return currentMovensState.tabId;
         }
-      }
-    });
+      })
+      .then(movensRunningTabId => {
+        browser.tabs
+          .query({ active: true, lastFocusedWindow: true })
+          .then(tabs => {
+            this.isMovensActiveInThisTab = tabs[0].id === movensRunningTabId;
+          });
+      });
 
     // subscribe to updates
     browser.storage.onChanged.addListener((changes, namespace) => {
@@ -84,6 +95,7 @@ export default Vue.extend({
           this.username = newValue.username;
           this.connecting = false;
           this.connected = true;
+          this.isMovensActiveInThisTab = true;
         }
       }
     });
@@ -95,7 +107,8 @@ export default Vue.extend({
       videolink: null,
       partyId: null,
       username: "",
-      error: ""
+      error: "",
+      isMovensActiveInThisTab: false
     };
   },
   methods: {
