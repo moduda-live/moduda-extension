@@ -12,7 +12,7 @@ import { log } from "@/util/log";
 import { User, OwnUser, OtherUser } from "./User";
 import { formatTime } from "@/util/formatTime";
 
-const SEND_TIME_UPDATE_INTERVAL = 500;
+const SEND_TIME_UPDATE_INTERVAL = 3000;
 
 export class Party extends EventEmitter<PartyEvent> {
   wsUrl: string;
@@ -235,8 +235,8 @@ export class Party extends EventEmitter<PartyEvent> {
           this.parentCommunicator.setIsUserAdmin(false);
         }
 
-        users.forEach((userInfoString: string) => {
-          const userInfo: UserInfo = JSON.parse(userInfoString);
+        users.forEach((userInfo: UserInfo) => {
+          console.dir(userInfo);
           const { userId, username, isAdmin, isRoomOwner } = userInfo;
           const user = this.connectToPeer(
             userId,
@@ -328,6 +328,7 @@ export class Party extends EventEmitter<PartyEvent> {
       }
       case "timeUpdate": {
         const { time } = msg.payload;
+        console.log("received time :>> ", time);
         this.parentCommunicator.setHostTime(time);
         break;
       }
