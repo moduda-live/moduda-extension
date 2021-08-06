@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <AppHeader id="movens-logo" />
-    <div class="hide-if-loading" v-if="!connecting">
-      <Alert type="error" v-show="error">{{ error }}</Alert>
+    <Alert type="error" v-show="error">{{ error }}</Alert>
+    <div class="pre-join-wrapper" v-if="!connecting && !connected && !error">
       <h1>Let's get started. 🚀</h1>
       <p>
         Please ensure that you are on a page with the video you want to watch
@@ -23,14 +23,25 @@
         long
         class="create-party-btn"
       >
-        Create a new party
+        Create a new room
       </Button>
     </div>
-    <div v-if="connecting" class="show-if-loading-wrapper">
+    <div v-if="connecting" class="while-join-wrapper">
       <Spin>
         <Icon type="ios-loading" size="40" class="demo-spin-icon-load"></Icon>
         <div>Connecting to server...</div>
       </Spin>
+    </div>
+    <div v-if="connected" class="post-join-wrapper">
+      <h1 style="font-weight: 400;">
+        Hello, <b>{{ username }}</b> 👋
+      </h1>
+      <p class="current-party-info">
+        You are currently connected to a room with ID:
+        <span class="blue">
+          <b> {{ partyId }}</b>
+        </span>
+      </p>
     </div>
   </div>
 </template>
@@ -47,16 +58,42 @@ export default Vue.extend({
     AppHeader
   },
   mounted() {
-    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === "CONNECTED") {
-        this.connecting = false;
-        window.close();
+    // get initial state from browser's storage
+    browser.storage.local.get(["movensCurrentState"]).then(res => {
+      const currentMovensState = res.movensCurrentState; // current state of the extension
+      if (currentMovensState) {
+        this.partyId = currentMovensState.currentPartyId;
+        this.videolink = currentMovensState.videolink;
+        this.username = currentMovensState.username;
+
+        if (this.partyId) {
+          // if partyId === "", extension is not currently running
+          this.connecting = false;
+          this.connected = true;
+        }
+      }
+    });
+
+    // subscribe to updates
+    browser.storage.onChanged.addListener((changes, namespace) => {
+      for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
+        if (key === "movensCurrentState" && newValue?.currentPartyId) {
+          // a setting has changed
+          this.partyId = newValue.currentPartyId;
+          this.videolink = newValue.videolink;
+          this.username = newValue.username;
+          this.connecting = false;
+          this.connected = true;
+        }
       }
     });
   },
   data() {
     return {
       connecting: false,
+      connected: false,
+      videolink: null,
+      partyId: null,
       username: "",
       error: ""
     };
@@ -88,6 +125,8 @@ export default Vue.extend({
         browser.tabs.sendMessage(currentTabId, createPartyMessage);
       } catch (err) {
         this.error = "Failed to create party. Try later!";
+        this.connecting = false;
+        this.connected = false;
       }
     }
   }
@@ -103,7 +142,7 @@ html {
 #app {
   color: @theme-primary-brighter;
   width: 350px;
-  padding: 1.4rem;
+  padding: 1.7rem 1.4rem 1.4rem;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -135,12 +174,20 @@ html {
   border: 0;
 }
 
-.show-if-loading-wrapper {
+.while-join-wrapper {
   height: 140px;
   width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.current-party-info {
+  padding-top: 0.6rem;
+}
+
+.blue {
+  color: #4467e6;
 }
 </style>

@@ -164,6 +164,8 @@ export class Party extends EventEmitter<PartyEvent> {
     };
 
     this.socket.onclose = () => {
+      window.clearInterval(this.periodicUpdateIntervalID);
+      this.parentCommunicator.endSession();
       this.emit(PartyEvent.DISCONNECTED);
       log("Server connection closed");
     };
@@ -543,7 +545,6 @@ export class Party extends EventEmitter<PartyEvent> {
   }
 
   leaveParty() {
-    window.clearInterval(this.periodicUpdateIntervalID);
     this.socket.close();
   }
 }

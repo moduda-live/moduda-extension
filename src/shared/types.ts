@@ -5,9 +5,18 @@ interface BrowserRuntimeMessage {
   payload: object;
 }
 
+export interface DisconnectedMessage extends BrowserRuntimeMessage {
+  type: "DISCONNECTED";
+  payload: {};
+}
+
 export interface ConnectedMessage extends BrowserRuntimeMessage {
   type: "CONNECTED";
-  payload: {};
+  payload: {
+    partyId: string;
+    videolink: string;
+    username: string;
+  };
 }
 
 export interface RedirectRequestMessage extends BrowserRuntimeMessage {

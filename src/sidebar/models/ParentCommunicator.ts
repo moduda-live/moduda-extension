@@ -97,7 +97,7 @@ export default class ParentCommunicator implements Communicator {
   }
 
   signalConnected() {
-    this.parentConnection.signalConnected();
+    this.parentConnection.signalConnected(this.party.id);
   }
 
   endSession() {

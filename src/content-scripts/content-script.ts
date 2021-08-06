@@ -7,7 +7,11 @@ import { VideoEvent } from "@/models/video/types";
 import { VideoStatus } from "@/sidebar/models/types";
 import ToastMaker from "@/models/toast/ToastMaker";
 import { isPlaying } from "@/util/dom";
-import { ConnectedMessage, CreatePartyMessage } from "@/shared/types";
+import {
+  DisconnectedMessage,
+  ConnectedMessage,
+  CreatePartyMessage
+} from "@/shared/types";
 
 declare type Connection<TCallSender extends object = CallSender> = {
   promise: Promise<AsyncMethodReturns<TCallSender>>;
@@ -15,11 +19,12 @@ declare type Connection<TCallSender extends object = CallSender> = {
 };
 
 class Movens {
+  username: string;
+  videolink: string;
   sidebar: Sidebar;
   iframeConnection!: Connection;
   childIframe!: AsyncMethodReturns<CallSender, string>;
   VideoManager: VideoManager;
-
   ToastMaker: ToastMaker;
 
   constructor(
@@ -28,6 +33,8 @@ class Movens {
     debug: boolean,
     partyId: string | ""
   ) {
+    this.username = username;
+    this.videolink = videolink;
     this.sidebar = new Sidebar(videolink, debug, partyId);
     this.setUpIframeConnection(username);
     this.VideoManager = new VideoManager();
@@ -75,6 +82,13 @@ class Movens {
     this.VideoManager.offAll();
     this.sidebar.unmount();
     (window as any).partyLoaded = false;
+
+    // update browser storage for current movens state as well
+    const disconnectMessage: DisconnectedMessage = {
+      type: "DISCONNECTED",
+      payload: {}
+    };
+    browser.runtime.sendMessage(disconnectMessage);
   }
 
   setUpIframeConnection(username: string) {
@@ -155,10 +169,14 @@ class Movens {
           console.log("Setting controls to: ", adminControlsOnly);
           this.VideoManager.adminControlsOnly = adminControlsOnly;
         },
-        signalConnected: () => {
+        signalConnected: (partyId: string) => {
           const message: ConnectedMessage = {
             type: "CONNECTED",
-            payload: {}
+            payload: {
+              partyId,
+              videolink: this.videolink,
+              username: this.username
+            }
           };
           browser.runtime.sendMessage(message);
         },
@@ -184,6 +202,7 @@ function initMovens(username: string, partyId: string, debug = false) {
     process.env.NODE_ENV === "development" && debug,
     partyId
   );
+
   (window as any).partyLoaded = true;
   (window as any).MovensController = MovensController;
 }
