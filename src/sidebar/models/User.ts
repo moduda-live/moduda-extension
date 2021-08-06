@@ -166,14 +166,13 @@ export class OtherUser extends User {
     });
 
     this.peer.on("stream", stream => {
-      console.log(`stream from ${this.id}`);
-      console.log(stream);
       this.stream = stream;
       this.party.emit(PartyEvent.UPDATE_USER_STREAM, this.id, this.stream);
     });
 
     this.peer.on("error", err => {
       console.log("Error: ", (err as any).code);
+      this.party.emit(PartyEvent.USER_LEFT, this.id);
       // TODO: Attempt to reconnect
     });
 

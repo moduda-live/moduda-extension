@@ -52,11 +52,18 @@ export class Party extends EventEmitter<PartyEvent> {
     // Note: More event handlers registered in store / plugin / syncPartyAndStorePlugin.ts
     this.on(PartyEvent.USER_JOINED, () => {
       log("User joined [inside Party]");
+
+      // check condition to START sending periodic updates
+      this.checkIfPeriodicallySendVideoTime();
       if (!this.showToast) return;
     })
       .on(PartyEvent.USER_LEFT, userId => {
-        log("User left [inside Party]");
+        log(`User ${userId} left [inside Party]`);
         this.users.delete(userId);
+
+        // check condition to STOP sending periodic updates
+        this.checkIfPeriodicallySendVideoTime();
+
         if (!this.showToast) return;
       })
       .on(PartyEvent.SET_USER_MUTE, (user: User, mute: boolean) => {
@@ -165,6 +172,7 @@ export class Party extends EventEmitter<PartyEvent> {
   cleanup() {
     if (this.periodicUpdateIntervalID !== -1) {
       window.clearInterval(this.periodicUpdateIntervalID);
+      this.periodicUpdateIntervalID = -1;
     }
     if (this.parentCommunicator) {
       this.parentCommunicator.endSession();
@@ -188,6 +196,27 @@ export class Party extends EventEmitter<PartyEvent> {
       this.emit(PartyEvent.ERROR);
       log("Error establishing connection with server");
     };
+  }
+
+  checkIfPeriodicallySendVideoTime() {
+    if (this.periodicUpdateIntervalID === -1) {
+      // CHECK IF WE NEED TO START SENDING UPDATES
+      // we only start sending new updates when:
+      // 1) this user is actually an admin
+      // 2) there is at least 1 other user
+      const startSendingUpdates: boolean =
+        this.ownUser.isAdmin && this.users.size > 1;
+
+      if (startSendingUpdates) {
+        this.periodicallySendVideoTime();
+      }
+    } else {
+      // WE HAVE ALREADY BEEN SENDING UPDATES, USER MUST BE AN ADMIN
+      if (this.users.size <= 1) {
+        window.clearInterval(this.periodicUpdateIntervalID);
+        this.periodicUpdateIntervalID = -1;
+      }
+    }
   }
 
   async handleMessage(this: Party, event: MessageEvent) {
@@ -244,7 +273,6 @@ export class Party extends EventEmitter<PartyEvent> {
           this.ownUser.setIsAdmin(true);
           this.ownUser.setIsRoomOwner(true);
           this.parentCommunicator.setIsUserAdmin(true);
-          this.periodicallySendVideoTime();
         } else {
           this.ownUser.setIsAdmin(false);
           this.ownUser.setIsRoomOwner(false);
@@ -285,6 +313,7 @@ export class Party extends EventEmitter<PartyEvent> {
           this.users.set(senderId, user);
           this.emit(PartyEvent.USER_JOINED, user);
         }
+
         break;
       }
       case "newForeignMessage": {
@@ -544,6 +573,11 @@ export class Party extends EventEmitter<PartyEvent> {
   }
 
   periodicallySendVideoTime() {
+    if (this.users.size <= 1) {
+      // no one to send info to, skip it for now
+      return;
+    }
+
     this.periodicUpdateIntervalID = window.setInterval(async () => {
       console.log("Sending update");
       const status = await this.parentCommunicator.getCurrentVideoStatus();
