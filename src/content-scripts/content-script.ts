@@ -21,7 +21,9 @@ declare type Connection<TCallSender extends object = CallSender> = {
 class Movens {
   username: string;
   videolink: string;
-  sidebar: Sidebar;
+  partyId: string;
+  debug: boolean;
+  sidebar!: Sidebar;
   iframeConnection!: Connection;
   childIframe!: AsyncMethodReturns<CallSender, string>;
   VideoManager: VideoManager;
@@ -35,12 +37,25 @@ class Movens {
   ) {
     this.username = username;
     this.videolink = videolink;
-    this.sidebar = new Sidebar(videolink, debug, partyId);
-    this.setUpIframeConnection(username);
-    this.VideoManager = new VideoManager();
-    this.setupVideoManagerListeners();
+    this.debug = debug;
+    this.partyId = partyId;
 
     this.ToastMaker = new ToastMaker();
+
+    this.VideoManager = new VideoManager();
+    this.setupVideoManagerListeners();
+  }
+
+  setupSidebar() {
+    this.sidebar = new Sidebar(this.videolink, this.debug, this.partyId);
+    this.setUpIframeConnection(this.username);
+  }
+
+  async selectVideo() {
+    await this.VideoManager.selectVideo(true);
+    this.VideoManager.cleanupVideos();
+    this.VideoManager.pause();
+    this.VideoManager.setupListeners();
   }
 
   setupVideoManagerListeners() {
@@ -104,22 +119,14 @@ class Movens {
         getUsername: () => {
           return username;
         },
-        selectVideo: async (autoResolveWithLargestVid: boolean) => {
-          try {
-            // pause until user selects video
-            await this.VideoManager.selectVideo(autoResolveWithLargestVid);
-            this.VideoManager.cleanupVideos();
-            this.VideoManager.pause();
-            this.VideoManager.setupListeners();
-          } catch (err) {
-            console.error("Error trying to get video reference: ", err);
-            throw new Error("Could not find video");
-          }
-        },
         hideSidebar: () => {
           this.sidebar.hide();
           this.sidebar.screenFormatter.triggerReflow();
           this.sidebar.enableReopenTease();
+        },
+        showSidebarOnceConnected: () => {
+          // iframe calls this once connection to Websocket server is established
+          this.sidebar.show();
         },
         playVideo: async () => {
           try {
@@ -171,6 +178,7 @@ class Movens {
           this.VideoManager.adminControlsOnly = adminControlsOnly;
         },
         signalConnected: (partyId: string) => {
+          // handled by src/background.ts (Background Script)
           const message: ConnectedMessage = {
             type: "CONNECTED",
             payload: {
@@ -180,6 +188,15 @@ class Movens {
             }
           };
           browser.runtime.sendMessage(message);
+          (window as any).partyLoaded = true;
+        },
+        signalConnectionFailed: () => {
+          console.log("FAILED TO CONNECT...");
+          // handled by src/popup/Popup.vue
+          const failedConnectMessage = {
+            type: "FAILED_CONNECT"
+          };
+          browser.runtime.sendMessage(failedConnectMessage);
         },
         endSession: () => {
           this.unmount();
@@ -195,7 +212,7 @@ class Movens {
   }
 }
 
-function initMovens(username: string, partyId: string, debug = false) {
+async function initMovens(username: string, partyId: string, debug = false) {
   // disable debugging for now
   const MovensController = new Movens(
     username,
@@ -204,8 +221,19 @@ function initMovens(username: string, partyId: string, debug = false) {
     partyId
   );
 
-  (window as any).partyLoaded = true;
-  (window as any).MovensController = MovensController;
+  // Step 1) select video
+  try {
+    await MovensController.selectVideo();
+    // send success info to popup
+    browser.runtime.sendMessage({ type: "FOUND_VID" });
+  } catch (err) {
+    // we couldn't actually find any videos on the page, report this back to the popup
+    browser.runtime.sendMessage({ type: "FAILED_VID" });
+    return;
+  }
+
+  // Step 2) if we can find a video to hook onto, set up the sidebar an' stuff
+  MovensController.setupSidebar();
 }
 
 browser.runtime.onMessage.addListener(message => {
@@ -220,6 +248,7 @@ browser.runtime.onMessage.addListener(message => {
 
 console.log("host is:", window.location.href);
 
+// TODO: replace with actual movens.app/join url
 if (window.location.host === "www.nytimes.com") {
   const currentWindowSearchParams = new URLSearchParams(window.location.search);
   const redirectUrl = new URL(browser.runtime.getURL("join.html"));

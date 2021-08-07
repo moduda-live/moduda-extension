@@ -145,6 +145,9 @@ export class Party extends EventEmitter<PartyEvent> {
       })
       .on(PartyEvent.CONNECTED, () => {
         this.parentCommunicator.signalConnected();
+      })
+      .on(PartyEvent.ERROR, () => {
+        this.parentCommunicator.signalConnectionFailed();
       });
   }
 
@@ -152,12 +155,6 @@ export class Party extends EventEmitter<PartyEvent> {
     log("Starting party...");
 
     await this.parentCommunicator.init();
-    try {
-      await this.parentCommunicator.selectVideo(true);
-    } catch (err) {
-      this.emit(PartyEvent.VIDEO_NOT_FOUND);
-      return;
-    }
 
     const username = await this.parentCommunicator.getUsername();
     this.emit(PartyEvent.CONNECTING);
@@ -186,14 +183,14 @@ export class Party extends EventEmitter<PartyEvent> {
     };
 
     this.socket.onclose = () => {
-      this.cleanup();
       this.emit(PartyEvent.DISCONNECTED);
+      this.cleanup();
       log("Server connection closed");
     };
 
     this.socket.onerror = () => {
-      this.cleanup();
       this.emit(PartyEvent.ERROR);
+      this.cleanup();
       log("Error establishing connection with server");
     };
   }

@@ -1,38 +1,51 @@
 <template>
   <div id="app">
     <AppHeader id="movens-logo" />
-    <Alert type="error" v-show="error">{{ error }}</Alert>
-    <div class="pre-join-wrapper" v-if="!connecting && !connected && !error">
+    <div class="join-wrapper" v-if="this.sessionState === SessionState.ERROR">
+      <h1>Oops. 𓀒 𓀓</h1>
+      <ErrorView :errorType="errorType" />
+      <Button @click="createParty" type="primary" size="large" long>
+        Click here to retry
+      </Button>
+    </div>
+    <div class="join-wrapper" v-show="sessionState === SessionState.DEFAULT">
       <h1>Let's get started. 🚀</h1>
       <p>
-        Please ensure that you are on a page with the video you want to watch
+        Please ensure that you are on a page with the video you want to watch.
       </p>
       <Input
+        style="margin-top: 1em;"
         v-model="username"
-        v-if="!connecting && !error"
         autofocus
-        class="mt-1em"
         :maxlength="15"
         placeholder="Enter username (optional)"
       />
-      <Button
-        v-if="!connecting && !error"
-        @click="createParty"
-        type="primary"
-        size="large"
-        long
-        class="create-party-btn"
-      >
+      <Button @click="createParty" type="primary" size="large" long>
         Create a new room
       </Button>
     </div>
-    <div v-if="connecting" class="while-join-wrapper">
+    <div
+      v-show="sessionState === SessionState.FINDING_VID"
+      class="join-loading-wrapper"
+    >
+      <Spin>
+        <Icon type="ios-loading" size="40" class="demo-spin-icon-load"></Icon>
+        <div>Finding video on the page...</div>
+      </Spin>
+    </div>
+    <div
+      v-show="sessionState === SessionState.CONNECTING"
+      class="join-loading-wrapper"
+    >
       <Spin>
         <Icon type="ios-loading" size="40" class="demo-spin-icon-load"></Icon>
         <div>Connecting to server...</div>
       </Spin>
     </div>
-    <div v-if="connected" class="post-join-wrapper">
+    <div
+      v-show="sessionState === SessionState.CONNECTED"
+      class="join-wrapper post-join-wrapper"
+    >
       <h1 style="font-weight: 400;">
         Hello, <b>{{ username }}</b> 👋
       </h1>
@@ -52,11 +65,28 @@ import Vue from "vue";
 import AppHeader from "@/shared/AppHeader.vue";
 import "tippy.js/animations/scale.css";
 import { CreatePartyMessage } from "@/shared/types";
+import ErrorView from "./ErrorView.vue";
+
+enum SessionState {
+  DEFAULT, // state before anything happens
+  FINDING_VID,
+  CONNECTING,
+  CONNECTED,
+  ERROR
+}
+
+export enum ErrorType {
+  FAILED_VID,
+  UNKNOWN,
+  FAILED_CONNECT,
+  NONE // indicates, well, no error
+}
 
 export default Vue.extend({
   name: "Popup",
   components: {
-    AppHeader
+    AppHeader,
+    ErrorView
   },
   mounted() {
     // get initial state from browser's storage
@@ -71,8 +101,7 @@ export default Vue.extend({
 
           if (this.partyId) {
             // if partyId === "", extension is not currently running
-            this.connecting = false;
-            this.connected = true;
+            this.sessionState = SessionState.CONNECTED;
           }
           return currentMovensState.tabId;
         }
@@ -81,6 +110,10 @@ export default Vue.extend({
         browser.tabs
           .query({ active: true, lastFocusedWindow: true })
           .then(tabs => {
+            if (!tabs || !tabs.length || !tabs[0]) {
+              this.isMovensActiveInThisTab = false;
+              return;
+            }
             this.isMovensActiveInThisTab = tabs[0].id === movensRunningTabId;
           });
       });
@@ -88,32 +121,60 @@ export default Vue.extend({
     // subscribe to updates
     browser.storage.onChanged.addListener((changes, namespace) => {
       for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
-        if (key === "movensCurrentState" && newValue?.currentPartyId) {
+        const newPartyId = newValue?.currentPartyId;
+
+        if (key === "movensCurrentState" && newPartyId) {
           // a setting has changed
           this.partyId = newValue.currentPartyId;
+
           this.videolink = newValue.videolink;
           this.username = newValue.username;
-          this.connecting = false;
-          this.connected = true;
+          this.sessionState = SessionState.CONNECTED;
           this.isMovensActiveInThisTab = true;
+        }
+      }
+    });
+
+    browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (!message.type) return;
+
+      switch (message.type) {
+        case "FOUND_VID": {
+          this.sessionState = SessionState.CONNECTING;
+          break;
+        }
+        case "FAILED_VID": {
+          this.errorType = ErrorType.FAILED_VID;
+          this.sessionState = SessionState.ERROR;
+          break;
+        }
+        case "FAILED_CONNECT": {
+          this.errorType = ErrorType.FAILED_CONNECT;
+          this.sessionState = SessionState.ERROR;
+          console.log("this.errorType :>> ", this.errorType);
+          break;
+        }
+        default: {
+          // ignore, probably for background script, since popups and background scripts run on the same env
         }
       }
     });
   },
   data() {
     return {
-      connecting: false,
-      connected: false,
+      SessionState,
+      ErrorType,
+      sessionState: SessionState.DEFAULT,
       videolink: null,
       partyId: null,
       username: "",
-      error: "",
+      errorType: ErrorType.NONE,
       isMovensActiveInThisTab: false
     };
   },
   methods: {
     async createParty() {
-      this.connecting = true;
+      this.sessionState = SessionState.FINDING_VID;
 
       try {
         const tabs = await browser.tabs.query({
@@ -137,9 +198,8 @@ export default Vue.extend({
 
         browser.tabs.sendMessage(currentTabId, createPartyMessage);
       } catch (err) {
-        this.error = "Failed to create party. Try later!";
-        this.connecting = false;
-        this.connected = false;
+        this.errorType = ErrorType.UNKNOWN;
+        this.sessionState = SessionState.ERROR;
       }
     }
   }
@@ -166,10 +226,10 @@ html {
     rgba(129, 95, 224, 0.10307072829131656) 0%,
     rgba(227, 80, 54, 0.10587184873949583) 100%
   );
-}
 
-.mt-1em {
-  margin-top: 1em;
+  h1 {
+    margin-bottom: 0.1em;
+  }
 }
 
 .ivu-alert {
@@ -182,12 +242,16 @@ html {
   right: 10px;
 }
 
-.create-party-btn {
-  margin-top: 0.3em;
-  border: 0;
+.join-wrapper {
+  line-height: 1.5;
+
+  button {
+    margin-top: 0.5em;
+    border: 0;
+  }
 }
 
-.while-join-wrapper {
+.join-loading-wrapper {
   height: 140px;
   width: 100%;
   display: flex;
@@ -198,9 +262,9 @@ html {
 
 .current-party-info {
   padding-top: 0.6rem;
-}
 
-.blue {
-  color: #4467e6;
+  span {
+    color: #4467e6;
+  }
 }
 </style>

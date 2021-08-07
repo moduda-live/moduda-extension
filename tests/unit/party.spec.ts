@@ -74,19 +74,6 @@ describe("Party.ts", () => {
       WS.clean();
     });
 
-    it("should emit PartyEvent.VIDEO_NOT_FOUND if no video on screen", async () => {
-      jest
-        .spyOn(CommunicatorMock.prototype, "selectVideo")
-        .mockImplementationOnce(() => {
-          throw new Error("Video not found");
-        });
-      const party = setUpParty();
-      const onVideoNotFound = jest.fn();
-      party.on(PartyEvent.VIDEO_NOT_FOUND, onVideoNotFound);
-      await party.connect();
-      expect(onVideoNotFound).toHaveBeenCalled();
-    });
-
     it("should emit PartyEvent.CONNECTING event", async () => {
       const party = setUpParty();
       const onConnecting = jest.fn();
@@ -167,7 +154,7 @@ describe("Party.ts", () => {
         }
       });
 
-      let expectedUsers: any = {
+      const expectedUsers: any = {
         [fakeOwnUserId]: expect.objectContaining({
           id: fakeOwnUserId,
           username: undefined, // parentCommunicator mock doesnt mock getUsername()

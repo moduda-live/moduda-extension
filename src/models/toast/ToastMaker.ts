@@ -3,7 +3,6 @@ import "toastify-js/src/toastify.css";
 
 export default class ToastMaker {
   makeToast(toastMsg: string, isWarning = false) {
-    console.log("Making toast: ", toastMsg);
     Toastify({
       text: toastMsg,
       duration: 1000,

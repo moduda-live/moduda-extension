@@ -27,6 +27,7 @@ export default class Sidebar {
     iframe.src = url.toString();
     iframe.allow = "microphone";
     this.iframe = iframe;
+
     this.attachToDom();
 
     // For adjusting screen layout based on sidebar visiblity
@@ -44,11 +45,13 @@ export default class Sidebar {
   attachToDom() {
     const container = document.createElement("div");
     container.classList.add("movens-sidebar");
-    container.style.right = "0";
-    container.appendChild(this.iframe);
-    document.body.appendChild(container);
 
-    this.sidebarContainer = container;
+    // hide sidebar for now, because we want to only load it once connection to Websocket server is successful
+    this.sidebarContainer = container; // this step MUST precede this.hide() as it is now
+    this.hide();
+
+    container.appendChild(this.iframe);
+    document.body.appendChild(this.sidebarContainer);
   }
 
   hide = () => {
@@ -87,7 +90,6 @@ export default class Sidebar {
   };
 
   unmount = () => {
-    console.log("HERE");
     this.hide();
     this.screenFormatter.triggerReflow();
     this.iframe.parentNode?.removeChild(this.iframe);

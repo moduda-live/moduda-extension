@@ -30,7 +30,6 @@ export enum PartyEvent {
   // Chat
   ADD_CHAT_MSG,
   // Video
-  VIDEO_NOT_FOUND,
   VIDEO_PLAY,
   VIDEO_PAUSE,
   VIDEO_SEEK,
@@ -73,7 +72,6 @@ export interface Communicator {
   setIsUserAdmin(isUserAdmin: boolean): void;
   hideSidebar(): void;
   makeToast(toastMsg: string): void;
-  selectVideo(autoResolveToLargestVideo: boolean): Promise<void>;
   playVideo(): Promise<void>;
   pauseVideo(): Promise<void>;
   seekVideo(currentTimeSeconds: number): Promise<void>;
@@ -86,5 +84,6 @@ export interface Communicator {
   setHostTime(currentTimeSeconds: number): void;
   setAdminControls(adminControlsOnly: boolean): void;
   signalConnected(): void;
+  signalConnectionFailed(): void;
   endSession(): void;
 }

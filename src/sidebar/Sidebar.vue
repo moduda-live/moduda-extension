@@ -1,10 +1,8 @@
 <template>
   <div class="sidebar">
-    <ErrorView :message="videoNotFoundErrorMsg" v-if="videoNotFound" />
-    <SetupView v-if="!videoNotFound && serverBeforeConnect" />
+    <SetupView v-if="serverBeforeConnect" />
     <ServerConnectionLoadIndicator v-if="serverConnecting" />
     <PartyUI v-if="serverConnected" />
-    <ErrorView :message="serverConnectErrorMsg" v-if="serverDisconnected" />
   </div>
 </template>
 
@@ -12,7 +10,6 @@
 import ServerConnectionLoadIndicator from "@/sidebar/components/ServerConnectionLoadIndicator.vue";
 import PartyUI from "./components/PartyUI.vue";
 import SetupView from "./components/SetupView.vue";
-import ErrorView from "./components/ErrorView.vue";
 import { mapState, mapGetters } from "vuex";
 
 export default {
@@ -20,16 +17,9 @@ export default {
   components: {
     ServerConnectionLoadIndicator,
     PartyUI,
-    SetupView,
-    ErrorView
-  },
-  created() {
-    this.serverConnectErrorMsg =
-      "Could not connect to server.\nTry again later.";
-    this.videoNotFoundErrorMsg = "Video not found.\nTry again in another page.";
+    SetupView
   },
   computed: {
-    ...mapState(["videoNotFound"]),
     ...mapGetters([
       "serverBeforeConnect",
       "serverConnecting",

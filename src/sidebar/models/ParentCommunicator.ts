@@ -49,9 +49,6 @@ export default class ParentCommunicator implements Communicator {
   /**
    * Video
    */
-  selectVideo(autoResolveToLargestVideo: boolean) {
-    return this.parentConnection.selectVideo(autoResolveToLargestVideo);
-  }
 
   playVideo() {
     return this.parentConnection.playVideo();
@@ -98,6 +95,11 @@ export default class ParentCommunicator implements Communicator {
 
   signalConnected() {
     this.parentConnection.signalConnected(this.party.id);
+    this.parentConnection.showSidebarOnceConnected();
+  }
+
+  signalConnectionFailed() {
+    this.parentConnection.signalConnectionFailed();
   }
 
   endSession() {

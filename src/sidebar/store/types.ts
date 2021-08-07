@@ -8,7 +8,6 @@ export enum ConnectionStatus {
 }
 
 export interface RootState {
-  videoNotFound: boolean;
   partyId: string;
   userId: string;
   serverConnectionStatus: ConnectionStatus;

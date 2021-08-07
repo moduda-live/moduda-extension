@@ -10,8 +10,8 @@ export interface MovensState {
   currentPartyId: string;
   previousPartyId: string;
   videolink: string;
-  tabId: number | undefined;
   username: string;
+  tabId: number | undefined;
 }
 
 interface ChangeInfo {
@@ -81,21 +81,22 @@ browser.runtime.onMessage.addListener(async function(
   switch (request.type) {
     case "DISCONNECTED": {
       // keep last used username and previous party id, but remove currentPartyId, videolink and tabId to indicate termination of session
-      const currentState = await browser.storage.local.get(
+      const storageGetResult = await browser.storage.local.get(
         "movensCurrentState"
       );
 
-      if (!currentState) {
-        console.error(
-          "Something went wrong: session terminated but no session was stored in the first place!"
-        );
-        return;
-      }
+      const currentState: MovensState = storageGetResult.movensCurrentState;
+      // todo: clean this up
+      const previousPartyId = currentState
+        ? currentState.previousPartyId || ""
+        : "";
+      const username = currentState ? currentState.username || "" : "";
 
       const terminatedState: MovensState = {
-        ...(currentState as MovensState),
-        videolink: "",
         currentPartyId: "",
+        previousPartyId,
+        username,
+        videolink: "",
         tabId: undefined
       };
 
