@@ -121,7 +121,6 @@ class Movens {
         },
         hideSidebar: () => {
           this.sidebar.hide();
-          this.sidebar.screenFormatter.triggerReflow();
           this.sidebar.enableReopenTease();
         },
         showSidebarOnceConnected: () => {
@@ -188,7 +187,6 @@ class Movens {
             }
           };
           browser.runtime.sendMessage(message);
-          (window as any).partyLoaded = true;
         },
         signalConnectionFailed: () => {
           console.log("FAILED TO CONNECT...");
@@ -213,6 +211,7 @@ class Movens {
 }
 
 async function initMovens(username: string, partyId: string, debug = false) {
+  (window as any).partyLoaded = true;
   // disable debugging for now
   const MovensController = new Movens(
     username,
