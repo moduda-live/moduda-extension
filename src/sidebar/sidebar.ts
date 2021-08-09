@@ -56,7 +56,7 @@ Vue.use(partyPlugin);
 
 let wsUrl = "ws://localhost";
 if (process.env.NODE_ENV === "production") {
-  wsUrl = "wss://ec2-18-134-142-199.eu-west-2.compute.amazonaws.com";
+  wsUrl = "wss://moduda.live";
 }
 
 const parentCommunicator = new ParentCommunicator();

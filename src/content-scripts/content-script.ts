@@ -246,10 +246,7 @@ browser.runtime.onMessage.addListener(message => {
   }
 });
 
-console.log("host is:", window.location.href);
-
-// TODO: replace with actual movens.app/join url
-if (window.location.host === "www.nytimes.com") {
+if (/moduda.live\//.test(window.location.href)) {
   const currentWindowSearchParams = new URLSearchParams(window.location.search);
   const redirectUrl = new URL(browser.runtime.getURL("join.html"));
   if (
@@ -266,9 +263,4 @@ if (window.location.host === "www.nytimes.com") {
     );
     window.location.href = redirectUrl.toString();
   }
-}
-
-if (/movens.app\/join\//.test(window.location.href)) {
-  const redirectUrl = new URL(browser.runtime.getURL("join.html"));
-  window.location.href = redirectUrl.toString();
 }
