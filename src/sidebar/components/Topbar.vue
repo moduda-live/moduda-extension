@@ -104,9 +104,7 @@ export default Vue.extend({
   watch: {
     myUser(updatedUser) {
       if (updatedUser) {
-        console.log("SETTING VALUE TO", updatedUser.isAdmin);
         this.enableAdminToggle = updatedUser.isAdmin;
-        console.log("LTEST VALUE: ", this.enableAdminToggle);
       }
     },
     adminControlsOnly(val) {

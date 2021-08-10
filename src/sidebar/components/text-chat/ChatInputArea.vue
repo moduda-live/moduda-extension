@@ -167,14 +167,11 @@ export default Vue.extend({
           textArea.style.height = `28px`;
           if (this.countingMessages) {
             this.numMessagesPastTenSeconds += 1;
-            console.log("Count: ", this.numMessagesPastTenSeconds);
           } else {
             // start counting
             this.countingMessages = true;
-            console.log("Counting started: ");
             this.numMessagesPastTenSeconds = 1;
             this.countingTimeout = window.setTimeout(() => {
-              console.log("Counting ended: ");
               this.countingMessages = false;
               this.numMessagesPastTenSeconds = 0;
             }, COUNT_DURATION_MS);

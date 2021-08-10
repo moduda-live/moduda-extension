@@ -107,7 +107,6 @@ class Movens {
   }
 
   setUpIframeConnection(username: string) {
-    // console.log("childOrigin: ", browser.runtime.getURL("").slice(0, -1));
     const connection = connectToChild({
       iframe: this.sidebar.iframe,
       childOrigin: browser.runtime.getURL("").slice(0, -1), // hacky workaround to make penpal work
@@ -172,7 +171,6 @@ class Movens {
           this.VideoManager.hostVideoStatus.currentTimeSeconds = currentTimeSeconds;
         },
         setAdminControls: (adminControlsOnly: boolean) => {
-          console.log("Setting controls to: ", adminControlsOnly);
           this.VideoManager.adminControlsOnly = adminControlsOnly;
         },
         signalConnected: (partyId: string) => {

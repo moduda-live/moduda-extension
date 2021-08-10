@@ -68,7 +68,6 @@ export default Vue.extend({
     const urlParams = new URLSearchParams(window.location.search);
     // we call decodeURIComponent() here so that we don't get encoded version (e.g. party%id -> party-id)
     this.redirectUrl = decodeURIComponent(urlParams.get("redirectUrl") ?? "");
-    console.log("REDIRECT TO ", this.redirectUrl);
     this.partyId = decodeURIComponent(urlParams.get("partyId") ?? "");
 
     if (!this.partyId || !this.redirectUrl) {
@@ -105,8 +104,6 @@ export default Vue.extend({
         const permissionGranted: boolean = await browser.permissions.request({
           origins: [this.permissionUrl]
         });
-
-        console.log("PERMISSION: ", permissionGranted);
 
         if (permissionGranted) {
           const redirectMessage: RedirectRequestMessage = {

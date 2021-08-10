@@ -47,7 +47,6 @@ export default Vue.extend({
         const match: RegExpMatchArray | null = word.match(/:(.+?):/);
         if (match !== null && match.length !== 0) {
           const emoteName = match[1];
-          console.log("emoteName from parsing:", emoteName);
           const emoteInfo = emoteInfoMap.get(emoteName);
 
           return emoteInfo

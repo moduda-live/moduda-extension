@@ -62,7 +62,6 @@ export default Vue.extend({
       if (!newVal && oldVal) {
         // text is being shown again, let's restore prev scrolling position
         const chatArea = this.$refs.chatArea as HTMLDivElement;
-        console.log("chatScrollPosition: ", this.chatScrollPosition);
         this.$nextTick(() => (chatArea.scrollTop = this.chatScrollPosition));
       }
     }
@@ -77,7 +76,6 @@ export default Vue.extend({
     hideChatAndSaveScroll() {
       const chatArea = this.$refs.chatArea as HTMLDivElement;
       const currentChatScrollPosition = chatArea.scrollTop;
-      console.log("storing scroll pos:", currentChatScrollPosition);
       this.hideChat(currentChatScrollPosition);
     }
   }

@@ -172,13 +172,14 @@ export class OtherUser extends User {
 
     this.peer.on("error", err => {
       console.log("Error: ", (err as any).code);
-      this.party.emit(PartyEvent.USER_LEFT, this.id);
+      this.party.emit(PartyEvent.USER_LEFT, this);
       // TODO: Attempt to reconnect
     });
 
     this.peer.on("close", () => {
       // TODO: Attempt to reconnect
-      this.party.emit(PartyEvent.USER_LEFT, this.id);
+      console.log("User" + this.username + " disconnected");
+      this.party.emit(PartyEvent.USER_LEFT, this);
     });
   }
 }

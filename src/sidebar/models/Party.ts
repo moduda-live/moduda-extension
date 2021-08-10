@@ -50,14 +50,29 @@ export class Party extends EventEmitter<PartyEvent> {
 
   setUpEventHandlers() {
     // Note: More event handlers registered in store / plugin / syncPartyAndStorePlugin.ts
-    this.on(PartyEvent.USER_JOINED, () => {
-      log("User joined [inside Party]");
+    this.on(PartyEvent.USER_JOINED, (user: User) => {
+      log(`User ${user.id} joined [inside Party]`);
 
       // check condition to START sending periodic updates
       this.checkIfPeriodicallySendVideoTime();
       if (!this.showToast) return;
+      this.parentCommunicator.makeToast(`${user.username} just joined! 👋`);
     })
-      .on(PartyEvent.USER_LEFT, userId => {
+      .on(PartyEvent.USER_LEFT, (user: User) => {
+        const userId = user.id;
+        if (!userId) {
+          console.error(
+            "Something went wrong...an user with no id left the group!"
+          );
+          return;
+        }
+
+        if (!this.users.has(userId)) {
+          // when other user disconnects by e.g. closing the browser, socket emits an error followed by close,
+          // so this gets triggered twice. we skip the rest of the logic if the user has already been removed.
+          return;
+        }
+
         log(`User ${userId} left [inside Party]`);
         this.users.delete(userId);
 
@@ -65,6 +80,7 @@ export class Party extends EventEmitter<PartyEvent> {
         this.checkIfPeriodicallySendVideoTime();
 
         if (!this.showToast) return;
+        this.parentCommunicator.makeToast(`${user.username} has left the room`);
       })
       .on(PartyEvent.SET_USER_MUTE, (user: User, mute: boolean) => {
         log("Setting user mute state to: " + mute);

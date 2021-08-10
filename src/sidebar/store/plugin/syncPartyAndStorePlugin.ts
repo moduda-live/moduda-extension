@@ -43,8 +43,8 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
       .on(PartyEvent.USER_JOINED, (user: User) => {
         store.dispatch("addUser", user);
       })
-      .on(PartyEvent.USER_LEFT, (userId: string) => {
-        store.dispatch("removeUser", userId);
+      .on(PartyEvent.USER_LEFT, (user: User) => {
+        store.dispatch("removeUser", user.id);
       })
       .on(
         PartyEvent.UPDATE_USER_STREAM,

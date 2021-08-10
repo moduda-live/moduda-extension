@@ -67,17 +67,14 @@ export default class ParentCommunicator implements Communicator {
   }
 
   relayPlay() {
-    //console.log("Relay play");
     this.party.relayPlay();
   }
 
   relayPause() {
-    //console.log("Relay pause");
     this.party.relayPause();
   }
 
   relaySeeked(currentTimeSeconds: number) {
-    //console.log("Relay seeked to ", currentTimeSeconds);
     this.party.relaySeeked(currentTimeSeconds);
   }
 

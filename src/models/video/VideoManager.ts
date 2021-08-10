@@ -58,8 +58,6 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
       return;
     }
 
-    console.log("GETTING VIDEO...");
-
     if (this.autoResolve) {
       const largestVideo = getLargestVideo(videos);
       largestVideo.classList.add("video--selected");

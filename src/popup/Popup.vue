@@ -151,7 +151,6 @@ export default Vue.extend({
         case "FAILED_CONNECT": {
           this.errorType = ErrorType.FAILED_CONNECT;
           this.sessionState = SessionState.ERROR;
-          console.log("this.errorType :>> ", this.errorType);
           break;
         }
         default: {

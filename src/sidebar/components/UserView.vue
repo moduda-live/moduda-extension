@@ -49,7 +49,7 @@ const THROTTLE_RATE = 150;
 const USER_SPEAKING_VOLUME_THRESHOLD = 0.05;
 
 export default Vue.extend({
-  name: "VoiceChatPanel",
+  name: "UserView",
   props: ["user"],
   components: {
     AdminIcon
@@ -62,7 +62,7 @@ export default Vue.extend({
   },
   computed: {
     usernameFirstChar() {
-      return this.user.username.charAt(0).toUpperCase();
+      return this.user.username?.charAt(0).toUpperCase();
     },
     isThereTimeout(): boolean {
       return this.timeout !== -1;
