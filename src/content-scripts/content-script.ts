@@ -92,19 +92,18 @@ class Movens {
   }
 
   unmount() {
-    // end everything
-    this.iframeConnection.destroy();
-    this.VideoManager.offAll(); // this removes all event listeners on the VideoManager object itself, not the videos on the page
-    this.VideoManager.removeAllVideoEventListeners();
-    this.sidebar.unmount();
-    (window as any).partyLoaded = false;
-
     // update browser storage for current movens state as well
     const disconnectMessage: DisconnectedMessage = {
       type: "DISCONNECTED",
       payload: {}
     };
     browser.runtime.sendMessage(disconnectMessage);
+
+    this.iframeConnection.destroy();
+    this.VideoManager.offAll(); // this removes all event listeners on the VideoManager object itself, not the videos on the page
+    this.VideoManager.removeAllVideoEventListeners();
+    this.sidebar.unmount();
+    (window as any).partyLoaded = false;
   }
 
   setUpIframeConnection(username: string) {

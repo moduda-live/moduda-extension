@@ -5,15 +5,16 @@
   top: 0;
   bottom: 0;
   right: 0;
-  width: 270px;
-  height: calc(100vh - 32px);
+  width: @sidebar-width;
+  box-sizing: border-box;
+  height: 100vh;
   z-index: 999999;
   background-color: @theme-primary-color;
   padding: 16px 21px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
 }
 
 .movens-sidebar--teasing__pseudo {

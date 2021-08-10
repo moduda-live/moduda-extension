@@ -1,21 +1,18 @@
 <template>
   <div class="sidebar">
     <SetupView v-if="serverBeforeConnect" />
-    <ServerConnectionLoadIndicator v-if="serverConnecting" />
     <PartyUI v-if="serverConnected" />
   </div>
 </template>
 
 <script>
-import ServerConnectionLoadIndicator from "@/sidebar/components/ServerConnectionLoadIndicator.vue";
 import PartyUI from "./components/PartyUI.vue";
 import SetupView from "./components/SetupView.vue";
-import { mapState, mapGetters } from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   name: "Sidebar",
   components: {
-    ServerConnectionLoadIndicator,
     PartyUI,
     SetupView
   },

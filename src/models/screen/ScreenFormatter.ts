@@ -1,34 +1,43 @@
-import { getViewportWidth } from "@/util/dom";
+import debounce from "lodash.debounce";
 
 export default abstract class ScreenFormatter {
-  sidebar: HTMLDivElement;
-  mutationObserver!: MutationObserver;
+  public abstract domAttachTarget: string;
+  sidebar!: HTMLDivElement;
+  sidebarWidth!: number;
 
   constructor() {
+    const debouncedAdjust = debounce(this.adjustScreenView.bind(this));
+    window.addEventListener("fullscreenchange", debouncedAdjust);
+    window.addEventListener("resize", debouncedAdjust);
+  }
+
+  registerSidebar() {
     this.sidebar = document.querySelector(".movens-sidebar") as HTMLDivElement;
+    this.sidebarWidth = this.sidebar.offsetWidth;
   }
 
-  get vw() {
-    return getViewportWidth();
-  }
-
-  get afterSidebarWidth() {
+  isSidebarHidden() {
     return (
-      this.vw -
-      (this.sidebar.offsetWidth + parseInt(this.sidebar.style.right, 10))
+      this.sidebar && this.sidebar.classList.contains("movens-sidebar-hidden")
     );
   }
 
-  triggerReflow() {
-    window.dispatchEvent(new Event("resize"));
+  adjustScreenView() {
+    if (this.isSidebarHidden() === undefined) return; // no sidebar yet
+
+    if (document.fullscreenElement && !this.isSidebarHidden()) {
+      this.fullScreenAndSidebarHidden();
+    } else if (document.fullscreenElement && this.isSidebarHidden()) {
+      this.fullScreenAndSidebar();
+    } else if (!document.fullscreenElement && this.isSidebarHidden()) {
+      this.normalScreenAndSidebarHidden();
+    } else if (!document.fullscreenElement && !this.isSidebarHidden()) {
+      this.normalScreenAndSidebar();
+    }
   }
 
-  setupListenersForChange() {
-    this.adjustScreenFormatOnFullScreenChange();
-    this.adjustScreenFormatOnResize();
-  }
-
-  abstract adjustScreenFormat(): void;
-  abstract adjustScreenFormatOnFullScreenChange(): void;
-  abstract adjustScreenFormatOnResize(): void;
+  abstract fullScreenAndSidebarHidden(): void;
+  abstract fullScreenAndSidebar(): void;
+  abstract normalScreenAndSidebarHidden(): void;
+  abstract normalScreenAndSidebar(): void;
 }

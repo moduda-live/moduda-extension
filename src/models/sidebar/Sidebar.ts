@@ -28,18 +28,14 @@ export default class Sidebar {
     iframe.allow = "microphone";
     this.iframe = iframe;
 
-    this.attachToDom();
-
     // For adjusting screen layout based on sidebar visiblity
-    this.setupScreenFormatter();
-  }
-
-  setupScreenFormatter() {
     this.screenFormatter = ScreenFormatterFactory.createScreenFormatter(
       window.location.href
     );
-    this.screenFormatter.setupListenersForChange(); // call once
-    this.screenFormatter.triggerReflow();
+
+    this.attachToDom();
+
+    this.screenFormatter.registerSidebar();
   }
 
   attachToDom() {
@@ -51,13 +47,17 @@ export default class Sidebar {
     this.hide();
 
     container.appendChild(this.iframe);
-    document.body.appendChild(this.sidebarContainer);
+    document
+      .querySelector(this.screenFormatter.domAttachTarget)
+      ?.appendChild(this.sidebarContainer);
   }
 
   hide = () => {
+    this.sidebarContainer.classList.add("movens-sidebar-hidden");
     this.sidebarContainer.classList.remove("movens-sidebar--teasing");
     this.sidebarContainer.style.right = `${-1 *
       (SIDEBAR_WIDTH + SIDEBAR_PADDING_X * 2)}px`;
+    if (this.screenFormatter) this.screenFormatter.adjustScreenView();
   };
 
   teaseSidebarContainer = () => {
@@ -68,11 +68,12 @@ export default class Sidebar {
   };
 
   show = () => {
+    this.sidebarContainer.classList.remove("movens-sidebar-hidden");
     this.sidebarContainer.removeEventListener("click", this.show);
     document.removeEventListener("mousemove", this.toggleBasedOnMouse);
     this.sidebarContainer.classList.remove("movens-sidebar--teasing");
     this.sidebarContainer.style.right = "0px";
-    this.screenFormatter.triggerReflow();
+    this.screenFormatter.adjustScreenView();
   };
 
   toggleBasedOnMouse = (e: MouseEvent) => {
@@ -91,8 +92,7 @@ export default class Sidebar {
 
   unmount = () => {
     this.hide();
-    this.screenFormatter.triggerReflow();
     this.iframe.parentNode?.removeChild(this.iframe);
-    document.body.removeChild(this.sidebarContainer);
+    this.sidebarContainer.parentNode?.removeChild(this.sidebarContainer);
   };
 }
