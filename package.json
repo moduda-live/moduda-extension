@@ -1,7 +1,6 @@
 {
-  "name": "movens-extension",
-  "version": "1.0.0",
-  "private": true,
+  "name": "moduda",
+  "version": "0.0.1",
   "scripts": {
     "dev": "vue-cli-service build --mode development --watch",
     "build": "vue-cli-service build",

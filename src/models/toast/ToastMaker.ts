@@ -5,8 +5,8 @@ export default class ToastMaker {
   makeToast(toastMsg: string, isWarning = false) {
     Toastify({
       text: toastMsg,
-      duration: 1000,
-      className: isWarning ? "movens-toast-warning" : "movens-toast",
+      duration: 2000,
+      className: isWarning ? "moduda-toast-warning" : "moduda-toast",
       gravity: "top",
       position: "center"
     }).showToast();

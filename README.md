@@ -1,14 +1,14 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/movens-app/movens-extension/master/public/icons/128.png" alt="movens" />
+  <img src="https://raw.githubusercontent.com/moduda-live/moduda-extension/master/public/icons/128.png" alt="moduda" />
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/movens-app/movens-extension/master/docs/img/sneak-1.png" alt="sneak_one" />
+  <img src="https://raw.githubusercontent.com/moduda-live/moduda-extension/master/docs/img/sneak-1.png" alt="sneak_one" />
 </p>
 
 Chrome extension that sychronizes video playback between multiple parties, allowing you to watch your favorite stream, movie or just about any video on the internet with your mates in real time.
 
-Code for the Node Websocket server (deployed on AWS ECS) can be found [here](https://github.com/movens-app/movens-server).
+Code for the Node Websocket server (deployed on AWS ECS) can be found [here](https://github.com/moduda-app/moduda-server).
 
 ### Set up development locally
 

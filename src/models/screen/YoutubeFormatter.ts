@@ -12,27 +12,22 @@ export default class YoutubeFormatter extends ScreenFormatter {
       ".ytp-chrome-bottom"
     ) as HTMLDivElement;
   }
+  /// ignore for nwo
+  // this.ytd.style.width = `calc(100vw - ${this.sidebarWidth}px)`;
+  // // center video
+  // const vid = document.querySelector("video") as HTMLVideoElement;
+  // vid.style.width = `calc(100vw - ${this.sidebarWidth}px)`;
+  // vid.style.height = `100vh`;
 
-  adjustScreenViewFullScreen(): void {
-    /// ignore for nwo
-    // this.ytd.style.width = `calc(100vw - ${this.sidebarWidth}px)`;
-    // // center video
-    // const vid = document.querySelector("video") as HTMLVideoElement;
-    // vid.style.width = `calc(100vw - ${this.sidebarWidth}px)`;
-    // vid.style.height = `100vh`;
-  }
-
-  adjustScreenViewNonFullScreen(): void {
-    // ignore for now
-    // this.ytd.style.width = `calc(100vw - ${this.sidebarWidth}px)`;
-    // const controlBarParent = document.querySelector(
-    //   "#movie_player"
-    // ) as HTMLDivElement;
-    // this.controlBar.style.width = `calc(${controlBarParent?.offsetWidth}px - 12px)`;
-    // const vid = document.querySelector("video") as HTMLVideoElement;
-    // vid.style.width = `calc(${controlBarParent?.offsetWidth}px)`;
-    // window.dispatchEvent(new Event("resize"));
-  }
+  // ignore for now
+  // this.ytd.style.width = `calc(100vw - ${this.sidebarWidth}px)`;
+  // const controlBarParent = document.querySelector(
+  //   "#movie_player"
+  // ) as HTMLDivElement;
+  // this.controlBar.style.width = `calc(${controlBarParent?.offsetWidth}px - 12px)`;
+  // const vid = document.querySelector("video") as HTMLVideoElement;
+  // vid.style.width = `calc(${controlBarParent?.offsetWidth}px)`;
+  // window.dispatchEvent(new Event("resize"));
 
   fullScreenAndSidebarHidden(): void {
     //ignore

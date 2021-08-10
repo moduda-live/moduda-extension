@@ -10,7 +10,7 @@
         with others</b
       >. If you are sure there is a video, please submit an issue (stating the
       name of the website and preferrably a screenshot as well) on our
-      <a href="https://github.com/movens-app/movens-extension" target="_blank"
+      <a href="https://github.com/moduda-live/moduda-extension" target="_blank"
         >Github repo</a
       >.
     </p>

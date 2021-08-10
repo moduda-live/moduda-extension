@@ -82,10 +82,10 @@ browser.runtime.onMessage.addListener(async function(
     case "DISCONNECTED": {
       // keep last used username and previous party id, but remove currentPartyId, videolink and tabId to indicate termination of session
       const storageGetResult = await browser.storage.local.get(
-        "movensCurrentState"
+        "modudaCurrentState"
       );
 
-      const currentState: MovensState = storageGetResult.movensCurrentState;
+      const currentState: MovensState = storageGetResult.modudaCurrentState;
       // todo: clean this up
       const previousPartyId = currentState
         ? currentState.previousPartyId || ""
@@ -101,13 +101,13 @@ browser.runtime.onMessage.addListener(async function(
       };
 
       await browser.storage.local.set({
-        movensCurrentState: terminatedState
+        modudaCurrentState: terminatedState
       });
       break;
     }
     case "CONNECTED": {
       // persist the current party state to storage
-      const movensCurrentState: MovensState = {
+      const modudaCurrentState: MovensState = {
         currentPartyId: request.payload.partyId,
         previousPartyId: request.payload.partyId,
         videolink: request.payload.videolink,
@@ -116,7 +116,7 @@ browser.runtime.onMessage.addListener(async function(
       };
 
       await browser.storage.local.set({
-        movensCurrentState: movensCurrentState
+        modudaCurrentState: modudaCurrentState
       });
       log("Saved current state of the extension");
       break;

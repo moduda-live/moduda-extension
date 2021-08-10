@@ -27,12 +27,12 @@
       </Cell>
       <Cell
         title="Github"
-        to="https://github.com/movens-app/movens-extension"
+        to="https://github.com/moduda-live/moduda-extension"
         target="_blank"
       >
         <Icon slot="arrow" type="logo-github" :size="18" />
       </Cell>
-      <Cell name="leave-cell" class="leave-party" title="Disconnect"> </Cell>
+      <Cell name="leave-cell" title="Disconnect" id="leave-cell"> </Cell>
     </CellGroup>
     <Icon
       id="show-settings"
@@ -127,7 +127,7 @@ export default Vue.extend({
   justify-content: space-between;
 }
 
-.leave-party {
+#leave-cell div.ivu-cell-title {
   color: @theme-orange;
 }
 

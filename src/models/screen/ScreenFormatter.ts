@@ -12,13 +12,13 @@ export default abstract class ScreenFormatter {
   }
 
   registerSidebar() {
-    this.sidebar = document.querySelector(".movens-sidebar") as HTMLDivElement;
+    this.sidebar = document.querySelector(".moduda-sidebar") as HTMLDivElement;
     this.sidebarWidth = this.sidebar.offsetWidth;
   }
 
   isSidebarHidden() {
     return (
-      this.sidebar && this.sidebar.classList.contains("movens-sidebar-hidden")
+      this.sidebar && this.sidebar.classList.contains("moduda-sidebar-hidden")
     );
   }
 

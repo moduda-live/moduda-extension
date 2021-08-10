@@ -13,7 +13,7 @@ export default class Sidebar {
   constructor(videolink: string, debug: boolean, partyId: string | "") {
     const iframe = document.createElement("iframe");
     iframe.style.border = "none";
-    iframe.id = "movens-iframe";
+    iframe.id = "moduda-iframe";
     const url = new URL(browser.runtime.getURL("sidebar.html"));
     url.searchParams.append("videolink", videolink);
 
@@ -21,7 +21,7 @@ export default class Sidebar {
     url.searchParams.append("debug", String(debug));
 
     if (partyId) {
-      url.searchParams.append("movensPartyId", partyId);
+      url.searchParams.append("modudaPartyId", partyId);
     }
 
     iframe.src = url.toString();
@@ -40,7 +40,7 @@ export default class Sidebar {
 
   attachToDom() {
     const container = document.createElement("div");
-    container.classList.add("movens-sidebar");
+    container.classList.add("moduda-sidebar");
 
     // hide sidebar for now, because we want to only load it once connection to Websocket server is successful
     this.sidebarContainer = container; // this step MUST precede this.hide() as it is now
@@ -53,25 +53,25 @@ export default class Sidebar {
   }
 
   hide = () => {
-    this.sidebarContainer.classList.add("movens-sidebar-hidden");
-    this.sidebarContainer.classList.remove("movens-sidebar--teasing");
+    this.sidebarContainer.classList.add("moduda-sidebar-hidden");
+    this.sidebarContainer.classList.remove("moduda-sidebar--teasing");
     this.sidebarContainer.style.right = `${-1 *
       (SIDEBAR_WIDTH + SIDEBAR_PADDING_X * 2)}px`;
     if (this.screenFormatter) this.screenFormatter.adjustScreenView();
   };
 
   teaseSidebarContainer = () => {
-    this.sidebarContainer.classList.add("movens-sidebar--teasing");
+    this.sidebarContainer.classList.add("moduda-sidebar--teasing");
     this.sidebarContainer.style.right = `${-1 *
       (SIDEBAR_WIDTH + SIDEBAR_PADDING_X * 2) +
       SIDEBAR_PADDING_X}px`;
   };
 
   show = () => {
-    this.sidebarContainer.classList.remove("movens-sidebar-hidden");
+    this.sidebarContainer.classList.remove("moduda-sidebar-hidden");
     this.sidebarContainer.removeEventListener("click", this.show);
     document.removeEventListener("mousemove", this.toggleBasedOnMouse);
-    this.sidebarContainer.classList.remove("movens-sidebar--teasing");
+    this.sidebarContainer.classList.remove("moduda-sidebar--teasing");
     this.sidebarContainer.style.right = "0px";
     this.screenFormatter.adjustScreenView();
   };

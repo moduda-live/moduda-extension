@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <AppHeader id="movens-logo" />
+    <AppHeader id="moduda-logo" />
     <div class="join-wrapper" v-if="this.sessionState === SessionState.ERROR">
       <h1>Oops. 𓀒 𓀓</h1>
       <ErrorView :errorType="errorType" />
@@ -91,9 +91,9 @@ export default Vue.extend({
   mounted() {
     // get initial state from browser's storage
     browser.storage.local
-      .get(["movensCurrentState"])
+      .get(["modudaCurrentState"])
       .then(res => {
-        const currentMovensState = res.movensCurrentState; // current state of the extension
+        const currentMovensState = res.modudaCurrentState; // current state of the extension
         if (currentMovensState) {
           this.partyId = currentMovensState.currentPartyId;
           this.videolink = currentMovensState.videolink;
@@ -106,7 +106,7 @@ export default Vue.extend({
           return currentMovensState.tabId;
         }
       })
-      .then(movensRunningTabId => {
+      .then(modudaRunningTabId => {
         browser.tabs
           .query({ active: true, lastFocusedWindow: true })
           .then(tabs => {
@@ -114,7 +114,7 @@ export default Vue.extend({
               this.isMovensActiveInThisTab = false;
               return;
             }
-            this.isMovensActiveInThisTab = tabs[0].id === movensRunningTabId;
+            this.isMovensActiveInThisTab = tabs[0].id === modudaRunningTabId;
           });
       });
 
@@ -123,7 +123,7 @@ export default Vue.extend({
       for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
         const newPartyId = newValue?.currentPartyId;
 
-        if (key === "movensCurrentState" && newPartyId) {
+        if (key === "modudaCurrentState" && newPartyId) {
           // a setting has changed
           this.partyId = newValue.currentPartyId;
 
@@ -236,7 +236,7 @@ html {
   display: flex;
 }
 
-#movens-logo {
+#moduda-logo {
   position: absolute;
   top: 10px;
   right: 10px;

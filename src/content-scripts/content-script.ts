@@ -92,7 +92,7 @@ class Movens {
   }
 
   unmount() {
-    // update browser storage for current movens state as well
+    // update browser storage for current moduda state as well
     const disconnectMessage: DisconnectedMessage = {
       type: "DISCONNECTED",
       payload: {}
@@ -244,13 +244,19 @@ browser.runtime.onMessage.addListener(message => {
   }
 });
 
+console.log(
+  "TEsting for url: ",
+  /moduda.live\/join/.test(window.location.href)
+);
+
 if (/moduda.live\//.test(window.location.href)) {
   const currentWindowSearchParams = new URLSearchParams(window.location.search);
-  const redirectUrl = new URL(browser.runtime.getURL("join.html"));
-  if (
+  const isValidUrl =
     currentWindowSearchParams.has("partyId") &&
-    currentWindowSearchParams.has("redirectUrl")
-  ) {
+    currentWindowSearchParams.has("redirectUrl");
+
+  if (isValidUrl) {
+    const redirectUrl = new URL(browser.runtime.getURL("join.html"));
     redirectUrl.searchParams.append(
       "partyId",
       currentWindowSearchParams.get("partyId")!

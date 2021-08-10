@@ -1,6 +1,6 @@
 @import "./variables.less";
 
-.movens-sidebar {
+.moduda-sidebar {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -17,7 +17,7 @@
   transition: all 0.1s ease;
 }
 
-.movens-sidebar--teasing__pseudo {
+.moduda-sidebar--teasing__pseudo {
   display: block;
   font-size: 11px;
   color: @theme-white;
@@ -26,19 +26,19 @@
   left: 3px;
 }
 
-.movens-sidebar--teasing {
+.moduda-sidebar--teasing {
   cursor: pointer;
 
   &:before {
-    &:extend(.movens-sidebar--teasing__pseudo);
+    &:extend(.moduda-sidebar--teasing__pseudo);
     content: "Click to open";
     top: 50%;
     transform: translateY(-50%);
   }
 
   &:after {
-    &:extend(.movens-sidebar--teasing__pseudo);
-    content: "movens";
+    &:extend(.moduda-sidebar--teasing__pseudo);
+    content: "moduda";
     font-weight: 700;
     top: 50%;
     transform: translateY(100%) translateY(-2px);
@@ -49,21 +49,21 @@
   }
 }
 
-#movens-iframe {
+#moduda-iframe {
   display: flex;
   flex: 1;
   box-sizing: border-box;
   overflow: hidden;
 }
 
-.movens-toast {
+.moduda-toast {
   border-radius: 2px;
   background: @theme-primary-color !important;
   color: @theme-white !important;
 }
 
-.movens-toast-warning {
-  &:extend(.movens-toast);
+.moduda-toast-warning {
+  &:extend(.moduda-toast);
   background: #c12503 !important;
 }
 

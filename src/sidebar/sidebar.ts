@@ -23,7 +23,7 @@ import createStoreWithParty from "./store";
 
 // get partyId if it exists
 const searchParams = new URLSearchParams(window.location.search);
-const partyId = searchParams.get("movensPartyId") ?? undefined;
+const partyId = searchParams.get("modudaPartyId") ?? undefined;
 
 // DEBUG
 const debug = searchParams.get("debug") === "true";

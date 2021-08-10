@@ -5,7 +5,7 @@
         src="icons/128.png"
         height="100"
         width="100"
-        alt="movens-icon"
+        alt="moduda-icon"
         style="margin: -50px 100px 15px"
       />
       <h1>A few more things to do before we get started...</h1>

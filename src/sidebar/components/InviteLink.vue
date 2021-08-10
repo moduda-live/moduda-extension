@@ -38,9 +38,7 @@ export default Vue.extend({
   },
   computed: {
     inviteLink() {
-      // const baseUrl = new URL("https://movens.app/join");
-      // todo: replace with actual url
-      const baseUrl = new URL("https://moduda.live");
+      const baseUrl = new URL("https://moduda.live/join");
       const searchParams = new URLSearchParams(window.location.search);
       const videolink = searchParams.get("videolink") ?? "";
       baseUrl.searchParams.append("redirectUrl", videolink);
