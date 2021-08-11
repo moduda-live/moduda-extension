@@ -47,7 +47,7 @@
       class="join-wrapper post-join-wrapper"
     >
       <h1 style="font-weight: 400;">
-        Hello, <b>{{ username }}</b> 👋
+        Hello, <b>{{ username || "Anonymous User" }}</b> 👋
       </h1>
       <p class="current-party-info">
         You are currently connected to a room with ID:
@@ -98,7 +98,7 @@ export default Vue.extend({
         if (currentMovensState) {
           this.partyId = currentMovensState.currentPartyId;
           this.videolink = currentMovensState.videolink;
-          this.username = currentMovensState.username;
+          this.username = currentMovensState.username; // if blank, must be "Anonymous user"
 
           if (currentMovensState.isConnecting) {
             this.sessionState = SessionState.CONNECTING;
@@ -147,11 +147,13 @@ export default Vue.extend({
           break;
         }
         case "FAILED_VID": {
+          this.setGlobalExtConnectingState(false);
           this.errorType = ErrorType.FAILED_VID;
           this.sessionState = SessionState.ERROR;
           break;
         }
         case "FAILED_CONNECT": {
+          this.setGlobalExtConnectingState(false);
           this.errorType = ErrorType.FAILED_CONNECT;
           this.sessionState = SessionState.ERROR;
           break;
@@ -182,7 +184,7 @@ export default Vue.extend({
 
       const currentState: MovensState = storageGetResult.modudaCurrentState;
       await browser.storage.local.set({
-        modudaCurrentState: { ...currentState, isConnecting: true }
+        modudaCurrentState: { ...currentState, isConnecting }
       });
     },
     async createParty() {
@@ -213,6 +215,7 @@ export default Vue.extend({
       } catch (err) {
         this.errorType = ErrorType.UNKNOWN;
         this.sessionState = SessionState.ERROR;
+        this.setGlobalExtConnectingState(false);
       }
     }
   }

@@ -19,6 +19,7 @@ declare type Connection<TCallSender extends object = CallSender> = {
 };
 
 class Movens {
+  usernameWasBlank: boolean;
   username: string;
   videolink: string;
   partyId: string;
@@ -30,12 +31,13 @@ class Movens {
   ToastMaker: ToastMaker;
 
   constructor(
-    username: string | "",
+    username: string,
     videolink: string,
     debug: boolean,
     partyId: string | ""
   ) {
-    this.username = username;
+    this.usernameWasBlank = !username;
+    this.username = username || "Anonymous User";
     this.videolink = videolink;
     this.debug = debug;
     this.partyId = partyId;
@@ -180,7 +182,7 @@ class Movens {
             payload: {
               partyId,
               videolink: this.videolink,
-              username: this.username
+              username: this.usernameWasBlank ? "" : this.username // do not save username if it was blank
             }
           };
           browser.runtime.sendMessage(message);
@@ -208,7 +210,9 @@ class Movens {
 }
 
 async function initMovens(username: string, partyId: string, debug = false) {
+  // first thing we do, else multiple party sessions will get started
   (window as any).partyLoaded = true;
+
   // disable debugging for now
   const MovensController = new Movens(
     username,
@@ -225,6 +229,7 @@ async function initMovens(username: string, partyId: string, debug = false) {
   } catch (err) {
     // we couldn't actually find any videos on the page, report this back to the popup
     browser.runtime.sendMessage({ type: "FAILED_VID" });
+    (window as any).partyLoaded = false;
     return;
   }
 
@@ -237,7 +242,7 @@ browser.runtime.onMessage.addListener(message => {
 
   if (message.type === "CREATE_PARTY" && !(window as any).partyLoaded) {
     message = message as CreatePartyMessage;
-    const username = message.payload.username || "Anonymous User";
+    const username = message.payload.username;
     initMovens(username, message.payload.partyId);
   }
 });
