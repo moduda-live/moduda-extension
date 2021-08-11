@@ -242,12 +242,7 @@ browser.runtime.onMessage.addListener(message => {
   }
 });
 
-console.log(
-  "TEsting for url: ",
-  /moduda.live\/join/.test(window.location.href)
-);
-
-if (/moduda.live\//.test(window.location.href)) {
+if (/moduda.live\/join/.test(window.location.href)) {
   const currentWindowSearchParams = new URLSearchParams(window.location.search);
   const isValidUrl =
     currentWindowSearchParams.has("partyId") &&

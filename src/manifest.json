@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "moduda",
+  "name": "Moduda",
   "version": "0.0.0.1",
-  "description": "Watch videos together",
+  "description": "Watch videos together, 모두다",
   "default_locale": "en",
   "permissions": ["activeTab", "storage"],
   "icons": {
@@ -24,7 +24,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://moduda.live/*"],
+      "matches": ["https://moduda.live/join*"],
       "js": ["js/content-script.js"]
     }
   ],

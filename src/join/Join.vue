@@ -16,7 +16,7 @@
         <ol>
           <li>
             <p class="step-text">
-              Enter a username for your party mates to see <b>(optional)</b>
+              Enter a username that others will see <b>(optional)</b>
             </p>
             <Input
               :maxlength="15"

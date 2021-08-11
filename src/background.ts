@@ -108,7 +108,6 @@ browser.runtime.onMessage.addListener(async function(
       break;
     }
     case "CONNECTED": {
-      await new Promise((resolve, reject) => setTimeout(resolve, 2000));
       // persist the current party state to storage
       const modudaCurrentState: MovensState = {
         currentPartyId: request.payload.partyId,

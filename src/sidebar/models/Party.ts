@@ -602,6 +602,8 @@ export class Party extends EventEmitter<PartyEvent> {
   }
 
   leaveParty() {
+    // send notification
+    this.parentCommunicator.makeToast("You disconnected from the room.");
     this.socket.close();
   }
 }

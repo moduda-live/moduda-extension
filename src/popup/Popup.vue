@@ -175,6 +175,16 @@ export default Vue.extend({
     };
   },
   methods: {
+    async setGlobalExtConnectingState(isConnecting: boolean) {
+      const storageGetResult = await browser.storage.local.get(
+        "modudaCurrentState"
+      );
+
+      const currentState: MovensState = storageGetResult.modudaCurrentState;
+      await browser.storage.local.set({
+        modudaCurrentState: { ...currentState, isConnecting: true }
+      });
+    },
     async createParty() {
       this.sessionState = SessionState.FINDING_VID;
 
@@ -199,15 +209,7 @@ export default Vue.extend({
         };
 
         browser.tabs.sendMessage(currentTabId, createPartyMessage);
-
-        const storageGetResult = await browser.storage.local.get(
-          "modudaCurrentState"
-        );
-
-        const currentState: MovensState = storageGetResult.modudaCurrentState;
-        await browser.storage.local.set({
-          modudaCurrentState: { ...currentState, isConnecting: true }
-        });
+        this.setGlobalExtConnectingState(true);
       } catch (err) {
         this.errorType = ErrorType.UNKNOWN;
         this.sessionState = SessionState.ERROR;
