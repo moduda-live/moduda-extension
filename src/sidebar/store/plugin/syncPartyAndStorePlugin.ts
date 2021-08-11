@@ -41,9 +41,30 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
         });
       })
       .on(PartyEvent.USER_JOINED, (user: User) => {
+        const userJoinedMessage: Message = {
+          isSenderAdmin: user.isAdmin,
+          senderUsername: user.username,
+          senderId: user.id ?? "",
+          content: ` has joined the room.`,
+          isSystemGenerated: true
+        };
+        store.dispatch("chat/addMessage", userJoinedMessage);
+
         store.dispatch("addUser", user);
       })
       .on(PartyEvent.USER_LEFT, (user: User) => {
+        // is already removed, ignore
+        if (user.id && !party.users.has(user.id)) return;
+
+        const userLeftMessage: Message = {
+          isSenderAdmin: user.isAdmin,
+          senderUsername: user.username,
+          senderId: user.id ?? "",
+          content: ` has left the room.`,
+          isSystemGenerated: true
+        };
+        store.dispatch("chat/addMessage", userLeftMessage);
+
         store.dispatch("removeUser", user.id);
       })
       .on(
@@ -77,6 +98,8 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
           mutation.payload.senderId,
           mutation.payload.content
         );
+
+        // message is a system-generated one, for various user events (e.g. user joined, left, played if admin, etc)
       }
 
       if (mutation.type === "SET_TOAST_SHOW") {

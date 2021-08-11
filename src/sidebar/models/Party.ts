@@ -252,10 +252,6 @@ export class Party extends EventEmitter<PartyEvent> {
         this.emit(PartyEvent.ERROR);
         break;
       }
-      case "addChatMsg": {
-        this.emit(PartyEvent.ADD_CHAT_MSG);
-        break;
-      }
       case "userId": {
         const { userId } = msg.payload;
         this.emit(PartyEvent.SET_MY_USER_ID, userId);

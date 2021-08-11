@@ -3,6 +3,7 @@ export interface Message {
   senderUsername: string;
   senderId: string;
   content: string;
+  isSystemGenerated?: boolean;
 }
 
 export interface ChatState {

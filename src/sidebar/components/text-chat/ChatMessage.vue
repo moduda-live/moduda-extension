@@ -2,8 +2,13 @@
   <div class="message-container">
     <AdminIcon v-if="message.isSenderAdmin" class="admin-icon" />
     <div class="username">{{ message.senderUsername }}</div>
-    <span style="white-space: pre-wrap;">:&nbsp;&nbsp;</span>
-    <span class="content">
+    <span style="white-space: pre-wrap;" v-if="!message.isSystemGenerated">
+      :&nbsp;&nbsp;
+    </span>
+    <span
+      class="content"
+      v-bind:class="{ 'system-msg': message.isSystemGenerated }"
+    >
       <component
         v-for="(partition, index) in parsedMessagePartition"
         :key="index"
@@ -29,7 +34,7 @@ interface ParsedPartitionInfo {
 
 export default Vue.extend({
   name: "ChatMessage",
-  props: ["message", "isAdmin"],
+  props: ["message", "isAdmin", "index"],
   components: {
     RenderedEmote,
     RenderedText,
@@ -107,5 +112,9 @@ export default Vue.extend({
 .content {
   word-break: break-word;
   white-space: pre-wrap;
+}
+
+.system-msg {
+  color: @theme-dark-text;
 }
 </style>

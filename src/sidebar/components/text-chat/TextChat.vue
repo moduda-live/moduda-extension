@@ -10,6 +10,7 @@ import Vue from "vue";
 import { mapGetters, mapActions } from "vuex";
 import ChatMessageArea from "./ChatMessageArea.vue";
 import ChatInputArea from "./ChatInputArea.vue";
+import { Message } from "../../store/chat/types";
 
 export default Vue.extend({
   name: "TextChat",
@@ -33,7 +34,7 @@ export default Vue.extend({
       }
 
       const trimmedMsg = this.message.trim();
-      const messageObj = {
+      const messageObj: Message = {
         isSenderAdmin: this.myUser.isAdmin,
         senderUsername: this.myUser.username,
         senderId: this.myUser.id,
