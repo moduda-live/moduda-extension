@@ -66,6 +66,7 @@ import AppHeader from "@/shared/AppHeader.vue";
 import "tippy.js/animations/scale.css";
 import { CreatePartyMessage } from "@/shared/types";
 import ErrorView from "./ErrorView.vue";
+import { MovensState } from "@/background";
 
 enum SessionState {
   DEFAULT, // state before anything happens
@@ -93,13 +94,15 @@ export default Vue.extend({
     browser.storage.local
       .get(["modudaCurrentState"])
       .then(res => {
-        const currentMovensState = res.modudaCurrentState; // current state of the extension
+        const currentMovensState: MovensState = res.modudaCurrentState; // current state of the extension
         if (currentMovensState) {
           this.partyId = currentMovensState.currentPartyId;
           this.videolink = currentMovensState.videolink;
           this.username = currentMovensState.username;
 
-          if (this.partyId) {
+          if (currentMovensState.isConnecting) {
+            this.sessionState = SessionState.CONNECTING;
+          } else if (this.partyId) {
             // if partyId === "", extension is not currently running
             this.sessionState = SessionState.CONNECTED;
           }
@@ -164,8 +167,8 @@ export default Vue.extend({
       SessionState,
       ErrorType,
       sessionState: SessionState.DEFAULT,
-      videolink: null,
-      partyId: null,
+      videolink: "",
+      partyId: "",
       username: "",
       errorType: ErrorType.NONE,
       isMovensActiveInThisTab: false
@@ -196,6 +199,15 @@ export default Vue.extend({
         };
 
         browser.tabs.sendMessage(currentTabId, createPartyMessage);
+
+        const storageGetResult = await browser.storage.local.get(
+          "modudaCurrentState"
+        );
+
+        const currentState: MovensState = storageGetResult.modudaCurrentState;
+        await browser.storage.local.set({
+          modudaCurrentState: { ...currentState, isConnecting: true }
+        });
       } catch (err) {
         this.errorType = ErrorType.UNKNOWN;
         this.sessionState = SessionState.ERROR;

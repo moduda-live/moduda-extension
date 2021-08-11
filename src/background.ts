@@ -12,6 +12,7 @@ export interface MovensState {
   videolink: string;
   username: string;
   tabId: number | undefined;
+  isConnecting: boolean;
 }
 
 interface ChangeInfo {
@@ -97,7 +98,8 @@ browser.runtime.onMessage.addListener(async function(
         previousPartyId,
         username,
         videolink: "",
-        tabId: undefined
+        tabId: undefined,
+        isConnecting: false
       };
 
       await browser.storage.local.set({
@@ -106,13 +108,15 @@ browser.runtime.onMessage.addListener(async function(
       break;
     }
     case "CONNECTED": {
+      await new Promise((resolve, reject) => setTimeout(resolve, 2000));
       // persist the current party state to storage
       const modudaCurrentState: MovensState = {
         currentPartyId: request.payload.partyId,
         previousPartyId: request.payload.partyId,
         videolink: request.payload.videolink,
         username: request.payload.username,
-        tabId: sender.tab?.id
+        tabId: sender.tab?.id,
+        isConnecting: false
       };
 
       await browser.storage.local.set({
