@@ -32,6 +32,14 @@
           @on-change="toggleAdminOnlyControls"
         />
       </Cell>
+      <Cell title="Auto-Sync">
+        <SwitchBtn
+          size="small"
+          :value="autoSync"
+          slot="extra"
+          @on-change="toggleAutoSync"
+        />
+      </Cell>
       <Cell
         title="Github"
         to="https://github.com/moduda-live/moduda-extension"
@@ -75,6 +83,9 @@ export default Vue.extend({
         adminControlsOnly: isSwitchOn
       });
     },
+    toggleAutoSync(isSiwtchOn: boolean) {
+      this.$party.parentCommunicator.setAutoSync(isSiwtchOn);
+    },
     handleClick(name: string | number) {
       if (name === "leave-cell") {
         this.showSettingsTippy[0].hide();
@@ -109,6 +120,7 @@ export default Vue.extend({
     return {
       showSettingsTippy: (null as unknown) as any,
       enableAdminToggle: false,
+      autoSync: false,
       primaryWhiteColor: "#c9c9c9",
       openLeaveConfirmModal: false
     };

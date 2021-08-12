@@ -82,7 +82,6 @@ function launchContentScriptWhenTabLoaded(
 
 browser.runtime.onInstalled?.addListener(() => {
   // clean up when chrome ext loads
-  console.log("Triggered here");
   browser.storage.local.clear();
 });
 

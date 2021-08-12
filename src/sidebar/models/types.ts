@@ -44,7 +44,6 @@ export enum SocketSendMsgType {
   NEW_SIGNAL = "newSignal",
   BROADCAST_MESSAGE = "broadcastMessage",
   SET_USER_MUTE = "setUserMute",
-  TIME_UPDATE = "timeUpdate",
   SET_ADMIN_CONTROLS = "setAdminControls"
 }
 
@@ -54,7 +53,8 @@ export enum RTCMsgType {
   SEEKED,
   CHANGE_SPEED,
   REQUEST_INITIAL_VIDEO_STATUS,
-  INITIAL_VIDEO_STATUS
+  INITIAL_VIDEO_STATUS,
+  TIME_UPDATE
 }
 
 export interface VideoStatus {
@@ -86,4 +86,5 @@ export interface Communicator {
   signalConnected(): void;
   signalConnectionFailed(): void;
   endSession(): void;
+  setAutoSync(autoSync: boolean): void;
 }

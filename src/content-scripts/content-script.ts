@@ -91,6 +91,9 @@ class Movens {
           `Only admins can change the video speed`,
           true
         );
+      })
+      .on(VideoEvent.AUTO_SYNC, () => {
+        this.ToastMaker.makeToast("Syncing with host...", false);
       });
   }
 
@@ -195,6 +198,10 @@ class Movens {
             type: "FAILED_CONNECT"
           };
           browser.runtime.sendMessage(failedConnectMessage);
+        },
+        setAutoSync: (autoSync: boolean) => {
+          this.VideoManager.autoSync = autoSync;
+          this.VideoManager.isSyncing = false;
         },
         endSession: () => {
           this.unmount();

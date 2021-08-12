@@ -102,4 +102,8 @@ export default class ParentCommunicator implements Communicator {
   endSession() {
     this.parentConnection.endSession();
   }
+
+  setAutoSync(autoSync: boolean) {
+    this.parentConnection.setAutoSync(autoSync);
+  }
 }

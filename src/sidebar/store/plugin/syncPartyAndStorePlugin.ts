@@ -88,7 +88,6 @@ export default function createSyncPartyAndStorePlugin(party: Party) {
         return;
       }
 
-      console.log(`mutation: ${mutation.type}`);
       if (
         mutation.type === "chat/ADD_CHAT_MESSAGE" &&
         mutation.payload.senderId === state.userId

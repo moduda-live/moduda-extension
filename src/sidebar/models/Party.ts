@@ -12,7 +12,7 @@ import { log } from "@/util/log";
 import { User, OwnUser, OtherUser } from "./User";
 import { formatTime } from "@/util/formatTime";
 
-const SEND_TIME_UPDATE_INTERVAL = 3000;
+const SEND_TIME_UPDATE_INTERVAL = 500;
 
 export class Party extends EventEmitter<PartyEvent> {
   wsUrl: string;
@@ -351,14 +351,12 @@ export class Party extends EventEmitter<PartyEvent> {
       }
       case "setAdminControls": {
         const { userId, adminControlsOnly } = msg.payload;
-        console.log("adminControlsReceived: ", adminControlsOnly);
         this.parentCommunicator.setAdminControls(adminControlsOnly);
         this.emit(PartyEvent.SET_ADMIN_ONLY_CONTROLS, adminControlsOnly);
         break;
       }
       case "promoteToRoomOwner": {
         const { userId, username } = msg.payload;
-        console.log(`Promoting ${username} to room owner`);
         this.users.forEach(user => {
           if (user.id === userId) {
             // Promote this user
@@ -378,12 +376,6 @@ export class Party extends EventEmitter<PartyEvent> {
             }
           }
         });
-        break;
-      }
-      case "timeUpdate": {
-        const { time } = msg.payload;
-        console.log("received time :>> ", time);
-        this.parentCommunicator.setHostTime(time);
         break;
       }
     }
@@ -469,7 +461,6 @@ export class Party extends EventEmitter<PartyEvent> {
    */
 
   sendChatMessage(senderId: string, content: string) {
-    console.log(`sender: ${senderId}`);
     this.socket.send(
       JSON.stringify({
         type: SocketSendMsgType.BROADCAST_MESSAGE,
@@ -509,7 +500,6 @@ export class Party extends EventEmitter<PartyEvent> {
   ) {
     this.users.forEach((user: User) => {
       if (!user.isOwn && user.peer !== null && user.peer !== undefined) {
-        console.log(`user: ${user.username}, and peer is ${user.peer}`);
         user.peer.send(
           JSON.stringify({
             type,
@@ -588,16 +578,10 @@ export class Party extends EventEmitter<PartyEvent> {
     }
 
     this.periodicUpdateIntervalID = window.setInterval(async () => {
-      console.log("Sending update");
       const status = await this.parentCommunicator.getCurrentVideoStatus();
-      this.socket.send(
-        JSON.stringify({
-          type: SocketSendMsgType.TIME_UPDATE,
-          payload: {
-            time: status.currentTimeSeconds
-          }
-        })
-      );
+      this.relayRTCMessageToOthers(RTCMsgType.TIME_UPDATE, {
+        currentTimeSeconds: status.currentTimeSeconds
+      });
     }, SEND_TIME_UPDATE_INTERVAL);
   }
 

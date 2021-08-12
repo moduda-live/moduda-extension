@@ -115,8 +115,6 @@ export class OtherUser extends User {
     });
 
     this.peer.on("data", async data => {
-      console.log(`Data received: ${data}`);
-
       const message = JSON.parse(data);
 
       if (message.type === undefined || message.type === null) {
@@ -160,6 +158,11 @@ export class OtherUser extends User {
           this.party.setVideoStatus(currentTimeSeconds, speed, isPlaying);
           break;
         }
+        case RTCMsgType.TIME_UPDATE: {
+          const { currentTimeSeconds } = message.payload;
+          this.party.parentCommunicator.setHostTime(currentTimeSeconds);
+          break;
+        }
         default:
           console.error("Could not identify message received via WebRTC");
       }
@@ -171,7 +174,6 @@ export class OtherUser extends User {
     });
 
     this.peer.on("error", err => {
-      console.log("Error: ", (err as any).code);
       this.party.emit(PartyEvent.USER_LEFT, this);
       // TODO: Attempt to reconnect
     });

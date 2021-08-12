@@ -85,8 +85,6 @@ export default Vue.extend({
     ErrorView
   },
   mounted() {
-    console.log("Browser: ");
-    console.log(browser);
     // get initial state from browser's storage
     browser.storage.local
       .get(["modudaCurrentState"])

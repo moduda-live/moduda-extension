@@ -47,11 +47,6 @@ export default Vue.extend({
   },
   watch: {
     chatMessages() {
-      console.log("CHAT MESSAGES UPDATED::::");
-      for (const o of this.chatMessages) {
-        console.dir(o);
-      }
-
       const chatArea = this.$refs.chatArea as HTMLDivElement;
       // only anchor chat to bottom if chatAnchored is true and user is near bottom of the chat within offset
       const userNearBottom =

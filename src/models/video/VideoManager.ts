@@ -1,12 +1,14 @@
-import { getLargestVideo, queryVideos } from "@/util/dom";
+import { getLargestVideo, queryVideos, isPlaying } from "@/util/dom";
 import DeferredPromise from "@/util/DeferredPromise";
 import EventEmitter from "@/util/EventEmitter";
 import { VideoEvent } from "./types";
-import { isPlaying } from "@/util/dom";
 import { VideoStatus } from "@/sidebar/models/types";
+import throttle from "lodash.throttle";
 
 // ms to delay resolving/rejecting of DeferredPromise<HTMLVideoElement>
 const ARTIFICIAL_DELAY = 200;
+const SYNC_PERIOD = 3000;
+const SYNC_THRESHOLD_TIME_DIFF = 1.5; // seconds
 
 // seeking event is prety much guaranteed to be triggered within 100ms of pause when user seeks
 // const MS_UNTIL_POTENTIAL_SEEKING = 100;
@@ -20,7 +22,10 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
   isUserAdmin: boolean;
   preventInfiniteLoop: boolean;
   adminControlsOnly: boolean;
-  static timeLostDelta = 1500;
+  throttledSync: any;
+  public isSyncing: boolean;
+  public autoSync: boolean; // whether or not enable autosync
+  static timeLostDelta = 1.5; // in seconds
 
   constructor() {
     super();
@@ -28,6 +33,8 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
     this.isUserAdmin = false;
     this.preventInfiniteLoop = false;
     this.adminControlsOnly = true;
+    this.isSyncing = false;
+    this.autoSync = false;
   }
 
   selectVideo(autoResolve: boolean): Promise<HTMLVideoElement> {
@@ -83,83 +90,131 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
   }
 
   private playEventListener = () => {
-    if (this.videoPlayedByOwn) {
-      if (this.isUserAdmin || !this.adminControlsOnly) {
-        console.log("user played on own, isAdmin");
-        this.hostVideoStatus.isPlaying = true;
-        this.emit(VideoEvent.PLAY);
-      } else if (!this.hostVideoStatus.isPlaying) {
-        console.log("user playing on own, cancel");
-        this.videoSelected.pause();
-        this.emit(VideoEvent.PLAY_BLOCKED);
-      }
-    } else {
-      if (this.videoSelected.readyState === 1) {
-        // play was triggered from seeking, so lets ignore
-        return;
-      }
+    // console.log("PLAY");
+    // console.log("this.videoPlayedByOwn :>> ", this.videoPlayedByOwn);
+
+    if (!this.videoPlayedByOwn) {
+      if (this.videoSelected.readyState === 1) return; // play was triggered from seeking, so ignore
       console.log("played by someone else");
       this.videoPlayedByOwn = true;
+      return;
+    }
+
+    if (this.isUserAdmin || !this.adminControlsOnly) {
+      console.log("user played on own, isAdmin");
+      this.hostVideoStatus.isPlaying = true;
+      this.emit(VideoEvent.PLAY);
+    } else if (!this.hostVideoStatus.isPlaying) {
+      console.log("user playing on own, cancel");
+      this.videoSelected.pause();
+      this.emit(VideoEvent.PLAY_BLOCKED);
     }
   };
 
   private pauseEventListener = () => {
-    if (this.videoPlayedByOwn) {
-      if (this.isUserAdmin || !this.adminControlsOnly) {
-        console.log("user paused on own, isAdmin");
-        this.hostVideoStatus.isPlaying = false;
-        this.emit(VideoEvent.PAUSE);
-      } else if (this.hostVideoStatus.isPlaying) {
-        console.log("user pausing on own, cancel");
-        this.videoSelected.play();
-        this.emit(VideoEvent.PAUSE_BLOCKED);
-      }
-    } else {
+    // console.log("PAUSE");
+    // console.log("this.videoPlayedByOwn :>> ", this.videoPlayedByOwn);
+
+    if (!this.videoPlayedByOwn) {
       console.log("paused by someone else");
       this.videoPlayedByOwn = true;
+      return;
+    }
+
+    if (this.isUserAdmin || !this.adminControlsOnly) {
+      console.log("user paused on own, isAdmin");
+      this.hostVideoStatus.isPlaying = false;
+      this.emit(VideoEvent.PAUSE);
+    } else if (this.hostVideoStatus.isPlaying) {
+      console.log("user pausing on own, cancel");
+      this.videoSelected.play();
+      this.emit(VideoEvent.PAUSE_BLOCKED);
     }
   };
 
   private seekedEventListener = () => {
-    if (this.videoPlayedByOwn) {
-      if (this.isUserAdmin || !this.adminControlsOnly) {
-        console.log("user seeked on own, isAdmin");
-        this.emit(VideoEvent.SEEKED, this.videoSelected.currentTime);
-      } else {
-        if (this.preventInfiniteLoop) {
-          this.preventInfiniteLoop = false;
-          return;
-        }
-        console.log("user seeked on own, cancel");
-        this.preventInfiniteLoop = true;
-        this.videoSelected.currentTime =
-          this.hostVideoStatus.currentTimeSeconds + VideoManager.timeLostDelta;
-        this.emit(VideoEvent.SEEKED_BLOCKED);
-      }
-    } else {
+    // console.log("SEEKED");
+    // console.log("this.videoPlayedByOwn :>> ", this.videoPlayedByOwn);
+
+    if (!this.videoPlayedByOwn) {
       console.log("seeked by someone else");
       this.videoPlayedByOwn = true;
+      return;
+    }
+
+    if (this.isSyncing) {
+      // we came here as a result of syncing...
+      this.isSyncing = false;
+      this.emit(VideoEvent.AUTO_SYNC);
+      return;
+    }
+
+    if (this.isUserAdmin || !this.adminControlsOnly) {
+      console.log("user seeked on own, isAdmin");
+      this.hostVideoStatus.currentTimeSeconds = this.videoSelected.currentTime;
+      this.emit(VideoEvent.SEEKED, this.videoSelected.currentTime);
+    } else {
+      if (this.preventInfiniteLoop) {
+        console.log("preventing loop");
+        this.preventInfiniteLoop = false;
+        return;
+      }
+
+      // if we place the following line before check for isSyncing, then non-admin users will be able to seek video one time after sync
+      this.preventInfiniteLoop = true;
+
+      console.log("user seeked on own, cancel");
+
+      // this triggers, pause, play then seeked
+      this.videoSelected.currentTime =
+        this.hostVideoStatus.currentTimeSeconds + VideoManager.timeLostDelta;
+      this.emit(VideoEvent.SEEKED_BLOCKED);
     }
   };
 
   private rateChangeEventListener = () => {
-    if (this.videoPlayedByOwn) {
-      if (this.isUserAdmin || !this.adminControlsOnly) {
-        console.log("user changed speed on own, isAdmin");
-        this.emit(VideoEvent.CHANGE_SPEED, this.videoSelected.playbackRate);
-      } else {
-        if (this.preventInfiniteLoop) {
-          this.preventInfiniteLoop = false;
-          return;
-        }
-        console.log("user changed speed on own, cancel");
-        this.preventInfiniteLoop = true;
-        this.videoSelected.playbackRate = this.hostVideoStatus.speed;
-        this.emit(VideoEvent.CHANGE_SPEED_BLOCKED);
-      }
-    } else {
-      console.log("changed speed by someone else");
+    // console.log("Rate changed: ");
+    // console.log("Current speed: ", this.videoSelected.playbackRate);
+
+    if (!this.videoPlayedByOwn) {
+      console.log("someone else changed speed");
       this.videoPlayedByOwn = true;
+      return;
+    }
+
+    if (this.isUserAdmin || !this.adminControlsOnly) {
+      console.log("user changed speed on own, isAdmin");
+      this.hostVideoStatus.speed = this.videoSelected.playbackRate;
+      this.emit(VideoEvent.CHANGE_SPEED, this.videoSelected.playbackRate);
+    } else {
+      if (this.preventInfiniteLoop) {
+        this.preventInfiniteLoop = false;
+        return;
+      }
+      console.log("user changed speed on own, cancel");
+      this.preventInfiniteLoop = true;
+      this.videoSelected.playbackRate = this.hostVideoStatus.speed;
+      this.emit(VideoEvent.CHANGE_SPEED_BLOCKED);
+    }
+  };
+
+  private timeEventListener = () => {
+    if (!this.autoSync) return; // don't even bother if not enabled
+    if (this.isUserAdmin) return; // this will not need to happen for admin user
+
+    console.log("CHECKING IF WE SHOULD SYNC");
+
+    const diff = Math.abs(
+      this.videoSelected.currentTime - this.hostVideoStatus.currentTimeSeconds
+    );
+    if (diff > SYNC_THRESHOLD_TIME_DIFF) {
+      // mismatch between host and our video by more than <THRESHOLD>-> correct
+      // future note: if sync diff is too large, syncing might be a bad experience for the rest of the group
+      console.log("SYNCING VIDEO TIMES...");
+      console.log(this.hostVideoStatus.currentTimeSeconds);
+
+      this.isSyncing = true;
+      this.videoSelected.currentTime = this.hostVideoStatus.currentTimeSeconds; // triggers "user seeked on own, cancel" branch
     }
   };
 
@@ -171,15 +226,11 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
       "ratechange",
       this.rateChangeEventListener
     );
-
-    // this.videoSelected.addEventListener("seeking", () => {
-    //   //console.log("Video seeking at: ", new Date().getTime());
-    //   clearTimeout(this.checkIfPausedFromSeekTimeout);
-    // });
+    this.throttledSync = throttle(this.timeEventListener, SYNC_PERIOD);
+    this.videoSelected.addEventListener("timeupdate", this.throttledSync);
   }
 
   removeAllVideoEventListeners() {
-    // removes all event listeners attached to the selected video
     this.videoSelected.removeEventListener("play", this.playEventListener);
     this.videoSelected.removeEventListener("pause", this.pauseEventListener);
     this.videoSelected.removeEventListener("seeked", this.seekedEventListener);
@@ -187,6 +238,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
       "ratechange",
       this.rateChangeEventListener
     );
+    this.videoSelected.removeEventListener("timeupdate", this.throttledSync);
   }
 
   play = async () => {
