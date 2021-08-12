@@ -6,6 +6,7 @@ import {
   Card,
   CellGroup,
   Cell,
+  Modal,
   Icon,
   Badge,
   Button,
@@ -50,6 +51,7 @@ Vue.component("Spin", Spin);
 Vue.component("Input", Input);
 Vue.component("Divider", Divider);
 Vue.component("Avatar", Avatar);
+Vue.component("Modal", Modal);
 
 // custom vue plugin to expose Party singleton as $party
 Vue.use(partyPlugin);

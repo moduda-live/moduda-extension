@@ -7,6 +7,13 @@
       type="ios-log-out"
       @click="hideSidebar"
     />
+    <Modal
+      v-model="openLeaveConfirmModal"
+      title="Leave room?"
+      @on-ok="leaveRoom"
+    >
+      <p>Click "OK" to proceed.</p>
+    </Modal>
     <CellGroup ref="menu" @on-click="handleClick">
       <Cell title="Notifications">
         <SwitchBtn
@@ -45,7 +52,6 @@
 
 <script lang="ts">
 import Vue from "vue";
-import AppHeader from "@/shared/AppHeader.vue";
 import tippy from "tippy.js";
 import "tippy.js/animations/shift-away-subtle.css";
 import { mapGetters, mapMutations, mapState } from "vuex";
@@ -71,12 +77,16 @@ export default Vue.extend({
     },
     handleClick(name: string | number) {
       if (name === "leave-cell") {
-        this.$party.leaveParty();
+        this.showSettingsTippy[0].hide();
+        this.openLeaveConfirmModal = true;
       }
+    },
+    leaveRoom() {
+      this.$party.leaveParty();
     }
   },
   mounted() {
-    tippy("#show-settings", {
+    this.showSettingsTippy = tippy("#show-settings", {
       content: (this.$refs.menu as Vue).$el,
       placement: "bottom-end",
       theme: "settings",
@@ -97,8 +107,10 @@ export default Vue.extend({
   },
   data() {
     return {
+      showSettingsTippy: (null as unknown) as any,
       enableAdminToggle: false,
-      primaryWhiteColor: "#c9c9c9"
+      primaryWhiteColor: "#c9c9c9",
+      openLeaveConfirmModal: false
     };
   },
   watch: {

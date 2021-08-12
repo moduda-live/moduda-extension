@@ -57,6 +57,10 @@ body {
   overflow: hidden;
 }
 
+.ivu-modal-mask {
+  background-color: transparent !important;
+}
+
 // global tippy styles
 .tippy-box {
   outline: none;
