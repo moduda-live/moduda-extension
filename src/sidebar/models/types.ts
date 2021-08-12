@@ -44,7 +44,8 @@ export enum SocketSendMsgType {
   NEW_SIGNAL = "newSignal",
   BROADCAST_MESSAGE = "broadcastMessage",
   SET_USER_MUTE = "setUserMute",
-  SET_ADMIN_CONTROLS = "setAdminControls"
+  SET_ADMIN_CONTROLS = "setAdminControls",
+  HEALTH_CHECK = "healthCheck"
 }
 
 export enum RTCMsgType {

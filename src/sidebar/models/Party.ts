@@ -13,6 +13,7 @@ import { User, OwnUser, OtherUser } from "./User";
 import { formatTime } from "@/util/formatTime";
 
 const SEND_TIME_UPDATE_INTERVAL = 500;
+const SEND_HEALTH_CHECK_INTERVAL = 1000 * 60; // 60 seconds
 
 export class Party extends EventEmitter<PartyEvent> {
   wsUrl: string;
@@ -23,6 +24,7 @@ export class Party extends EventEmitter<PartyEvent> {
   ownUser!: OwnUser;
   showToast: boolean;
   periodicUpdateIntervalID: number;
+  serverHealthCheckSendIntervalID: number;
 
   constructor(
     wsUrl: string,
@@ -37,6 +39,7 @@ export class Party extends EventEmitter<PartyEvent> {
     parentCommunicator.setParty(this);
     this.parentCommunicator = parentCommunicator;
     this.periodicUpdateIntervalID = -1;
+    this.serverHealthCheckSendIntervalID = -1;
 
     // cleanup if we lose connection with Websocket server by tab/window/browser closing
     window.addEventListener("beforeunload", event => {
@@ -196,6 +199,7 @@ export class Party extends EventEmitter<PartyEvent> {
     this.socket.onopen = () => {
       this.emit(PartyEvent.CONNECTED);
       this.socket.onmessage = this.handleMessage.bind(this);
+      this.sendHealthCheckToServer();
     };
 
     this.socket.onclose = () => {
@@ -209,6 +213,19 @@ export class Party extends EventEmitter<PartyEvent> {
       this.cleanup();
       log("Error establishing connection with server");
     };
+  }
+
+  sendHealthCheckToServer() {
+    // AWS ALB closes idle connections after 200s (for now)
+    // we send health update every minute
+    this.serverHealthCheckSendIntervalID = window.setInterval(async () => {
+      this.socket.send(
+        JSON.stringify({
+          type: SocketSendMsgType.HEALTH_CHECK,
+          payload: {}
+        })
+      );
+    }, SEND_HEALTH_CHECK_INTERVAL);
   }
 
   checkIfPeriodicallySendVideoTime() {
