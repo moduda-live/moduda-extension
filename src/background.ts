@@ -80,6 +80,12 @@ function launchContentScriptWhenTabLoaded(
   return test;
 }
 
+browser.runtime.onInstalled?.addListener(() => {
+  // clean up when chrome ext loads
+  console.log("Triggered here");
+  browser.storage.local.clear();
+});
+
 browser.runtime.onMessage.addListener(async function(
   request: RedirectRequestMessage | ConnectedMessage | DisconnectedMessage,
   sender,

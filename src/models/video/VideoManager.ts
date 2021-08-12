@@ -76,7 +76,6 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
         this.videoClickPromise.resolve(largestVideo);
       }, ARTIFICIAL_DELAY);
     }
-
     // Currently these are never called, but keeping this in case
     // I decide to allow users to manually select the video
     // this.handleHoverOnVideos(videos);
