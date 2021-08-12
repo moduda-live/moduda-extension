@@ -1,4 +1,4 @@
-import "@/assets/styles/sidebar.less";
+import "../assets/styles/content-script.less";
 import { connectToChild } from "penpal";
 import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
 import Sidebar from "@/models/sidebar/Sidebar";
@@ -7,6 +7,7 @@ import { VideoEvent } from "@/models/video/types";
 import { VideoStatus } from "@/sidebar/models/types";
 import ToastMaker from "@/models/toast/ToastMaker";
 import { isPlaying } from "@/util/dom";
+import { log } from "../util/log";
 import {
   DisconnectedMessage,
   ConnectedMessage,
@@ -223,6 +224,7 @@ async function initMovens(username: string, partyId: string, debug = false) {
 
   // Step 1) select video
   try {
+    log("SELECTING VIDEO...");
     await MovensController.selectVideo();
     // send success info to popup
     browser.runtime.sendMessage({ type: "FOUND_VID" });

@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Moduda",
-  "version": "0.0.0.1",
+  "version": "0.0.1",
   "description": "Watch videos together, 모두다",
   "default_locale": "en",
   "permissions": ["activeTab", "storage"],
@@ -29,6 +29,6 @@
     }
   ],
   "optional_permissions": ["http://*/*", "https://*/*"],
-  "web_accessible_resources": ["icons/*", "sidebar.html", "join.html"],
+  "web_accessible_resources": ["icons/*", "sidebar.html", "join.html", "css/*"],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; connect-src 'self' https://api.betterttv.net/3/emotes/shared/top http://localhost:* ws://localhost:* wss://moduda.live; object-src 'self'"
 }

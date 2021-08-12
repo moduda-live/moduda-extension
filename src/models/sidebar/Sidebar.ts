@@ -1,6 +1,7 @@
 import { getViewportWidth } from "@/util/dom";
 import ScreenFormatterFactory from "@/models/screen/ScreenFormatterFactory";
 import ScreenFormatter from "@/models/screen/ScreenFormatter";
+import { log } from "../../util/log";
 
 const SIDEBAR_WIDTH = 270;
 const SIDEBAR_PADDING_X = 21;
@@ -24,6 +25,8 @@ export default class Sidebar {
       url.searchParams.append("modudaPartyId", partyId);
     }
 
+    log("CREATING IFRAME");
+
     iframe.src = url.toString();
     iframe.allow = "microphone";
     this.iframe = iframe;
@@ -40,13 +43,17 @@ export default class Sidebar {
 
   attachToDom() {
     const container = document.createElement("div");
-    container.classList.add("moduda-sidebar");
+    container.id = "moduda-sidebar";
 
     // hide sidebar for now, because we want to only load it once connection to Websocket server is successful
     this.sidebarContainer = container; // this step MUST precede this.hide() as it is now
     this.hide();
 
     container.appendChild(this.iframe);
+
+    log("ATTACHING TO DOM...");
+    log(this.screenFormatter.domAttachTarget);
+
     document
       .querySelector(this.screenFormatter.domAttachTarget)
       ?.appendChild(this.sidebarContainer);

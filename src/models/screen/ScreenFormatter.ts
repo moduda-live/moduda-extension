@@ -12,7 +12,7 @@ export default abstract class ScreenFormatter {
   }
 
   registerSidebar() {
-    this.sidebar = document.querySelector(".moduda-sidebar") as HTMLDivElement;
+    this.sidebar = document.querySelector("#moduda-sidebar") as HTMLDivElement;
     this.sidebarWidth = this.sidebar.offsetWidth;
   }
 

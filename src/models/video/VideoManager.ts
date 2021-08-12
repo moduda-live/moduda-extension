@@ -20,6 +20,7 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
   isUserAdmin: boolean;
   preventInfiniteLoop: boolean;
   adminControlsOnly: boolean;
+  static timeLostDelta = 1500;
 
   constructor() {
     super();
@@ -132,7 +133,8 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
         }
         console.log("user seeked on own, cancel");
         this.preventInfiniteLoop = true;
-        this.videoSelected.currentTime = this.hostVideoStatus.currentTimeSeconds;
+        this.videoSelected.currentTime =
+          this.hostVideoStatus.currentTimeSeconds + VideoManager.timeLostDelta;
         this.emit(VideoEvent.SEEKED_BLOCKED);
       }
     } else {

@@ -25,11 +25,15 @@ module.exports = {
     },
     sidebar: "./src/sidebar/sidebar.ts"
   },
+  filenameHashing: false,
   chainWebpack: config => {
     const types = ["vue-modules", "vue"];
     types.forEach(type =>
       addStyleResource(config.module.rule("less").oneOf(type))
     );
+
+    config.devtool = "cheap-module-eval-sourcemap";
+    config.productionSourceMap = true;
 
     // config.module
     //   .rule("worklet")
@@ -56,6 +60,21 @@ module.exports = {
             "content-script": ["src/content-scripts/content-script.ts"]
           }
         }
+      },
+      artifactFilename: ({ name, version, mode }) => {
+        if (mode === "production") {
+          return `${name}-v${version}-${process.env.BROWSER}.zip`;
+        }
+        return `${name}-v${version}-${process.env.BROWSER}-${mode}.zip`;
+      },
+      manifestTransformer: manifest => {
+        if (process.env.NODE_ENV === "production") {
+          manifest.content_scripts[0] = {
+            ...manifest.content_scripts[0],
+            css: ["css/content-script.css"]
+          };
+        }
+        return manifest;
       }
     }
   }

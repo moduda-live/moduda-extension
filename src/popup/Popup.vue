@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <AppHeader id="moduda-logo" />
-    <div class="join-wrapper" v-if="this.sessionState === SessionState.ERROR">
+    <div class="join-wrapper" v-if="sessionState === SessionState.ERROR">
       <h1>Oops. 𓀒 𓀓</h1>
       <ErrorView :errorType="errorType" />
       <Button @click="createParty" type="primary" size="large" long>
@@ -67,6 +67,8 @@ import "tippy.js/animations/scale.css";
 import { CreatePartyMessage } from "@/shared/types";
 import ErrorView from "./ErrorView.vue";
 import { MovensState } from "@/background";
+import { log } from "@/util/log";
+import { ErrorType } from "@/popup/types";
 
 enum SessionState {
   DEFAULT, // state before anything happens
@@ -76,13 +78,6 @@ enum SessionState {
   ERROR
 }
 
-export enum ErrorType {
-  FAILED_VID,
-  UNKNOWN,
-  FAILED_CONNECT,
-  NONE // indicates, well, no error
-}
-
 export default Vue.extend({
   name: "Popup",
   components: {
@@ -90,12 +85,15 @@ export default Vue.extend({
     ErrorView
   },
   mounted() {
+    console.log("Browser: ");
+    console.log(browser);
     // get initial state from browser's storage
     browser.storage.local
       .get(["modudaCurrentState"])
       .then(res => {
         const currentMovensState: MovensState = res.modudaCurrentState; // current state of the extension
         if (currentMovensState) {
+          log(JSON.stringify(currentMovensState));
           this.partyId = currentMovensState.currentPartyId;
           this.videolink = currentMovensState.videolink;
           this.username = currentMovensState.username; // if blank, must be "Anonymous user"
@@ -113,6 +111,7 @@ export default Vue.extend({
         browser.tabs
           .query({ active: true, lastFocusedWindow: true })
           .then(tabs => {
+            log(JSON.stringify(tabs));
             if (!tabs || !tabs.length || !tabs[0]) {
               this.isMovensActiveInThisTab = false;
               return;
@@ -197,6 +196,12 @@ export default Vue.extend({
         });
 
         const currentTabId = tabs[0].id as number;
+
+        if (process.env.NODE_ENV === "production") {
+          await browser.tabs.insertCSS({
+            file: "css/content-script.css"
+          });
+        }
 
         await browser.tabs.executeScript({
           file: "js/content-script.js"

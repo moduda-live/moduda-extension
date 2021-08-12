@@ -5,13 +5,14 @@
     </p>
     <p v-if="cannotFindVideo">
       We could not locate a video on the current web page.
-      <b
-        >Make sure you are on the page that contains the video you want to watch
-        with others</b
-      >. If you are sure there is a video, please submit an issue (stating the
+      <b>
+        Make sure you are on the page that contains the video you want to watch
+        with others
+      </b>
+      . If you are sure there is a video, please submit an issue (stating the
       name of the website and preferrably a screenshot as well) on our
-      <a href="https://github.com/moduda-live/moduda-extension" target="_blank"
-        >Github repo</a
+      <a href="https://github.com/moduda-live/moduda-extension" target="_blank">
+        Github repo </a
       >.
     </p>
     <p v-if="cannotConnect">
@@ -22,7 +23,7 @@
 
 <script>
 import Vue from "vue";
-import { ErrorType } from "./Popup.vue";
+import { ErrorType } from "@/popup/types";
 
 export default Vue.extend({
   name: "ErrorView",

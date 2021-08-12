@@ -52,6 +52,12 @@ function launchContentScriptWhenTabLoaded(
       return;
     }
 
+    if (process.env.NODE_ENV === "production") {
+      await browser.tabs.insertCSS(tab!.id!, {
+        file: "css/content-script.css"
+      });
+    }
+
     await browser.tabs.executeScript(tab!.id!, {
       file: "js/content-script.js"
     });
