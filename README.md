@@ -1,12 +1,10 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/moduda-live/moduda-extension/master/public/icons/128.png" alt="moduda" />
+  <img src="https://raw.githubusercontent.com/moduda-live/moduda-extension/master/docs/title.png" alt="moduda"/>
 </p>
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/moduda-live/moduda-extension/master/docs/img/sneak-1.png" alt="sneak_one" />
-</p>
+[![sneak_one](https://raw.githubusercontent.com/moduda-live/moduda-extension/master/docs/sneak-1.png)](https://youtu.be/4QkwSxrrowU)
 
-Chrome extension that sychronizes video playback between multiple parties, allowing you to watch your favorite stream, movie or just about any video on the internet with your mates in real time.
+**Moduda** (Korean for "together", 모두다) is a Chrome extension that synchronizes video playbacks on the web, allowing everyone to watch videos together.
 
 Code for the Node Websocket server (deployed on AWS ECS) can be found [here](https://github.com/moduda-app/moduda-server).
 
