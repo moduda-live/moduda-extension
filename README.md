@@ -6,7 +6,7 @@
 
 **Moduda** (Korean for "together", 모두다) is a Chrome extension that synchronizes video playbacks on the web, allowing everyone to watch videos together.
 
-Code for the Node Websocket server (deployed on AWS ECS) can be found [here](https://github.com/moduda-app/moduda-server).
+Code for the Node Websocket server (deployed on AWS ECS) can be found [here](https://github.com/moduda-live/moduda-server).
 
 ### Set up development locally
 
