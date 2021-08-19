@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/moduda-live/moduda-extension/master/docs/title.png" alt="moduda"/>
 </p>
 
-[![sneak_one](https://raw.githubusercontent.com/moduda-live/moduda-extension/master/docs/sneak-1.png)](https://youtu.be/4QkwSxrrowU)
+[![sneak_one](https://raw.githubusercontent.com/moduda-live/moduda-extension/master/docs/sneak-1.png)](https://www.youtube.com/watch?v=371ALd1I0j0&ab_channel=Moduda)
 
 **Moduda** (Korean for "together", 모두다) is a Chrome extension that synchronizes video playbacks on the web, allowing everyone to watch videos together.
 
