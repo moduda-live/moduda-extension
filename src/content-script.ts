@@ -66,6 +66,7 @@ class Movens {
   async selectVideo() {
     await this.siteManager.videoManager.selectVideo(true);
     this.siteManager.videoManager.cleanupVideos();
+    this.siteManager.videoManager.pause();
     this.siteManager.videoManager.setupListeners();
   }
 
