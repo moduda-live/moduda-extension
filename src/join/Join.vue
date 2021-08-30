@@ -10,7 +10,7 @@
       />
       <h1>A few more things to do before we get started...</h1>
       <p class="subheader">
-        You are trying to join party <b> {{ partyId }} </b>
+        You are trying to join room <b> {{ partyId }} </b>
       </p>
       <div class="permission-steps">
         <ol>
@@ -27,7 +27,7 @@
           </li>
           <li v-if="!askUsernameOnly">
             <p class="step-text">
-              Click the button below to grant permission for Movens to run on
+              Click the button below to grant permission for Moduda to run on
               <b> {{ permissionUrl }} </b>
             </p>
             <Button
@@ -37,7 +37,7 @@
               long
               ghost
             >
-              Grand permissions
+              Grant permissions
             </Button>
           </li>
         </ol>
@@ -49,7 +49,7 @@
           style="margin-top:5px;"
           ghost
         >
-          Join your party
+          Join your room
         </Button>
       </div>
     </div>
