@@ -1,8 +1,8 @@
-import { Party } from "@/sidebar/models/Party";
-import { PartyEvent } from "@/sidebar/models/types";
+import { Party } from "../../models/Party";
+import { PartyEvent } from "../../models/types";
 import { Store, MutationPayload } from "vuex";
 import { ConnectionStatus, RootState } from "../types";
-import { User } from "@/sidebar/models/User";
+import { User } from "../../models/User";
 import { Message } from "../chat/types";
 
 export default function createSyncPartyAndStorePlugin(party: Party) {

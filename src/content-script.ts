@@ -1,18 +1,19 @@
-import "../assets/styles/content-script.less";
+import "./assets/styles/content-script.less";
 import { connectToChild } from "penpal";
 import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
-import Sidebar from "@/models/sidebar/Sidebar";
-import VideoManager from "@/models/video/VideoManager";
-import { VideoEvent } from "@/models/video/types";
-import { VideoStatus } from "@/sidebar/models/types";
-import ToastMaker from "@/models/toast/ToastMaker";
+import Sidebar from "@/iframe-models/dom/SidebarDOM";
+import { VideoEvent } from "@/iframe-models/site-managers/types";
+import ToastMaker from "@/iframe-models/toast/ToastMaker";
 import { isPlaying } from "@/util/dom";
-import { log } from "../util/log";
+import { log } from "./util/log";
 import {
+  VideoStatus,
   DisconnectedMessage,
   ConnectedMessage,
   CreatePartyMessage
 } from "@/shared/types";
+import { SiteManagerFactory } from "./iframe-models/site-managers/SiteManagerFactory";
+import SiteManager from "@/iframe-models/site-managers/SiteManager";
 
 declare type Connection<TCallSender extends object = CallSender> = {
   promise: Promise<AsyncMethodReturns<TCallSender>>;
@@ -28,7 +29,7 @@ class Movens {
   sidebar!: Sidebar;
   iframeConnection!: Connection;
   childIframe!: AsyncMethodReturns<CallSender, string>;
-  VideoManager: VideoManager;
+  siteManager: SiteManager;
   ToastMaker: ToastMaker;
 
   constructor(
@@ -45,26 +46,34 @@ class Movens {
 
     this.ToastMaker = new ToastMaker();
 
-    this.VideoManager = new VideoManager();
+    this.siteManager = SiteManagerFactory.createSiteManager(
+      window.location.href
+    );
     this.setupVideoManagerListeners();
   }
 
   setupSidebar() {
-    this.sidebar = new Sidebar(this.videolink, this.debug, this.partyId);
+    this.sidebar = new Sidebar(
+      this.videolink,
+      this.debug,
+      this.partyId,
+      this.siteManager.screenFormatter
+    );
+
     this.setUpIframeConnection(this.username);
   }
 
   async selectVideo() {
-    await this.VideoManager.selectVideo(true);
-    this.VideoManager.cleanupVideos();
-    this.VideoManager.pause();
-    this.VideoManager.setupListeners();
+    await this.siteManager.videoManager.selectVideo(true);
+    this.siteManager.videoManager.cleanupVideos();
+    this.siteManager.videoManager.setupListeners();
   }
 
   setupVideoManagerListeners() {
-    this.VideoManager.on(VideoEvent.PLAY, () => {
-      this.childIframe.relayPlay();
-    })
+    this.siteManager.videoManager
+      .on(VideoEvent.PLAY, () => {
+        this.childIframe.relayPlay();
+      })
       .on(VideoEvent.PAUSE, () => {
         this.childIframe.relayPause();
       })
@@ -106,8 +115,8 @@ class Movens {
     browser.runtime.sendMessage(disconnectMessage);
 
     this.iframeConnection.destroy();
-    this.VideoManager.offAll(); // this removes all event listeners on the VideoManager object itself, not the videos on the page
-    this.VideoManager.removeAllVideoEventListeners();
+    this.siteManager.videoManager.offAll(); // this removes all event listeners on the VideoManager object itself, not the videos on the page
+    this.siteManager.videoManager.removeAllVideoEventListeners();
     this.sidebar.unmount();
     (window as any).partyLoaded = false;
   }
@@ -133,28 +142,28 @@ class Movens {
         },
         playVideo: async () => {
           try {
-            await this.VideoManager.play();
+            await this.siteManager.videoManager.play();
           } catch (err) {
             console.error("Error trying to play this video", err.message);
           }
         },
         pauseVideo: async () => {
           try {
-            await this.VideoManager.pause();
+            await this.siteManager.videoManager.pause();
           } catch (err) {
             console.error("Error trying to pause this video: ", err.message);
           }
         },
         seekVideo: async (currentTimeSeconds: number) => {
           try {
-            await this.VideoManager.seek(currentTimeSeconds);
+            await this.siteManager.videoManager.seek(currentTimeSeconds);
           } catch (err) {
             console.error("Error trying to seek this video: ", err.message);
           }
         },
         changeVideoSpeed: async (speed: number) => {
           try {
-            await this.VideoManager.changeSpeed(speed);
+            await this.siteManager.videoManager.changeSpeed(speed);
           } catch (err) {
             console.error(
               "Error trying to change this video speed: ",
@@ -163,7 +172,7 @@ class Movens {
           }
         },
         getCurrentVideoStatus: (): VideoStatus => {
-          const vid = this.VideoManager.videoSelected;
+          const vid = this.siteManager.videoManager.videoSelected;
           return {
             currentTimeSeconds: vid.currentTime,
             speed: vid.playbackRate,
@@ -171,13 +180,13 @@ class Movens {
           };
         },
         setIsUserAdmin: (isUserAdmin: boolean) => {
-          this.VideoManager.setIsUserAdmin(isUserAdmin);
+          this.siteManager.videoManager.setIsUserAdmin(isUserAdmin);
         },
         setHostTime: (currentTimeSeconds: number) => {
-          this.VideoManager.hostVideoStatus.currentTimeSeconds = currentTimeSeconds;
+          this.siteManager.videoManager.hostVideoStatus.currentTimeSeconds = currentTimeSeconds;
         },
         setAdminControls: (adminControlsOnly: boolean) => {
-          this.VideoManager.adminControlsOnly = adminControlsOnly;
+          this.siteManager.videoManager.adminControlsOnly = adminControlsOnly;
         },
         signalConnected: (partyId: string) => {
           // handled by src/background.ts (Background Script)
@@ -200,8 +209,8 @@ class Movens {
           browser.runtime.sendMessage(failedConnectMessage);
         },
         setAutoSync: (autoSync: boolean) => {
-          this.VideoManager.autoSync = autoSync;
-          this.VideoManager.isSyncing = false;
+          this.siteManager.videoManager.autoSync = autoSync;
+          this.siteManager.videoManager.isSyncing = false;
         },
         endSession: () => {
           this.unmount();

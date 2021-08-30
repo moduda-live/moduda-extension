@@ -3,12 +3,10 @@ import debounce from "lodash.debounce";
 export default abstract class ScreenFormatter {
   public abstract domAttachTarget: string;
   sidebar!: HTMLDivElement;
-  sidebarWidth!: number;
 
   constructor() {
     const debouncedAdjust = debounce(this.adjustScreenView.bind(this));
     window.addEventListener("fullscreenchange", debouncedAdjust);
-    // window.addEventListener("resize", debouncedAdjust);
   }
 
   get(selector: string): any {
@@ -17,7 +15,6 @@ export default abstract class ScreenFormatter {
 
   registerSidebar() {
     this.sidebar = document.querySelector("#moduda-sidebar") as HTMLDivElement;
-    this.sidebarWidth = this.sidebar.offsetWidth;
   }
 
   isSidebarHidden() {

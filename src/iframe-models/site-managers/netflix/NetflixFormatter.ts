@@ -1,4 +1,4 @@
-import ScreenFormatter from "./ScreenFormatter";
+import ScreenFormatter from "../ScreenFormatter";
 
 export default class NetflixFormatter extends ScreenFormatter {
   private app: HTMLElement;

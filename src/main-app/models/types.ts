@@ -1,5 +1,6 @@
 import { Party } from "./Party";
 import { AsyncMethodReturns, CallSender } from "penpal/lib/types";
+import { VideoStatus } from "@/shared/types";
 
 export interface UserInfo {
   userId: string;
@@ -56,12 +57,6 @@ export enum RTCMsgType {
   REQUEST_INITIAL_VIDEO_STATUS,
   INITIAL_VIDEO_STATUS,
   TIME_UPDATE
-}
-
-export interface VideoStatus {
-  currentTimeSeconds: number;
-  speed: number;
-  isPlaying: boolean;
 }
 
 export interface Communicator {

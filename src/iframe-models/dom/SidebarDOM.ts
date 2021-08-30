@@ -1,6 +1,5 @@
 import { getViewportWidth } from "@/util/dom";
-import ScreenFormatterFactory from "@/models/screen/ScreenFormatterFactory";
-import ScreenFormatter from "@/models/screen/ScreenFormatter";
+import ScreenFormatter from "@/iframe-models/site-managers/ScreenFormatter";
 import { log } from "../../util/log";
 
 const SIDEBAR_WIDTH = 270;
@@ -11,7 +10,12 @@ export default class Sidebar {
   screenFormatter!: ScreenFormatter;
   iframe: HTMLIFrameElement;
 
-  constructor(videolink: string, debug: boolean, partyId: string | "") {
+  constructor(
+    videolink: string,
+    debug: boolean,
+    partyId: string | "",
+    screenFormatter: ScreenFormatter
+  ) {
     const iframe = document.createElement("iframe");
     iframe.style.border = "none";
     iframe.id = "moduda-iframe";
@@ -32,9 +36,7 @@ export default class Sidebar {
     this.iframe = iframe;
 
     // For adjusting screen layout based on sidebar visiblity
-    this.screenFormatter = ScreenFormatterFactory.createScreenFormatter(
-      window.location.href
-    );
+    this.screenFormatter = screenFormatter;
 
     this.attachToDom();
 

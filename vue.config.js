@@ -23,7 +23,7 @@ module.exports = {
       entry: "./src/join/join.ts",
       title: "Join"
     },
-    sidebar: "./src/sidebar/sidebar.ts"
+    sidebar: "./src/main-app/sidebar.ts"
   },
   filenameHashing: false,
   chainWebpack: config => {
@@ -57,7 +57,7 @@ module.exports = {
         },
         contentScripts: {
           entries: {
-            "content-script": ["src/content-scripts/content-script.ts"]
+            "content-script": ["src/content-script.ts"]
           }
         }
       },

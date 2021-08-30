@@ -1,14 +1,10 @@
-import ScreenFormatter from "./ScreenFormatter";
+import ScreenFormatter from "../ScreenFormatter";
 
-export default class YoutubeFormatter extends ScreenFormatter {
+export default class DefaultScreenFormatter extends ScreenFormatter {
   public domAttachTarget = "body";
   public playerSelector = "#player-theater-container";
   public videoSelector = "video";
   public controlsSelector = ".ytp-chrome-bottom";
-
-  constructor() {
-    super();
-  }
 
   centerVid() {
     const video = this.get(this.videoSelector);
@@ -42,8 +38,9 @@ export default class YoutubeFormatter extends ScreenFormatter {
   }
 
   normalScreenAndSidebar(): void {
-    const moviePlayer = this.get(this.playerSelector);
-    moviePlayer.style.width = `calc(100% - var(--sidebar-width))`;
+    this.get(
+      this.playerSelector
+    ).style.width = `calc(100% - var(--sidebar-width))`;
     this.centerVid();
   }
 }

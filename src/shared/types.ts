@@ -37,3 +37,9 @@ export interface CreatePartyMessage extends BrowserTabsMessage {
     username: string;
   };
 }
+
+export interface VideoStatus {
+  currentTimeSeconds: number;
+  speed: number;
+  isPlaying: boolean;
+}
