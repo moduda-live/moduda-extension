@@ -1,13 +1,47 @@
-export function queryVideos(
+// Credits: Yong Wang, https://stackoverflow.com/questions/5525071/how-to-wait-until-an-element-exists
+function waitForElm(selector: string): Promise<HTMLElement> {
+  return new Promise(resolve => {
+    if (document.querySelector(selector)) {
+      return resolve(document.querySelector(selector) as HTMLElement);
+    }
+
+    const observer = new MutationObserver(mutations => {
+      if (document.querySelector(selector)) {
+        resolve(document.querySelector(selector) as HTMLElement);
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  });
+}
+
+export async function queryVideos(
   window: Window,
-  results: Array<HTMLVideoElement>
-): Array<HTMLVideoElement> {
+  maxWaitTime: number
+): Promise<Array<HTMLVideoElement>> {
   const doc = window.document;
   const videos = doc.querySelectorAll("video");
-  videos.forEach(video => results.push(video));
 
-  return results;
+  if (!videos.length) {
+    // there are no videos, wait for at least 1 to load
+    return Promise.race([
+      waitForElm("video").then(video => [video]),
+      new Promise((resolve, reject) =>
+        setTimeout(
+          () => reject("No videos found after " + maxWaitTime + "ms."),
+          maxWaitTime
+        )
+      )
+    ]) as Promise<Array<HTMLVideoElement>>;
+  }
+
+  return Array.from(videos);
 }
+
 export function getLargestVideo(
   videos: Array<HTMLVideoElement>
 ): HTMLVideoElement {

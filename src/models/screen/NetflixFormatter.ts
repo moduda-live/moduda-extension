@@ -18,10 +18,10 @@ export default class NetflixFormatter extends ScreenFormatter {
   }
 
   fullScreenAndSidebarHidden(): void {
-    this.normalScreenAndSidebar();
+    this.normalScreenAndSidebarHidden();
   }
 
   fullScreenAndSidebar(): void {
-    this.normalScreenAndSidebarHidden();
+    this.normalScreenAndSidebar();
   }
 }

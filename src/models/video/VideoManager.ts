@@ -9,6 +9,7 @@ import throttle from "lodash.throttle";
 const ARTIFICIAL_DELAY = 200;
 const SYNC_PERIOD = 3000;
 const SYNC_THRESHOLD_TIME_DIFF = 1.5; // seconds
+const MAX_WAIT_VIDEO_LOAD_TIME = 1; // miliseconds
 
 // seeking event is prety much guaranteed to be triggered within 100ms of pause when user seeks
 // const MS_UNTIL_POTENTIAL_SEEKING = 100;
@@ -57,36 +58,38 @@ export default class VideoManager extends EventEmitter<VideoEvent> {
     });
   }
 
-  selectVideoWithDelay() {
-    const videos = queryVideos(window, []);
-    if (videos.length === 0) {
+  async selectVideoWithDelay() {
+    try {
+      const videos = await queryVideos(window, MAX_WAIT_VIDEO_LOAD_TIME);
+      if (this.autoResolve) {
+        const largestVideo = getLargestVideo(videos);
+        largestVideo.classList.add("video--selected");
+        console.log("Largest video on page:", largestVideo);
+
+        this.videoSelected = largestVideo;
+
+        this.hostVideoStatus = {
+          currentTimeSeconds: this.videoSelected.currentTime,
+          speed: this.videoSelected.playbackRate,
+          isPlaying: isPlaying(this.videoSelected)
+        };
+
+        setTimeout(() => {
+          this.videoClickPromise.resolve(largestVideo);
+        }, ARTIFICIAL_DELAY);
+      }
+      // Currently these are never called, but keeping this in case
+      // I decide to allow users to manually select the video
+      // this.handleHoverOnVideos(videos);
+      // this.handleClickOnVideos(videos);
+    } catch (error) {
+      console.error(error);
       setTimeout(() => {
         this.videoClickPromise.reject("There are no videos on the page");
       }, ARTIFICIAL_DELAY);
+
       return;
     }
-
-    if (this.autoResolve) {
-      const largestVideo = getLargestVideo(videos);
-      largestVideo.classList.add("video--selected");
-      console.log("Largest video on page:", largestVideo);
-
-      this.videoSelected = largestVideo;
-
-      this.hostVideoStatus = {
-        currentTimeSeconds: this.videoSelected.currentTime,
-        speed: this.videoSelected.playbackRate,
-        isPlaying: isPlaying(this.videoSelected)
-      };
-
-      setTimeout(() => {
-        this.videoClickPromise.resolve(largestVideo);
-      }, ARTIFICIAL_DELAY);
-    }
-    // Currently these are never called, but keeping this in case
-    // I decide to allow users to manually select the video
-    // this.handleHoverOnVideos(videos);
-    // this.handleClickOnVideos(videos);
   }
 
   private playEventListener = () => {
