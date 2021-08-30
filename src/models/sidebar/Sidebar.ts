@@ -80,6 +80,7 @@ export default class Sidebar {
     document.removeEventListener("mousemove", this.toggleBasedOnMouse);
     this.sidebarContainer.classList.remove("moduda-sidebar--teasing");
     this.sidebarContainer.style.right = "0px";
+
     this.screenFormatter.adjustScreenView();
   };
 

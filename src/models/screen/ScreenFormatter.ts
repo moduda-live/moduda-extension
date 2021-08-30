@@ -8,7 +8,11 @@ export default abstract class ScreenFormatter {
   constructor() {
     const debouncedAdjust = debounce(this.adjustScreenView.bind(this));
     window.addEventListener("fullscreenchange", debouncedAdjust);
-    window.addEventListener("resize", debouncedAdjust);
+    // window.addEventListener("resize", debouncedAdjust);
+  }
+
+  get(selector: string): any {
+    return document.querySelector(selector);
   }
 
   registerSidebar() {
@@ -25,15 +29,16 @@ export default abstract class ScreenFormatter {
   adjustScreenView() {
     if (this.isSidebarHidden() === undefined) return; // no sidebar yet
 
-    if (document.fullscreenElement && !this.isSidebarHidden()) {
+    if (document.fullscreenElement && this.isSidebarHidden()) {
       this.fullScreenAndSidebarHidden();
-    } else if (document.fullscreenElement && this.isSidebarHidden()) {
+    } else if (document.fullscreenElement && !this.isSidebarHidden()) {
       this.fullScreenAndSidebar();
     } else if (!document.fullscreenElement && this.isSidebarHidden()) {
       this.normalScreenAndSidebarHidden();
     } else if (!document.fullscreenElement && !this.isSidebarHidden()) {
       this.normalScreenAndSidebar();
     }
+    window.dispatchEvent(new Event("resize"));
   }
 
   abstract fullScreenAndSidebarHidden(): void;

@@ -1,44 +1,49 @@
 import ScreenFormatter from "./ScreenFormatter";
 
 export default class YoutubeFormatter extends ScreenFormatter {
-  private ytd: HTMLElement;
-  private controlBar: HTMLElement;
   public domAttachTarget = "body";
+  public playerSelector = "#player-theater-container";
+  public videoSelector = "video";
+  public controlsSelector = ".ytp-chrome-bottom";
 
   constructor() {
     super();
-    this.ytd = document.querySelector("ytd-app") as HTMLDivElement;
-    this.controlBar = document.querySelector(
-      ".ytp-chrome-bottom"
-    ) as HTMLDivElement;
   }
-  /// ignore for nwo
-  // this.ytd.style.width = `calc(100vw - ${this.sidebarWidth}px)`;
-  // // center video
-  // const vid = document.querySelector("video") as HTMLVideoElement;
-  // vid.style.width = `calc(100vw - ${this.sidebarWidth}px)`;
-  // vid.style.height = `100vh`;
 
-  // ignore for now
-  // this.ytd.style.width = `calc(100vw - ${this.sidebarWidth}px)`;
-  // const controlBarParent = document.querySelector(
-  //   "#movie_player"
-  // ) as HTMLDivElement;
-  // this.controlBar.style.width = `calc(${controlBarParent?.offsetWidth}px - 12px)`;
-  // const vid = document.querySelector("video") as HTMLVideoElement;
-  // vid.style.width = `calc(${controlBarParent?.offsetWidth}px)`;
-  // window.dispatchEvent(new Event("resize"));
+  centerVid() {
+    const video = this.get(this.videoSelector);
+    video.style.left = `calc(50% - ${video.offsetWidth / 2}px)`;
+    video.height = "100%";
+  }
 
   fullScreenAndSidebarHidden(): void {
-    //ignore
+    this.get(this.playerSelector).style.width = "100vw";
+    this.get(this.controlsSelector).style.width = `calc(${
+      this.get(this.playerSelector).offsetWidth
+    }px - 30px)`;
+    this.get(this.videoSelector).style.width = "100vw";
+    this.centerVid();
   }
+
   fullScreenAndSidebar(): void {
-    //ignore
+    this.get(this.playerSelector).style.width =
+      "calc(100vw - var(--sidebar-width))";
+    this.get(this.controlsSelector).style.width =
+      "calc((100vw - 24px) - var(--sidebar-width))";
+    this.get(this.videoSelector).style.width =
+      "calc(100vw - var(--sidebar-width))";
+
+    this.centerVid();
   }
+
   normalScreenAndSidebarHidden(): void {
-    //ignore
+    this.get(this.playerSelector).style.width = "100%";
+    this.centerVid();
   }
+
   normalScreenAndSidebar(): void {
-    //ignore
+    const moviePlayer = this.get(this.playerSelector);
+    moviePlayer.style.width = `calc(100% - var(--sidebar-width))`;
+    this.centerVid();
   }
 }
