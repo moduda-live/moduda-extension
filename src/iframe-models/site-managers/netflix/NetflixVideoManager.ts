@@ -1,6 +1,8 @@
 import VideoManager from "../VideoManager";
 
 export default class NetflixVideoManager extends VideoManager {
+  videoTargetSelector = "video";
+
   constructor() {
     super();
     const customScript = document.createElement("script");

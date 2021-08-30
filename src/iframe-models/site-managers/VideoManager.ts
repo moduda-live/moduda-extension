@@ -24,6 +24,7 @@ export default abstract class VideoManager extends EventEmitter<VideoEvent> {
   preventInfiniteLoop: boolean;
   adminControlsOnly: boolean;
   throttledSync: any;
+  abstract videoTargetSelector: string;
   public isSyncing: boolean;
   public autoSync: boolean; // whether or not enable autosync
   static timeLostDelta = 1.5; // in seconds
@@ -60,7 +61,11 @@ export default abstract class VideoManager extends EventEmitter<VideoEvent> {
 
   async selectVideoWithDelay() {
     try {
-      const videos = await queryVideos(window, MAX_WAIT_VIDEO_LOAD_TIME);
+      const videos = await queryVideos(
+        this.videoTargetSelector,
+        window,
+        MAX_WAIT_VIDEO_LOAD_TIME
+      );
       if (this.autoResolve) {
         const largestVideo = getLargestVideo(videos);
         largestVideo.classList.add("video--selected");

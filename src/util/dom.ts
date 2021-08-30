@@ -20,11 +20,16 @@ function waitForElm(selector: string): Promise<HTMLElement> {
 }
 
 export async function queryVideos(
+  selector: string,
   window: Window,
   maxWaitTime: number
 ): Promise<Array<HTMLVideoElement>> {
+  if (!selector.includes("video")) {
+    throw Error("String 'video' must be in the selector when selecting video!");
+  }
+
   const doc = window.document;
-  const videos = doc.querySelectorAll("video");
+  const videos = doc.querySelectorAll(selector);
 
   if (!videos.length) {
     // there are no videos, wait for at least 1 to load
@@ -39,7 +44,7 @@ export async function queryVideos(
     ]) as Promise<Array<HTMLVideoElement>>;
   }
 
-  return Array.from(videos);
+  return Array.from(videos) as Array<HTMLVideoElement>;
 }
 
 export function getLargestVideo(

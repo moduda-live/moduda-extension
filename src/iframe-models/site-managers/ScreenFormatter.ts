@@ -9,8 +9,16 @@ export default abstract class ScreenFormatter {
     window.addEventListener("fullscreenchange", debouncedAdjust);
   }
 
-  get(selector: string): any {
-    return document.querySelector(selector);
+  get(selector: string): HTMLElement {
+    let el;
+    el = document.querySelector(selector) as HTMLElement;
+    if (!el) {
+      el = document.createElement("div");
+      console.error(
+        "Element not found! Temporarily creating element but this indicates an error in development! Please report me to the developer."
+      );
+    }
+    return el;
   }
 
   registerSidebar() {

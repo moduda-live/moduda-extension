@@ -9,7 +9,7 @@ export default class YoutubeScreenFormatter extends ScreenFormatter {
   centerVid() {
     const video = this.get(this.videoSelector);
     video.style.left = `calc(50% - ${video.offsetWidth / 2}px)`;
-    video.height = "100%";
+    video.setAttribute("height", "100%");
   }
 
   fullScreenAndSidebarHidden(): void {
