@@ -148,29 +148,14 @@ class Movens {
             console.error("Error trying to play this video", err.message);
           }
         },
-        pauseVideo: async () => {
-          try {
-            await this.siteManager.videoManager.pause();
-          } catch (err) {
-            console.error("Error trying to pause this video: ", err.message);
-          }
+        pauseVideo: () => {
+          this.siteManager.videoManager.pause();
         },
-        seekVideo: async (currentTimeSeconds: number) => {
-          try {
-            await this.siteManager.videoManager.seek(currentTimeSeconds);
-          } catch (err) {
-            console.error("Error trying to seek this video: ", err.message);
-          }
+        seekVideo: (currentTimeSeconds: number) => {
+          this.siteManager.videoManager.seek(currentTimeSeconds);
         },
         changeVideoSpeed: async (speed: number) => {
-          try {
-            await this.siteManager.videoManager.changeSpeed(speed);
-          } catch (err) {
-            console.error(
-              "Error trying to change this video speed: ",
-              err.message
-            );
-          }
+          this.siteManager.videoManager.changeSpeed(speed);
         },
         getCurrentVideoStatus: (): VideoStatus => {
           const vid = this.siteManager.videoManager.videoSelected;

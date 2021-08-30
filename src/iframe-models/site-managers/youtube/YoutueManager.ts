@@ -1,9 +1,9 @@
 import SiteManager from "../SiteManager";
-import DefaultScreenFormatter from "../default/DefaultScreenFormatter";
 import DefaultVideoManager from "../default/DefaultVideoManager";
+import YoutubeScreenFormatter from "./YoutubeScreenFormatter";
 
 export default class YoutubeManager extends SiteManager {
   constructor() {
-    super(new DefaultScreenFormatter(), new DefaultVideoManager());
+    super(new YoutubeScreenFormatter(), new DefaultVideoManager());
   }
 }
